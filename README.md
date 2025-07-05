@@ -1,4 +1,7 @@
 ## 🚀 git flow
+<img width="838" height="718" alt="Image" src="https://github.com/user-attachments/assets/530e9719-468e-457a-981a-e5fa46af82ff" />
+
+&nbsp;
 - `main`
   - 프로젝트 최종 merge
   - 기본 프로젝트 세팅, 배포 가능한 브랜치, 항상 배포 가능한 상태를 유지
