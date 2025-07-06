@@ -35,7 +35,7 @@ public class ConsumptionRecord extends BaseEntity {
 
     @Column(length = 1000)
     private String memo;
-
+    
     @ColumnDefault("0")
     private Integer commentCount = 0;
 

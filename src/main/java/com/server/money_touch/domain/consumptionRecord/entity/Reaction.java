@@ -1,6 +1,6 @@
 package com.server.money_touch.domain.consumptionRecord.entity;
 
-import com.server.money_touch.consumptionRecord.enums.ReactionType;
+import com.server.money_touch.domain.consumptionRecord.enums.ReactionType;
 import com.server.money_touch.global.apiPayload.code.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
