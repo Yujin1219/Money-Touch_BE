@@ -6,6 +6,7 @@ import com.server.money_touch.global.apiPayload.code.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
@@ -34,6 +35,16 @@ public class ConsumptionRecord extends BaseEntity {
 
     @Column(length = 1000)
     private String memo;
+    
+    @ColumnDefault("0")
+    private Integer commentCount = 0;
 
+    @ColumnDefault("0")
+    private Integer wiseCount = 0;
 
+    @ColumnDefault("0")
+    private Integer wasteCount = 0;
+
+    @ColumnDefault("0")
+    private Integer viewCount = 0;
 }
