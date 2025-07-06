@@ -1,6 +1,6 @@
 package com.server.money_touch.domain.budget.entity;
 
-import com.server.money_touch.domain.user.entity.User;
+import com.server.money_touch.domain.consumptionRecord.entity.ConsumptionCategory;
 import com.server.money_touch.global.apiPayload.code.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
