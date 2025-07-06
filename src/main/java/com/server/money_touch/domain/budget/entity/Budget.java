@@ -1,8 +1,8 @@
 package com.server.money_touch.domain.budget.entity;
 
+import com.server.money_touch.domain.user.entity.User;
 import com.server.money_touch.global.apiPayload.code.BaseEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
+import jakarta.persistence.*;
 import lombok.*;
 
 @Getter
@@ -19,4 +19,7 @@ public class Budget extends BaseEntity {
     private Boolean isFromRoutine = false;
 
     // 예산-유저 다대일 연관관계
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 }

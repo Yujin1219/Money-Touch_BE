@@ -1,6 +1,7 @@
 package com.server.money_touch.domain.routine.entity;
 
 import com.server.money_touch.domain.budget.entity.Budget;
+import com.server.money_touch.domain.user.entity.User;
 import com.server.money_touch.global.apiPayload.code.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -29,4 +30,7 @@ public class Routine extends BaseEntity {
     private Budget budget;
 
     // 소비루틴-유저 다대일
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 }

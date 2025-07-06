@@ -1,8 +1,8 @@
 package com.server.money_touch.domain.consumptionRecord.entity;
 
+import com.server.money_touch.domain.user.entity.User;
 import com.server.money_touch.global.apiPayload.code.BaseEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
+import jakarta.persistence.*;
 import lombok.*;
 
 @Getter
@@ -15,4 +15,7 @@ public class TotalConsumption extends BaseEntity {
     private Integer totalConsumptionAmount; // 총 소비 금액
 
     // 총 소비-유저 다대일 연관관계
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 }

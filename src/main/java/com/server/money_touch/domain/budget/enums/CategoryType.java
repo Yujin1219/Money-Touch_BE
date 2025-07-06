@@ -1,4 +1,4 @@
-package com.server.money_touch.domain.budget.entity;
+package com.server.money_touch.domain.budget.enums;
 
 public enum CategoryType {
     DEFAULT("기본 카테고리"),

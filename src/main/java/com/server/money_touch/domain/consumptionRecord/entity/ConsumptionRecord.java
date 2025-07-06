@@ -1,6 +1,5 @@
 package com.server.money_touch.domain.consumptionRecord.entity;
 
-import com.server.money_touch.domain.budget.entity.BudgetCategory;
 import com.server.money_touch.domain.user.entity.User;
 import com.server.money_touch.global.apiPayload.code.BaseEntity;
 import jakarta.persistence.*;
@@ -20,8 +19,8 @@ public class ConsumptionRecord extends BaseEntity {
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "budget_category_id", nullable = false)
-    private BudgetCategory budgetCategory;
+    @JoinColumn(name = "consumption_category_id", nullable = false)
+    private ConsumptionCategory consumptionCategory;
 
     @Column(nullable = false)
     private int amount;
