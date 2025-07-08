@@ -42,6 +42,7 @@ public class BudgetController {
         return ApiResponse.onSuccess(response);
     }
 
+
     // 가계부 한 달 예산 수정 (타인의 소비 루틴 가져올 시 사용)
     @Operation(
             summary = "한 달 예산 수정 API",
@@ -60,6 +61,7 @@ public class BudgetController {
         BudgetResponse.BudgetCreateResultDTO response = BudgetResponse.BudgetCreateResultDTO.builder().build();
         return ApiResponse.onSuccess(response);
     }
+
 
     // 가계부 한 달 예산 대비 총 소비 사용 금액 조회
     @Operation(
