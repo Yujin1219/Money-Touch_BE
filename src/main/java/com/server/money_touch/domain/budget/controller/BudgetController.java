@@ -65,7 +65,7 @@ public class BudgetController {
     })
     @PatchMapping("/{budgetId}")
     public ApiResponse<BudgetResponse.BudgetCreateResultDTO> patchBudget(@Valid @RequestBody BudgetRequest.BudgetCreateDTO request,
-                                                                         @RequestParam Long budgetId) {
+                                                                         @PathVariable Long budgetId) {
         BudgetResponse.BudgetCreateResultDTO response = BudgetResponse.BudgetCreateResultDTO.builder().build();
         return ApiResponse.onSuccess(response);
     }
@@ -87,7 +87,7 @@ public class BudgetController {
             @Parameter(name = "budgetId", description = "조회하려는 예산 아이디", example = "1", required = true),
     })
     @GetMapping("/{budgetId}")
-    public ApiResponse<BudgetResponse.BudgetDetailDTO> getBudget(@RequestParam Long budgetId) {
+    public ApiResponse<BudgetResponse.BudgetDetailDTO> getBudget(@PathVariable Long budgetId) {
         BudgetResponse.BudgetDetailDTO response = BudgetResponse.BudgetDetailDTO.builder().build();
         return ApiResponse.onSuccess(response);
     }

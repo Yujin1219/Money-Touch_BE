@@ -33,7 +33,6 @@ public class BudgetResponse {
         private Integer percent;
     }
 
-
     @Builder
     @Getter
     @NoArgsConstructor
@@ -50,7 +49,7 @@ public class BudgetResponse {
                 "      \"amount\": 100000\n" +
                 "    }\n" +
                 "  ]")
-        private List<BudgetRequest.BudgetCreateDTO.DefaultCategoryBudget> defaultCategoryBudgets;
+        private List<BudgetResponse.BudgetDetailDTO.DefaultCategoryBudget> defaultCategoryBudgets;
 
         @Schema(description = "내 카테고리별 예산 목록", example = "  \"customCategoryBudgets\": [\n" +
                 "    {\n" +
@@ -58,7 +57,7 @@ public class BudgetResponse {
                 "      \"amount\": 150000\n" +
                 "    }\n" +
                 "  ],")
-        private List<BudgetRequest.BudgetCreateDTO.CustomCategoryBudget> customCategoryBudgets;
+        private List<BudgetResponse.BudgetDetailDTO.CustomCategoryBudget> customCategoryBudgets;
 
         @Schema(description = "소비 루틴 카테고리 예산 목록", example = "  \"routineCategoryBudgets\": [\n" +
                 "    {\n" +
@@ -66,7 +65,7 @@ public class BudgetResponse {
                 "      \"amount\": 100000\n" +
                 "    }\n" +
                 "  ]")
-        private List<BudgetRequest.BudgetCreateDTO.RoutineCategoryBudget> routineCategoryBudgets;
+        private List<BudgetResponse.BudgetDetailDTO.RoutineCategoryBudget> routineCategoryBudgets;
 
         @Builder
         @Getter
