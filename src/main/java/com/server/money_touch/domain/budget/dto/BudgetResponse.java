@@ -1,10 +1,9 @@
 package com.server.money_touch.domain.budget.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
+import java.util.List;
 
 public class BudgetResponse {
 
@@ -29,5 +28,79 @@ public class BudgetResponse {
 
         @Schema(description = "한 달 예산 대비 총 소비 금액 퍼센트", example = "50")
         private Integer percent;
+    }
+
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Schema(description = "한 달 예산 내역 응답 정보")
+    public static class BudgetDetailDTO {
+
+        @Schema(description = "한 달 전체 예산", example = "500000")
+        private Integer totalBudget;
+
+        @Schema(description = "기본 카테고리별 예산 목록", example = "  \"defaultCategoryBudgets\": [\n" +
+                "    {\n" +
+                "      \"categoryName\": \"배달/외식\",\n" +
+                "      \"amount\": 100000\n" +
+                "    }\n" +
+                "  ]")
+        private List<BudgetRequest.BudgetCreateDTO.DefaultCategoryBudget> defaultCategoryBudgets;
+
+        @Schema(description = "내 카테고리별 예산 목록", example = "  \"customCategoryBudgets\": [\n" +
+                "    {\n" +
+                "      \"categoryName\": \"교육비\",\n" +
+                "      \"amount\": 150000\n" +
+                "    }\n" +
+                "  ],")
+        private List<BudgetRequest.BudgetCreateDTO.CustomCategoryBudget> customCategoryBudgets;
+
+        @Schema(description = "소비 루틴 카테고리 예산 목록", example = "  \"routineCategoryBudgets\": [\n" +
+                "    {\n" +
+                "      \"categoryName\": \"술/유흥\",\n" +
+                "      \"amount\": 100000\n" +
+                "    }\n" +
+                "  ]")
+        private List<BudgetRequest.BudgetCreateDTO.RoutineCategoryBudget> routineCategoryBudgets;
+
+        @Builder
+        @Getter
+        @NoArgsConstructor
+        @AllArgsConstructor
+        @Schema(description = "기본 카테고리별 예산")
+        public static class DefaultCategoryBudget {
+            @Schema(description = "기본 예산 카테고리명", example = "배달/외식")
+            private String categoryName;
+
+            @Schema(description = "카테고리별 예산 금액", example = "100000")
+            private Integer amount;
+        }
+
+        @Builder
+        @Getter
+        @NoArgsConstructor
+        @AllArgsConstructor
+        @Schema(description = "사용자 정의 카테고리별 예산")
+        public static class CustomCategoryBudget {
+            @Schema(description = "사용자 정의 카테고리명", example = "교육비")
+            private String categoryName;
+
+            @Schema(description = "카테고리별 예산 금액", example = "150000")
+            private Integer amount;
+        }
+
+        @Builder
+        @Getter
+        @NoArgsConstructor
+        @AllArgsConstructor
+        @Schema(description = "소비 루틴 카테고리 예산")
+        public static class RoutineCategoryBudget {
+            @Schema(description = "소비 루틴 카테고리명", example = "술/유흥")
+            private String categoryName;
+
+            private Integer amount;
+        }
     }
 }

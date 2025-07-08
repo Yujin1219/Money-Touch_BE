@@ -24,6 +24,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.List;
 
 @Configuration
 public class SwaggerConfig {
@@ -152,24 +155,59 @@ public class SwaggerConfig {
         mediaType.addExamples("COMMON200", new Example().value(resultJson));
     }
 
-    private Object generateDtoFromSchemaExample(Class<?> dtoClass) {
-        try {
-            Object instance = dtoClass.getDeclaredConstructor().newInstance();
-            for (Field field : dtoClass.getDeclaredFields()) {
-                field.setAccessible(true);
-                Schema schema = field.getAnnotation(Schema.class);
-                if (schema != null && !schema.example().isEmpty()) {
-                    Object exampleValue = convertToFieldType(schema.example(), field.getType());
-                    if (exampleValue != null) {
-                        field.set(instance, exampleValue);
-                    }
+    private Object generateDtoFromSchemaExample(Class<?> dtoClass) throws Exception {
+        Object instance = dtoClass.getDeclaredConstructor().newInstance();
+        for (Field field : dtoClass.getDeclaredFields()) {
+            field.setAccessible(true);
+
+            Schema schema = field.getAnnotation(Schema.class);
+            if (schema == null) continue;
+
+            String exampleValue = schema.example();
+            Class<?> fieldType = field.getType();
+
+            if (exampleValue.isEmpty()) continue;
+
+            if (fieldType == String.class) {
+                field.set(instance, exampleValue);
+            } else if (fieldType == Integer.class || fieldType == int.class) {
+                field.set(instance, Integer.parseInt(exampleValue));
+            } else if (fieldType == Long.class || fieldType == long.class) {
+                field.set(instance, Long.parseLong(exampleValue));
+            } else if (List.class.isAssignableFrom(fieldType)) {
+                // 리스트 타입 처리
+                Type genericType = ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0];
+                if (genericType instanceof Class<?> genericClass) {
+                    Object childDto = generateDtoFromSchemaExample(genericClass);
+                    field.set(instance, List.of(childDto));
                 }
+            } else {
+                // nested DTO 객체라면 재귀적으로 생성
+                Object nestedObject = generateDtoFromSchemaExample(fieldType);
+                field.set(instance, nestedObject);
             }
-            return instance;
-        } catch (Exception e) {
-            return null;
         }
+        return instance;
     }
+
+//    private Object generateDtoFromSchemaExample(Class<?> dtoClass) {
+//        try {
+//            Object instance = dtoClass.getDeclaredConstructor().newInstance();
+//            for (Field field : dtoClass.getDeclaredFields()) {
+//                field.setAccessible(true);
+//                Schema schema = field.getAnnotation(Schema.class);
+//                if (schema != null && !schema.example().isEmpty()) {
+//                    Object exampleValue = convertToFieldType(schema.example(), field.getType());
+//                    if (exampleValue != null) {
+//                        field.set(instance, exampleValue);
+//                    }
+//                }
+//            }
+//            return instance;
+//        } catch (Exception e) {
+//            return null;
+//        }
+//    }
 
     private Object convertToFieldType(String example, Class<?> type) {
         try {
