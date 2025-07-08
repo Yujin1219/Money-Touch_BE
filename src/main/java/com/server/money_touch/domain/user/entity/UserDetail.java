@@ -1,5 +1,6 @@
 package com.server.money_touch.domain.user.entity;
 
+import com.server.money_touch.domain.user.enums.Gender;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -31,8 +32,7 @@ public class UserDetail {
     private Boolean isIncome;
 
     // 회원-회원상세 일대일
-    @OneToOne
-    @JoinColumn(name = "user_id")
+    @OneToOne(mappedBy = "userDetail", fetch = FetchType.LAZY)
     private User user;
 
 }

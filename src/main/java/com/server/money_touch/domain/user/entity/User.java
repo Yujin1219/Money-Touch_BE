@@ -1,6 +1,8 @@
 package com.server.money_touch.domain.user.entity;
 
 
+import com.server.money_touch.domain.user.enums.AuthType;
+import com.server.money_touch.domain.user.enums.Role;
 import com.server.money_touch.global.apiPayload.code.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -30,5 +32,10 @@ public class User extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role = Role.USER;
+
+
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true) // 해당 user 삭제시 userDetail 자동삭제
+    @JoinColumn(name = "user_detail_id")
+    private UserDetail userDetail;
 
 }
