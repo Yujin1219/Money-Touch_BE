@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
 @Validated
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/budget")
+@RequestMapping("/api/budgets")
 public class BudgetController {
 
     // 가계부 한 달 예산 등록
@@ -95,12 +95,14 @@ public class BudgetController {
 
     // 한 달 예산 대비 총 소비 사용 금액 조회
     @Operation(
-            summary = "가계부 한 달 총 소비 금액 조회 API",
-            description = "한 달 예산 기준으로 현재까지의 총 소비 금액과 예산 소진 비율을 반환합니다."
+            summary = "한 달 총 소비 금액 조회 API",
+            description = "한 달 예산을 기준으로 예산 아이디 및 현재까지의 총 소비 금액과 예산 소진 비율을 반환합니다. " +
+                    "등록된 예산이 없는 경우, 에러 메시지를 반환합니다."
     )
     @ApiSuccessCodeExample(resultClass = BudgetResponse.TotalConsumptionResultDTO.class)
     @ApiErrorCodeExamples({
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "USER_NOT_FOUND"),
+            @ApiErrorCodeExample(value = ErrorStatus.class, name = "BUDGET_NOT_EXIST"),
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "_BAD_REQUEST"),
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "_INTERNAL_SERVER_ERROR"),
     })

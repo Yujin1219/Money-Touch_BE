@@ -23,6 +23,9 @@ public class BudgetResponse {
     @AllArgsConstructor
     @Schema(description = "한 달 총 소비 사용 금액 응답 정보")
     public static class TotalConsumptionResultDTO {
+        @Schema(description = "예산 아이디", example = "1")
+        private Long budgetId;
+
         @Schema(description = "한 달 총 소비 금액", example = "78000")
         private Integer totalConsumption;
 

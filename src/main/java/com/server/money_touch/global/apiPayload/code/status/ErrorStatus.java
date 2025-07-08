@@ -23,6 +23,7 @@ public enum ErrorStatus implements BaseErrorCode {
     BUDGET_NOT_FOUND(HttpStatus.BAD_REQUEST, "BUDGET4001", "아이디와 일치하는 예산이 없습니다."),
     TOTAL_BUDGET_EXCEEDED(HttpStatus.BAD_REQUEST, "BUDGET4002", "카테고리 예산 총합이 전체 예산을 초과합니다."),
     TOTAL_BUDGET_TOO_LOW(HttpStatus.BAD_REQUEST, "BUDGET4003", "카테고리 예산 총합이 전체 예산보다 작습니다."),
+    BUDGET_NOT_EXIST(HttpStatus.NOT_FOUND, "BUDGET_4041", "이번달에 등록된 예산이 없습니다."),
 
     // 고정비 관련 에러
     FIXED_CONSUMPTION_NOT_FOUND(HttpStatus.BAD_REQUEST, "FIXED_CONSUMPTION4001", "아이디와 일치하는 고정비가 없습니다.");
