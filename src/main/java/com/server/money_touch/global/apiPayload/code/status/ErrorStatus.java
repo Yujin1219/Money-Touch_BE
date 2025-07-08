@@ -24,6 +24,9 @@ public enum ErrorStatus implements BaseErrorCode {
     TOTAL_BUDGET_EXCEEDED(HttpStatus.BAD_REQUEST, "BUDGET4002", "카테고리 예산 총합이 전체 예산을 초과합니다."),
     TOTAL_BUDGET_TOO_LOW(HttpStatus.BAD_REQUEST, "BUDGET4003", "카테고리 예산 총합이 전체 예산보다 작습니다.");
 
+    // 소비 기록 에러
+
+
     private final HttpStatus httpStatus;
     private final String code;
     private final String message;
