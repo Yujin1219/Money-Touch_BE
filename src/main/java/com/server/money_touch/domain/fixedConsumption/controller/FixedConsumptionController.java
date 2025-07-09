@@ -29,7 +29,7 @@ public class FixedConsumptionController {
             summary = "고정비 등록 API",
             description = "고정비 등록 API 입니다. 금액, 카테고리, 항목명, 메모를 RequestBody로 입력받아 고정비를 등록합니다."
     )
-    @ApiSuccessCodeExample(resultClass = FixedConsumptionRequest.FixedConsumptionCreateDTO.class)
+    @ApiSuccessCodeExample(resultClass = FixedConsumptionResponse.FixedConsumptionCreateResultDTO.class)
     @ApiErrorCodeExamples({
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "USER_NOT_FOUND"),
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "_BAD_REQUEST"),
@@ -47,7 +47,7 @@ public class FixedConsumptionController {
             description = "고정비 ID를 통해 등록된 항목을 찾아, 금액·카테고리·항목명·메모를 수정하는 API입니다. " +
                     "ID는 Path 파라미터로, 수정 정보는 RequestBody로 입력받습니다."
     )
-    @ApiSuccessCodeExample(resultClass = FixedConsumptionRequest.FixedConsumptionCreateDTO.class)
+    @ApiSuccessCodeExample(resultClass = FixedConsumptionResponse.FixedConsumptionCreateResultDTO.class)
     @ApiErrorCodeExamples({
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "USER_NOT_FOUND"),
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "FIXED_CONSUMPTION_NOT_FOUND"),
