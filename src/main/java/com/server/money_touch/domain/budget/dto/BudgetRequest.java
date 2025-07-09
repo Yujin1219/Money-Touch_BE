@@ -5,12 +5,16 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.List;
 
 public class BudgetRequest {
 
     @Getter
+    @Setter
+    @NoArgsConstructor
     @Schema(description = "한 달 예산 등록 요청 정보")
     public static class BudgetCreateDTO {
 
@@ -32,6 +36,8 @@ public class BudgetRequest {
         private List<RoutineCategoryBudget> routineCategoryBudgets;
 
         @Getter
+        @Setter
+        @NoArgsConstructor
         @Schema(description = "기본 카테고리별 예산")
         public static class DefaultCategoryBudget {
 
@@ -46,6 +52,8 @@ public class BudgetRequest {
         }
 
         @Getter
+        @Setter
+        @NoArgsConstructor
         @Schema(description = "사용자 정의 카테고리별 예산")
         public static class CustomCategoryBudget {
 
@@ -60,6 +68,8 @@ public class BudgetRequest {
         }
 
         @Getter
+        @Setter
+        @NoArgsConstructor
         @Schema(description = "소비 루틴 카테고리 예산")
         public static class RoutineCategoryBudget {
 
