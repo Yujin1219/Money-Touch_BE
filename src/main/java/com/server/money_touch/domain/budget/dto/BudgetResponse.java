@@ -43,28 +43,13 @@ public class BudgetResponse {
         @Schema(description = "한 달 전체 예산", example = "500000")
         private Integer totalBudget;
 
-        @Schema(description = "기본 카테고리별 예산 목록", example = "  \"defaultCategoryBudgets\": [\n" +
-                "    {\n" +
-                "      \"categoryName\": \"배달/외식\",\n" +
-                "      \"amount\": 100000\n" +
-                "    }\n" +
-                "  ]")
+        @Schema(description = "기본 카테고리별 예산 목록")
         private List<BudgetResponse.BudgetDetailDTO.DefaultCategoryBudget> defaultCategoryBudgets;
 
-        @Schema(description = "내 카테고리별 예산 목록", example = "  \"customCategoryBudgets\": [\n" +
-                "    {\n" +
-                "      \"categoryName\": \"교육비\",\n" +
-                "      \"amount\": 150000\n" +
-                "    }\n" +
-                "  ],")
+        @Schema(description = "내 카테고리별 예산 목록")
         private List<BudgetResponse.BudgetDetailDTO.CustomCategoryBudget> customCategoryBudgets;
 
-        @Schema(description = "소비 루틴 카테고리 예산 목록", example = "  \"routineCategoryBudgets\": [\n" +
-                "    {\n" +
-                "      \"categoryName\": \"술/유흥\",\n" +
-                "      \"amount\": 100000\n" +
-                "    }\n" +
-                "  ]")
+        @Schema(description = "소비 루틴 카테고리 예산 목록")
         private List<BudgetResponse.BudgetDetailDTO.RoutineCategoryBudget> routineCategoryBudgets;
 
         @Builder

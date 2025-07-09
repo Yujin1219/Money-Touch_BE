@@ -32,11 +32,8 @@ public class RoutineRequest {
         @Size(max = 1000, message = "소비 루틴 소개는 1000자 이하로 입력해주세요.")
         private String routineDescription;
 
-        @Schema(
-                description = "소비 루틴 해시태그 목록",
-                example = "[{\"hashtagName\": \"#식비절약\"}, {\"hashtagName\": \"#생활비\"}]"
-        )
-        private List<RoutineRequest.RoutineHashtagDTO> hashtags;
+        @Schema(description = "소비 루틴 해시태그 목록", example = "[\"#식비절약\", \"#생활비\"]")
+        private List<String> hashtags;
 
         @Schema(description = "카테고리별 예산 목록")
         @NotNull(message = "카테고리별 예산 목록은 비어 있을 수 없습니다.")
@@ -58,14 +55,5 @@ public class RoutineRequest {
             @NotNull(message = "카테고리 금액은 필수입니다.")
             private Integer amount;
         }
-    }
-
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @Schema(description = "소비 루틴 등록 해시태그 정보")
-    public static class RoutineHashtagDTO {
-        @Schema(description = "해시태그 이름", example = "#식비절약")
-        private String hashtagName;
     }
 }

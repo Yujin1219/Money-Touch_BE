@@ -76,7 +76,7 @@ public class BudgetController {
             summary = "한 달 예산 내역 조회 API",
             description = "아이디와 일치하는 한 달 예산 내역(에산 수정, 소비 루틴 등록 시) 조회 API 입니다."
     )
-    @ApiSuccessCodeExample(resultClass = BudgetResponse.BudgetDetailDTO.class)
+//    @ApiSuccessCodeExample(resultClass = BudgetResponse.BudgetDetailDTO.class)
     @ApiErrorCodeExamples({
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "USER_NOT_FOUND"),
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "BUDGET_NOT_FOUND"),

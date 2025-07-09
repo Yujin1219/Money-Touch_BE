@@ -1,6 +1,5 @@
 package com.server.money_touch.domain.routine.controller;
 
-import com.server.money_touch.domain.budget.dto.BudgetResponse;
 import com.server.money_touch.domain.routine.dto.RoutineRequest;
 import com.server.money_touch.domain.routine.dto.RoutineResponse;
 import com.server.money_touch.global.apiPayload.ApiResponse;
@@ -47,6 +46,23 @@ public class RoutineController {
     public ApiResponse<RoutineResponse.RoutineCreateResultDTO> postRoutine(@Valid @RequestBody RoutineRequest.RoutineCreateDTO request,
                                                                     @PathVariable Long budgetId) {
         RoutineResponse.RoutineCreateResultDTO response = RoutineResponse.RoutineCreateResultDTO.builder().build();
+        return ApiResponse.onSuccess(response);
+    }
+
+    //내 소비 루틴 목록 조회
+    @Operation(
+            summary = "사용자가 등록한 소비 루틴 조회 API",
+            description = "가계부에서 사용자가 등록한 소비 루틴 목록을 조회하는 API입니다."
+    )
+//    @ApiSuccessCodeExample(resultClass = RoutineResponse.MyRoutineListDTO.class)
+    @ApiErrorCodeExamples({
+            @ApiErrorCodeExample(value = ErrorStatus.class, name = "USER_NOT_FOUND"),
+            @ApiErrorCodeExample(value = ErrorStatus.class, name = "_BAD_REQUEST"),
+            @ApiErrorCodeExample(value = ErrorStatus.class, name = "_INTERNAL_SERVER_ERROR"),
+    })
+    @GetMapping("/users")
+    public ApiResponse<RoutineResponse.MyRoutineListDTO> getMyRoutines() {
+        RoutineResponse.MyRoutineListDTO response = RoutineResponse.MyRoutineListDTO.builder().build();
         return ApiResponse.onSuccess(response);
     }
 }
