@@ -1,5 +1,6 @@
 package com.server.money_touch.domain.consumptionRecord.controller;
 
+import com.server.money_touch.domain.consumptionRecord.dto.FeedRequest;
 import com.server.money_touch.domain.consumptionRecord.dto.FeedResponse;
 import com.server.money_touch.global.apiPayload.ApiResponse;
 import com.server.money_touch.global.apiPayload.code.status.ErrorStatus;
@@ -10,13 +11,11 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "피드 페이지", description = "피드 조회 API")
 @Slf4j
@@ -64,11 +63,10 @@ public class FeedController {
         return ApiResponse.onSuccess(response);
     }
 
-
     // 마이페이지 - 내 피드 모아보기
     @Operation(
             summary = "내 피드 조회 API",
-            description = "마이페이지에 있는 My 피드를 눌러 현재 사용자의 소비 기록 피드를 조회하는 API입니다."
+            description = "마이페이지에 있는 My 피드를 눌러 현재 사용자의 소비 기록 피드를 조회하는 API 입니다."
     )
 //    @ApiSuccessCodeExample(resultClass = FeedResponse.FeedListResultDTO.class)
     @ApiErrorCodeExamples({
@@ -81,4 +79,33 @@ public class FeedController {
         FeedResponse.FeedListResultDTO response = FeedResponse.FeedListResultDTO.builder().build();
         return ApiResponse.onSuccess(response);
     }
+
+    // 댓글 등록
+    @Operation(
+            summary = "댓글 등록 API",
+            description = "피드에 댓글을 작성하는 API입니다. parentId가 있으면 대댓글, 없으면 일반 댓글입니다."
+    )
+    //    @ApiSuccessCodeExample(resultClass = CommentResponse.CommentCreateResultDTO.class)
+    @ApiErrorCodeExamples({
+            @ApiErrorCodeExample(value = ErrorStatus.class, name = "USER_NOT_FOUND"),
+            @ApiErrorCodeExample(value = ErrorStatus.class, name = "CONSUMPTION_RECORD_NOT_FOUND"),
+            @ApiErrorCodeExample(value = ErrorStatus.class, name = "PARENT_COMMENT_NOT_FOUND"),
+            @ApiErrorCodeExample(value = ErrorStatus.class, name = "NESTED_REPLY_NOT_ALLOWED"),
+            @ApiErrorCodeExample(value = ErrorStatus.class, name = "COMMENT_CONTENT_TOO_LONG"),
+            @ApiErrorCodeExample(value = ErrorStatus.class, name = "COMMENT_CONTENT_EMPTY"),
+            @ApiErrorCodeExample(value = ErrorStatus.class, name = "_BAD_REQUEST"),
+            @ApiErrorCodeExample(value = ErrorStatus.class, name = "_INTERNAL_SERVER_ERROR")
+    })
+    @Parameters({
+            @Parameter(name = "consumptionRecordId", description = "소비 기록 ID", example = "1", required = true)
+    })
+    @PostMapping("/{consumptionRecordId}/comment")
+    public ApiResponse<FeedResponse.CommentResultDTO> createComment(
+            @PathVariable Long consumptionRecordId,
+            @RequestBody @Valid FeedRequest.CommentCreateDTO request
+    ) {
+        FeedResponse.CommentResultDTO response = FeedResponse.CommentResultDTO.builder().build();
+        return ApiResponse.onSuccess(response);
+    }
+
 }

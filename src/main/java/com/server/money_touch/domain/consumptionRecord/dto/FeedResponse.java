@@ -111,4 +111,17 @@ public class FeedResponse {
         private String budgetCategoryName;
 
     }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Schema(description = "댓글 등록 응답 정보")
+    public static class CommentResultDTO {
+
+        @Schema(description = "댓글 ID", example = "10")
+        private Long commentId;
+
+    }
+
 }
