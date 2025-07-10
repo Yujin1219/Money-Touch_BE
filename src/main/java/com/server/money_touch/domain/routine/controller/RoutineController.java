@@ -57,7 +57,6 @@ public class RoutineController {
             summary = "내 소비 루틴 목록 조회 API",
             description = "가계부에서 사용자가 등록한 소비 루틴 목록을 조회하는 API입니다."
     )
-//    @ApiSuccessCodeExample(resultClass = RoutineResponse.MyRoutineListDTO.class)
     @ApiErrorCodeExamples({
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "USER_NOT_FOUND"),
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "_BAD_REQUEST"),
@@ -99,5 +98,27 @@ public class RoutineController {
         );
         return ApiResponse.onSuccess(routines);
     }
+
+    // 내 소비 루틴 상세 조회
+    @Operation(
+            summary = "내 소비 루틴 상세 조회 API",
+            description = "가계부에서 사용자가 등록한 소비 루틴 상세 정보를 조회하는 API입니다."
+    )
+    @ApiErrorCodeExamples({
+            @ApiErrorCodeExample(value = ErrorStatus.class, name = "USER_NOT_FOUND"),
+            @ApiErrorCodeExample(value = ErrorStatus.class, name = "ROUTINE_NOT_FOUND"),
+            @ApiErrorCodeExample(value = ErrorStatus.class, name = "_BAD_REQUEST"),
+            @ApiErrorCodeExample(value = ErrorStatus.class, name = "_INTERNAL_SERVER_ERROR"),
+    })
+    @Parameters({
+            @Parameter(name = "routineId", description = "조회하려는 소비 루틴 아이디", example = "1", required = true),
+    })
+    @GetMapping("/users/{routineId}")
+    public ApiResponse<RoutineResponse.RoutineDetailDTO> getMyDetailRoutine(@PathVariable Long routineId) {
+        RoutineResponse.RoutineDetailDTO response = RoutineResponse.RoutineDetailDTO.builder().build();
+        return ApiResponse.onSuccess(response);
+    }
+
+    // 소비 루틴 이미지 등록
 
 }

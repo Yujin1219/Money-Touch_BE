@@ -25,62 +25,62 @@ public class BudgetRequest {
         @Schema(description = "기본 카테고리별 예산 목록")
         @NotNull(message = "기본 카테고리 예산 목록은 비어 있을 수 없습니다.")
         @Valid
-        private List<DefaultCategoryBudget> defaultCategoryBudgets;
+        private List<BudgetRequest.DefaultCategoryBudget> defaultCategoryBudgets;
 
         @Schema(description = "내 카테고리별 예산 목록")
         @Valid
-        private List<CustomCategoryBudget> customCategoryBudgets;
+        private List<BudgetRequest.CustomCategoryBudget> customCategoryBudgets;
 
         @Schema(description = "소비 루틴 카테고리 예산 목록")
         @Valid
-        private List<RoutineCategoryBudget> routineCategoryBudgets;
+        private List<BudgetRequest.RoutineCategoryBudget> routineCategoryBudgets;
+    }
 
-        @Getter
-        @Setter
-        @NoArgsConstructor
-        @Schema(description = "기본 카테고리별 예산")
-        public static class DefaultCategoryBudget {
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @Schema(description = "기본 카테고리별 예산")
+    public static class DefaultCategoryBudget {
 
-            @Schema(description = "기본 예산 카테고리명", example = "배달/외식")
-            @NotNull(message = "기본 카테고리 이름은 필수입니다.")
-            @Size(max = 8, message = "기본 카테고리 이름은 8자 이하로 입력해주세요.")
-            private String categoryName;
+        @Schema(description = "기본 예산 카테고리명", example = "배달/외식")
+        @NotNull(message = "기본 카테고리 이름은 필수입니다.")
+        @Size(max = 8, message = "기본 카테고리 이름은 8자 이하로 입력해주세요.")
+        private String categoryName;
 
-            @Schema(description = "카테고리별 예산 금액", example = "100000")
-            @NotNull(message = "카테고리 금액은 필수입니다.")
-            private Integer amount;
-        }
+        @Schema(description = "카테고리별 예산 금액", example = "100000")
+        @NotNull(message = "카테고리 금액은 필수입니다.")
+        private Integer amount;
+    }
 
-        @Getter
-        @Setter
-        @NoArgsConstructor
-        @Schema(description = "사용자 정의 카테고리별 예산")
-        public static class CustomCategoryBudget {
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @Schema(description = "사용자 정의 카테고리별 예산")
+    public static class CustomCategoryBudget {
 
-            @Schema(description = "사용자 정의 카테고리명", example = "교육비")
-            @NotNull(message = "사용자 정의 카테고리 이름은 필수입니다.")
-            @Size(max = 8, message = "사용자 정의 카테고리 이름은 8자 이하로 입력해주세요.")
-            private String categoryName;
+        @Schema(description = "사용자 정의 카테고리명", example = "교육비")
+        @NotNull(message = "사용자 정의 카테고리 이름은 필수입니다.")
+        @Size(max = 8, message = "사용자 정의 카테고리 이름은 8자 이하로 입력해주세요.")
+        private String categoryName;
 
-            @Schema(description = "카테고리별 예산 금액", example = "150000")
-            @NotNull(message = "카테고리 금액은 필수입니다.")
-            private Integer amount;
-        }
+        @Schema(description = "카테고리별 예산 금액", example = "150000")
+        @NotNull(message = "카테고리 금액은 필수입니다.")
+        private Integer amount;
+    }
 
-        @Getter
-        @Setter
-        @NoArgsConstructor
-        @Schema(description = "소비 루틴 카테고리 예산")
-        public static class RoutineCategoryBudget {
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @Schema(description = "소비 루틴 카테고리 예산")
+    public static class RoutineCategoryBudget {
 
-            @Schema(description = "소비 루틴 카테고리명", example = "술/유흥")
-            @NotNull(message = "소비 루틴 카테고리 이름은 필수입니다.")
-            @Size(max = 8, message = "소비 루틴 카테고리 이름은 8자 이하로 입력해주세요.")
-            private String categoryName;
+        @Schema(description = "소비 루틴 카테고리명", example = "술/유흥")
+        @NotNull(message = "소비 루틴 카테고리 이름은 필수입니다.")
+        @Size(max = 8, message = "소비 루틴 카테고리 이름은 8자 이하로 입력해주세요.")
+        private String categoryName;
 
-            @Schema(description = "카테고리별 예산 금액", example = "100000")
-            @NotNull(message = "카테고리 금액은 필수입니다.")
-            private Integer amount;
-        }
+        @Schema(description = "카테고리별 예산 금액", example = "100000")
+        @NotNull(message = "카테고리 금액은 필수입니다.")
+        private Integer amount;
     }
 }

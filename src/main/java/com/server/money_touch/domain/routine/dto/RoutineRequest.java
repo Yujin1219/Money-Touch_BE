@@ -30,7 +30,7 @@ public class RoutineRequest {
         @Schema(description = "소비 루틴 소개", example = "적당히 놀고 쓸만큼 써도 50만원이면 해결할 수 있어요!")
         @NotNull(message = "소비 루틴 소개는 필수입니다.")
         @Size(max = 1000, message = "소비 루틴 소개는 1000자 이하로 입력해주세요.")
-        private String routineDescription;
+        private String routineContent;
 
         @Schema(description = "소비 루틴 이미지 url", example = "https://")
         String routineImgUrl;
@@ -41,22 +41,22 @@ public class RoutineRequest {
         @Schema(description = "카테고리별 예산 목록")
         @NotNull(message = "카테고리별 예산 목록은 비어 있을 수 없습니다.")
         @Valid
-        private List<RoutineRequest.RoutineCreateDTO.CategoryBudget> categoryBudgets;
+        private List<CategoryBudgetDTO> categoryBudgeList;
+    }
 
-        @Getter
-        @Setter
-        @NoArgsConstructor
-        @Schema(description = "카테고리별 예산")
-        public static class CategoryBudget {
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @Schema(description = "카테고리별 예산")
+    public static class CategoryBudgetDTO {
 
-            @Schema(description = "예산 카테고리명", example = "배달/외식")
-            @NotNull(message = "카테고리 이름은 필수입니다.")
-            @Size(max = 8, message = "카테고리 이름은 8자 이하로 입력해주세요.")
-            private String categoryName;
+        @Schema(description = "예산 카테고리명", example = "배달/외식")
+        @NotNull(message = "카테고리 이름은 필수입니다.")
+        @Size(max = 8, message = "카테고리 이름은 8자 이하로 입력해주세요.")
+        private String categoryName;
 
-            @Schema(description = "카테고리별 예산 금액", example = "100000")
-            @NotNull(message = "카테고리 금액은 필수입니다.")
-            private Integer amount;
-        }
+        @Schema(description = "카테고리별 예산 금액", example = "100000")
+        @NotNull(message = "카테고리 금액은 필수입니다.")
+        private Integer amount;
     }
 }

@@ -181,7 +181,7 @@ public class HouseholdConsumptionResponse {
       "amount": 7000
     }
   ],
-  "itemsSize": 3
+  "itemSize": 3
 }
 """)    public static  class CalendarDailyConsumeDetailDTO {
 
@@ -189,28 +189,28 @@ public class HouseholdConsumptionResponse {
         private String date;
 
         @Schema(description = "일일 소비 항목 목록")
-        private List<ConsumeItem> items;
+        private List<HouseholdConsumptionResponse.ConsumeItemDTO> items;
 
         @Schema(description = "일일 소비 항목 개수", example = "3")
-        private List<ConsumeItem> itemSize;
+        private Integer itemSize;
+    }
 
-        @Getter
-        @Builder
-        @AllArgsConstructor
-        @Schema(description = "소비 항목")
-        public static class ConsumeItem {
+    @Getter
+    @Builder
+    @AllArgsConstructor
+    @Schema(description = "소비 항목")
+    public static class ConsumeItemDTO {
 
-            @Schema(description = "소비 기록 아이디", example = "1")
-            private Long consumptionRecordId;
+        @Schema(description = "소비 기록 아이디", example = "1")
+        private Long consumptionRecordId;
 
-            @Schema(description = "카테고리 이름", example = "배달/외식")
-            private String categoryName;
+        @Schema(description = "카테고리 이름", example = "배달/외식")
+        private String categoryName;
 
-            @Schema(description = "항목명", example = "스타벅스")
-            private String content;
+        @Schema(description = "항목명", example = "스타벅스")
+        private String content;
 
-            @Schema(description = "소비 금액", example = "5000")
-            private Integer amount;
-        }
+        @Schema(description = "소비 금액", example = "5000")
+        private Integer amount;
     }
 }
