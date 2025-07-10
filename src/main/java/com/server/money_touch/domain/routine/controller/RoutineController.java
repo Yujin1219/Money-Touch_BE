@@ -121,4 +121,23 @@ public class RoutineController {
 
     // 소비 루틴 이미지 등록
 
+
+    @Operation(
+            summary = "타인의 소비루틴 상세 조회",
+            description = "전체 소비 루틴 리스트에서 소비 루틴 상세 정보를 조회하는 API입니다.")
+    @ApiErrorCodeExamples({
+            @ApiErrorCodeExample(value = ErrorStatus.class, name = "USER_NOT_FOUND"),
+            @ApiErrorCodeExample(value = ErrorStatus.class, name = "ROUTINE_NOT_FOUND"),
+            @ApiErrorCodeExample(value = ErrorStatus.class, name = "_BAD_REQUEST"),
+            @ApiErrorCodeExample(value = ErrorStatus.class, name = "_INTERNAL_SERVER_ERROR"),
+    })
+    @Parameters({
+            @Parameter(name = "routineId", description = "조회하려는 소비 루틴 아이디", example = "1", required = true),
+    })
+    @GetMapping("/list/{routineId}")
+    public ApiResponse<RoutineResponse.RoutineListDetailDTO> getOtherDetailRoutine(@PathVariable Long routineId) {
+        RoutineResponse.RoutineListDetailDTO response = RoutineResponse.RoutineListDetailDTO.builder().build();
+        return ApiResponse.onSuccess(response);
+    }
+
 }

@@ -148,4 +148,33 @@ public class RoutineResponse {
         @Schema(description = "카테고리별 예산 금액", example = "100000")
         private Integer amount;
     }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    @Schema(description = "타인 루틴 상세 응답")
+    public static class RoutineListDetailDTO {
+
+        @Schema(description = "한 달 전체 예산", example = "500000")
+        private Integer totalBudget;
+
+        @Schema(description = "소비 루틴 이름", example = "50만원으로 한 달 살기 루틴")
+        private String routineName;
+
+        @Schema(description = "카테고리별 예산 목록", example = """
+        [
+          {
+            "categoryName": "배달/외식",
+            "amount": 100000
+          },
+          {
+            "categoryName": "카페",
+            "amount": 400000
+          }
+        ]
+        """)
+        private List<RoutineResponse.CategoryBudgetDetailDTO> categoryBudgetList;
+    }
 }
