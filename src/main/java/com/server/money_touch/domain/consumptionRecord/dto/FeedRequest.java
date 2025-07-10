@@ -1,5 +1,6 @@
 package com.server.money_touch.domain.consumptionRecord.dto;
 
+import com.server.money_touch.domain.consumptionRecord.enums.ReactionType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -25,4 +26,12 @@ public class FeedRequest {
         private String content;
     }
 
+    // 리액션 추가/변경 DTO
+    @Getter
+    @Schema(description = "리액션 추가/변경 요청 DTO")
+    public static class ReactionCreateDTO {
+        @Schema(description = "리액션 타입 (현명해요: WISE / 낭비에요: WASTE)", example = "WISE")
+        @NotNull(message = "리액션 타입은 필수입니다.")
+        private ReactionType type;
+    }
 }

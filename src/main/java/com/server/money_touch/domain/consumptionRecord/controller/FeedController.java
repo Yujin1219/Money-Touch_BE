@@ -6,7 +6,6 @@ import com.server.money_touch.global.apiPayload.ApiResponse;
 import com.server.money_touch.global.apiPayload.code.status.ErrorStatus;
 import com.server.money_touch.global.validation.annotation.ApiErrorCodeExample;
 import com.server.money_touch.global.validation.annotation.ApiErrorCodeExamples;
-import com.server.money_touch.global.validation.annotation.ApiSuccessCodeExample;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
@@ -108,4 +107,29 @@ public class FeedController {
         return ApiResponse.onSuccess(response);
     }
 
+    // 리액션 추가/변경
+    @Operation(
+            summary = "피드 반응 추가/변경/삭제 API",
+            description = "피드에 현명해요 또는 낭비에요 반응을 추가하거나 변경 혹은 삭제하는 API입니다. 이미 반응이 있으면 변경되고, 같은 반응을 누르면 취소됩니다."
+    )
+//    @ApiSuccessCodeExample(resultClass = ReactionResponse.ReactionResultDTO.class)
+    @ApiErrorCodeExamples({
+            @ApiErrorCodeExample(value = ErrorStatus.class, name = "USER_NOT_FOUND"),
+            @ApiErrorCodeExample(value = ErrorStatus.class, name = "CONSUMPTION_RECORD_NOT_FOUND"),
+            @ApiErrorCodeExample(value = ErrorStatus.class, name = "REACTION_NOT_FOUND"),
+            @ApiErrorCodeExample(value = ErrorStatus.class, name = "_BAD_REQUEST"),
+            @ApiErrorCodeExample(value = ErrorStatus.class, name = "_INTERNAL_SERVER_ERROR")
+    })
+    @Parameters({
+            @Parameter(name = "consumptionRecordId", description = "소비 기록 ID", example = "1", required = true)
+    })
+    @PostMapping("/{consumptionRecordId}/reaction")
+    public ApiResponse<FeedResponse.ReactionResultDTO> addOrUpdateReaction(
+//            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @PathVariable Long consumptionRecordId,
+            @RequestBody @Valid FeedRequest.ReactionCreateDTO request
+    ) {
+        FeedResponse.ReactionResultDTO response = FeedResponse.ReactionResultDTO.builder().build();
+        return ApiResponse.onSuccess(response);
+    }
 }
