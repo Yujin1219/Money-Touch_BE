@@ -17,6 +17,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Tag(name = "가계부 소비 루틴 페이지", description = "가계부 소비 루틴에 관한 API")
 @Slf4j
 @Validated
@@ -64,9 +66,38 @@ public class RoutineController {
     @GetMapping("/users")
     public ApiResponse<RoutineResponse.MyRoutineListDTO> getMyRoutines() {
         RoutineResponse.MyRoutineListDTO response = RoutineResponse.MyRoutineListDTO.builder().build();
-
         return ApiResponse.onSuccess(response);
     }
 
-    // 소비 루틴 이미지 등록?
+    @Operation(
+            summary = "전체 소비 루틴 리스트 조회",
+            description = "최신순으로 전체 소비 루틴을 조회합니다. 임시 더미데이터 입력한 상태입니다. "
+                    + "Try it out -> Execute 로 리스트 확인 가능합니다."
+                    + "당일 등록은 NEW 표시를 위해 true로 전달합니다.")
+    @ApiErrorCodeExamples({
+            @ApiErrorCodeExample(value = ErrorStatus.class, name = "USER_NOT_FOUND"),
+            @ApiErrorCodeExample(value = ErrorStatus.class, name = "_BAD_REQUEST"),
+            @ApiErrorCodeExample(value = ErrorStatus.class, name = "_INTERNAL_SERVER_ERROR"),
+            @ApiErrorCodeExample(value = ErrorStatus.class, name = "ROUTINE_NOT_FOUND"),
+    })
+    @GetMapping("/list")
+    public ApiResponse<List<RoutineResponse.RoutineListDTO>> getAllRoutines(){
+
+        // TODO: 실제 데이터로 교체 예정. 임시 더미데이터
+        List<RoutineResponse.RoutineListDTO> routines = List.of(
+                new RoutineResponse.RoutineListDTO(
+                        1L, true,"2025-07-09","50만원으로 한 달 살기 루틴",
+                        "라인", "https://","https://",
+                        List.of("#식비절약", "#생활비")
+                ),
+
+                new RoutineResponse.RoutineListDTO(
+                        2L,false,"2025-06-10","커피값을 아끼자",
+                        "오리", "https://","https://",
+                        List.of("#카페지출줄이기","#커피절약")
+                )
+        );
+        return ApiResponse.onSuccess(routines);
+    }
+
 }

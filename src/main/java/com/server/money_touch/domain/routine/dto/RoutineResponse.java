@@ -1,8 +1,6 @@
 package com.server.money_touch.domain.routine.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -72,4 +70,37 @@ public class RoutineResponse {
         @Schema(description = "소비 루틴 해시태그 목록", example = "[\"#식비절약\", \"#생활비\"]")
         private List<String> hashtags;
     }
+
+    @Getter
+    @AllArgsConstructor
+    @Schema(description = "전체 소비 루틴 리스트")
+    public static class RoutineListDTO {
+
+        @Schema(description = "소비 루틴 아이디", example = "1")
+        private Long routineId;
+
+        @Schema(description = "NEW 여부", example = "true")
+        private boolean isNew;
+
+        @Schema(description = "소비 루틴 등록 날짜", example = "2025-07-09")
+        private String createDate;
+
+        @Schema(description = "소비 루틴 이름", example = "50만원으로 한 달 살기 루틴")
+        private String routineName;
+
+        @Schema(description = "닉네임", example = "라인")
+        private String nickname;
+
+        @Schema(description = "소비 루틴 이미지 url", example = "https://")
+        private String routineImgUrl;
+
+        @Schema(description = "프로필 이미지 url", example = "https://")
+        private String profileImgUrl;
+
+        @Schema(description = "소비 루틴 해시태그 목록", example = "[\"#식비절약\", \"#생활비\"]")
+        private List<String> hashtags;
+
+    }
+
+
 }

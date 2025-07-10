@@ -15,7 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-@Tag(name = "소비 기록 등록 페이지", description = "소비 기록 등록에 관한 API")
+@Tag(name = "소비 기록 페이지", description = "소비 기록에 관한 API")
 @Slf4j
 @Validated
 @RequiredArgsConstructor
