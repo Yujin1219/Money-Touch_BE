@@ -1,5 +1,6 @@
 package com.server.money_touch.domain.user.dto;
 
+import com.server.money_touch.domain.badge.entity.Badge;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,7 +24,7 @@ public class UserResponse {
         @Schema(description = "프로필 이미지 URL", example = "https://example.com/profile.jpg")
         private String profileImgUrl;
 
-        @Schema(description = "뱃지 ID", example = "1")
-        private Long badgeId;
+        @Schema(description = "대표 뱃지 ID", example = "1")
+        private Badge badgeId;
     }
 }

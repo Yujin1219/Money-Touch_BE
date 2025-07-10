@@ -21,5 +21,7 @@ public class Badge {
     @Column(nullable = false)
     private String imageUrl;
 
+    @Column(nullable = false, length = 100)
+    private String description;
 
 }
