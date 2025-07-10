@@ -1,8 +1,6 @@
 package com.server.money_touch.domain.routine.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -90,13 +88,26 @@ public class RoutineResponse {
         @Schema(description = "소비 루틴 소개", example = "적당히 놀고 쓸만큼 써도 50만원이면 해결할 수 있어요!")
         private String routineContent;
 
-        @Schema(description = "카테고리별 예산 목록")
+        @Schema(description = "카테고리별 예산 목록", example = """
+        [
+          {
+            "categoryName": "배달/외식",
+            "amount": 100000
+          },
+          {
+            "categoryName": "카페",
+            "amount": 400000
+          }
+        ]
+        """)
         private List<RoutineResponse.CategoryBudgetDetailDTO> categoryBudgetList;
     }
 
     @Getter
     @Setter
     @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
     @Schema(description = "카테고리별 예산 정보")
     public static class CategoryBudgetDetailDTO {
 

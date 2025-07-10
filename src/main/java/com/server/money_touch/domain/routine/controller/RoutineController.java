@@ -67,8 +67,6 @@ public class RoutineController {
         return ApiResponse.onSuccess(response);
     }
 
-    // 소비 루틴 이미지 등록
-
     // 내 소비 루틴 상세 조회
     @Operation(
             summary = "내 소비 루틴 상세 조회 API",
@@ -88,4 +86,6 @@ public class RoutineController {
         RoutineResponse.RoutineDetailDTO response = RoutineResponse.RoutineDetailDTO.builder().build();
         return ApiResponse.onSuccess(response);
     }
+
+    // 소비 루틴 이미지 등록
 }
