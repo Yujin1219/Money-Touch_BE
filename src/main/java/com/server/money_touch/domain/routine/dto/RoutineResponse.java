@@ -51,6 +51,9 @@ public class RoutineResponse {
     @Schema(description = "내가 등록한 소비 루틴 세부 정보, 소비 루틴 조회시 List로 전달")
     public static class MyRoutineDetailDTO {
 
+        @Schema(description = "소비 루틴 아이디", example = "1")
+        private Long routineId;
+
         @Schema(description = "소비 루틴 등록 날짜", example = "2025-07-05T13:45:30\n")
         private LocalDateTime createDate;
 
