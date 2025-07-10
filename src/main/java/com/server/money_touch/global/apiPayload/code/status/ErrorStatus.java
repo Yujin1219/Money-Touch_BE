@@ -25,16 +25,22 @@ public enum ErrorStatus implements BaseErrorCode {
     TOTAL_BUDGET_TOO_LOW(HttpStatus.BAD_REQUEST, "BUDGET4003", "카테고리 예산 총합이 전체 예산보다 작습니다."),
     BUDGET_NOT_EXIST(HttpStatus.NOT_FOUND, "BUDGET_4041", "이번달에 등록된 예산이 없습니다."),
 
+    // 소비 기록 에러
+    CONSUMPTION_RECORD_NOT_FOUND(HttpStatus.NOT_FOUND, "CONSUMPTION4001", "일치하는 소비기록이 존재하지 않습니다."),
+
+    // 댓글 관련 에러
+    COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "COMMENT6001", "존재하지 않는 댓글입니다."),
+    PARENT_COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "COMMENT6002", "부모 댓글을 찾을 수 없습니다."),
+    NESTED_REPLY_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "COMMENT6003", "대댓글에는 댓글을 달 수 없습니다."),
+    COMMENT_CONTENT_TOO_LONG(HttpStatus.BAD_REQUEST, "COMMENT6004", "댓글 내용이 너무 깁니다. (최대 300자)"),
+    COMMENT_CONTENT_EMPTY(HttpStatus.BAD_REQUEST, "COMMENT6005", "댓글 내용을 입력해주세요.");
+
     // 고정비 관련 에러
     FIXED_CONSUMPTION_NOT_FOUND(HttpStatus.BAD_REQUEST, "FIXED_CONSUMPTION4001", "아이디와 일치하는 고정비가 없습니다."),
-
-    // 소비 기록 에러
-    CONSUMPTION_RECORD_NOT_FOUND(HttpStatus.BAD_REQUEST, "CONSUMPTION_RECORD4001", "아이디와 일치하는 소비 기록이 없습니다."),
 
     // 소비 루틴 관련 에러
     ROUTINE_NOT_FOUND(HttpStatus.BAD_REQUEST, "ROUTINE4001", "아이디와 일치하는 소비 루틴이 없습니다."),
     ROUTINE_ALREADY_EXIST(HttpStatus.BAD_REQUEST, "ROUTINE4002", "한 달 소비 루틴 등록 횟수를 초과하였습니다.");
-
 
     private final HttpStatus httpStatus;
     private final String code;
