@@ -66,9 +66,7 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ubuntu
           key: ${{ secrets.KEY }}
-          source: |
-            docker-compose.yml
-            nginx.conf
+          source: "docker-compose.yml,nginx.conf"
           target: /home/ubuntu/
 
   deploy:
