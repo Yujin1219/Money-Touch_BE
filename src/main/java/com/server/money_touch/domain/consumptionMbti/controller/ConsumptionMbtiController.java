@@ -28,7 +28,7 @@ public class ConsumptionMbtiController {
 
     @Operation(
             summary = "소비 Mbti 조회 API",
-            description = "소비 Mbti 조회 API 입니다."
+            description = "결과 코드(예: PTG)에 해당하는 소비 MBTI 설명, 부제, 이미지 등을 조회합니다."
     )
     @ApiSuccessCodeExample(resultClass = ConsumptionMbtiResponse.ConsumptionMbtiResultDTO.class)
     @ApiErrorCodeExamples({
