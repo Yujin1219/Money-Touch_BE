@@ -78,5 +78,4 @@ public class UserRequest{
     }
 
 
-    public static class
 }

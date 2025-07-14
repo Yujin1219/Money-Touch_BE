@@ -8,6 +8,8 @@ import com.server.money_touch.global.validation.annotation.ApiErrorCodeExample;
 import com.server.money_touch.global.validation.annotation.ApiErrorCodeExamples;
 import com.server.money_touch.global.validation.annotation.ApiSuccessCodeExample;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -24,16 +26,19 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/consumptionMbti")
 public class ConsumptionMbtiController {
 
-    // 소비 Mbti 등록
+    // 소비 Mbti 조회
     @Operation(
             summary = "소비 Mbti 조회 API",
-            description = "소비 Mbti 조회 API 입니다."
+            description = "결과 코드(예: PTG)에 해당하는 소비 MBTI 설명, 부제, 이미지 등을 조회합니다."
     )
     @ApiSuccessCodeExample(resultClass = ConsumptionMbtiResponse.ConsumptionMbtiResultDTO.class)
     @ApiErrorCodeExamples({
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "MBTI_NOT_FOUND"),
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "_BAD_REQUEST"),
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "_INTERNAL_SERVER_ERROR"),
+    })
+    @Parameters({
+            @Parameter(name = "result", description = "조회하려는 소비 Mbti", example = "PTG", required = true),
     })
     @GetMapping("/result")
     public ApiResponse<ConsumptionMbtiResponse.ConsumptionMbtiResultDTO> getMbti(@RequestParam @NotBlank(message = "결과값은 필수입니다.") String result) {

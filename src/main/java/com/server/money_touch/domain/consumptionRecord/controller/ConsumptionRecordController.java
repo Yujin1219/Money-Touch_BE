@@ -12,6 +12,7 @@ import com.server.money_touch.global.validation.annotation.ApiSuccessCodeExample
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.websocket.server.PathParam;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
@@ -39,7 +40,6 @@ public class ConsumptionRecordController {
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "_BAD_REQUEST"),
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "_INTERNAL_SERVER_ERROR"),
     })
-
     @PostMapping("/record")
     public ApiResponse<ConsumptionRecordResponse.ConsumptionRecordCreateResultDTO> postConsumptionRecord(
             @Valid @RequestBody ConsumptionRecordRequest.ConsumptionRecordCreateDTO request){
