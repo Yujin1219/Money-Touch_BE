@@ -121,10 +121,11 @@ public class HouseholdConsumptionController {
     @Parameters({
             @Parameter(name = "year", description = "조회하려는 소비 연도", example = "2025", required = true),
             @Parameter(name = "month", description = "조회하려는 소비 월", example = "7", required = true),
+            @Parameter(name = "cursorId", description = "커서 (이전 요청의 마지막 consumptionRecordId). 첫 요청 시 생략", example = "3", required = false)
     })
     @GetMapping("/monthly")
-    public ApiResponse<HouseholdConsumptionResponse.MonthlyHistoryResponseDTO> getConsumptionRecordByMonth(@RequestParam Integer year,
-                                                                                                        @RequestParam Integer month) {
+    public ApiResponse<HouseholdConsumptionResponse.MonthlyHistoryResponseDTO> getConsumptionRecordByMonth(@RequestParam Integer year, @RequestParam Integer month,
+                                                                                                           @RequestParam(required = false) Long cursorId) {
         HouseholdConsumptionResponse.MonthlyHistoryResponseDTO response = HouseholdConsumptionResponse.MonthlyHistoryResponseDTO.builder().build();
         return ApiResponse.onSuccess(response);
     }

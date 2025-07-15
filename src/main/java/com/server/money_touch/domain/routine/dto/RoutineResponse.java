@@ -29,7 +29,7 @@ public class RoutineResponse {
         @Schema(description = "내가 등록한 소비 루틴 목록")
         List<RoutineThumbnailDTO> routineList;
 
-        @Schema(description = "현재 페이지의 소비 루틴 개수", example = "20")
+        @Schema(description = "현재 페이지의 소비 루틴 개수", example = "1")
         Integer routineListSize;
 
         @Schema(description = "페이지 처음 여부", example = "true")
@@ -40,6 +40,9 @@ public class RoutineResponse {
 
         @Schema(description = "다음 페이지가 있는지 여부", example = "true")
         Boolean hasNext;
+
+        @Schema(description = "다음 요청에 사용할 커서 ID", example = "20")
+        private Long nextCursorId;
     }
 
     @Getter

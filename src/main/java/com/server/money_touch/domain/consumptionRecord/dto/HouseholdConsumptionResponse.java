@@ -42,7 +42,7 @@ public class HouseholdConsumptionResponse {
       "date": "2025-07-02",
       "items": [
         {
-          "consumptionRecordId": 1,
+          "consumptionRecordId": 3,
           "categoryName": "카페",
           "content": "스타벅스",
           "amount": 12000
@@ -60,7 +60,7 @@ public class HouseholdConsumptionResponse {
       "date": "2025-07-01",
       "items": [
         {
-          "consumptionRecordId": 3,
+          "consumptionRecordId": 1,
           "categoryName": "교통",
           "content": "버스",
           "amount": 1350
@@ -72,7 +72,7 @@ public class HouseholdConsumptionResponse {
   "dailyHistorySize": 3,
   "isFirst": true,
   "isLast": false,
-  "hasNext": true
+  "hasNext": false
 }
 """)
     public static class MonthlyHistoryResponseDTO {
@@ -91,6 +91,9 @@ public class HouseholdConsumptionResponse {
 
         @Schema(description = "다음 페이지 존재 여부", example = "true")
         private Boolean hasNext;
+
+        @Schema(description = "다음 요청에 사용할 커서 (마지막 소비 기록 ID)", example = "3")
+        private Long nextCursorId;
     }
 
 

@@ -2,6 +2,7 @@ package com.server.money_touch.domain.budget.controller;
 
 import com.server.money_touch.domain.budget.dto.BudgetRequest;
 import com.server.money_touch.domain.budget.dto.BudgetResponse;
+import com.server.money_touch.domain.budget.service.budget.BudgetCommandService;
 import com.server.money_touch.global.apiPayload.ApiResponse;
 import com.server.money_touch.global.apiPayload.code.status.ErrorStatus;
 import com.server.money_touch.global.validation.annotation.ApiErrorCodeExample;
@@ -25,6 +26,8 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/house-holds/budgets")
 public class BudgetController {
 
+    private final BudgetCommandService budgetCommandService;
+
     // 가계부 한 달 예산 등록
     @Operation(
             summary = "한 달 예산 등록 API",
@@ -35,39 +38,42 @@ public class BudgetController {
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "USER_NOT_FOUND"),
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "TOTAL_BUDGET_EXCEEDED"),
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "TOTAL_BUDGET_TOO_LOW"),
+            @ApiErrorCodeExample(value = ErrorStatus.class, name = "BUDGET_ALREADY_EXIST"),
+            @ApiErrorCodeExample(value = ErrorStatus.class, name = "CONSUMPTION_CATEGORY_NOT_FOUND"),
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "_BAD_REQUEST"),
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "_INTERNAL_SERVER_ERROR"),
     })
     @PostMapping()
     public ApiResponse<BudgetResponse.BudgetCreateResultDTO> postBudget(@Valid @RequestBody BudgetRequest.BudgetCreateDTO request) {
-        BudgetResponse.BudgetCreateResultDTO response = BudgetResponse.BudgetCreateResultDTO.builder().build();
+        // 로그인 전까지 userId 1로 임시 세팅
+        BudgetResponse.BudgetCreateResultDTO response = budgetCommandService.saveBudgetWithCategories(1L, request);
         return ApiResponse.onSuccess(response);
     }
 
 
-    // 한 달 예산 수정
-    @Operation(
-            summary = "한 달 예산 수정 API",
-            description = "아이디와 일치하는 한 달 예산 수정 API 입니다. " +
-                    "총 예산과 카테고리별(기본, 사용자 정의, 소비 루틴) 예산 목록을 RequestBody로 입력받아 한 달 예산을 수정합니다."
-    )
-    @ApiSuccessCodeExample(resultClass = ApiResponse.class)
-    @ApiErrorCodeExamples({
-            @ApiErrorCodeExample(value = ErrorStatus.class, name = "USER_NOT_FOUND"),
-            @ApiErrorCodeExample(value = ErrorStatus.class, name = "BUDGET_NOT_FOUND"),
-            @ApiErrorCodeExample(value = ErrorStatus.class, name = "TOTAL_BUDGET_EXCEEDED"),
-            @ApiErrorCodeExample(value = ErrorStatus.class, name = "TOTAL_BUDGET_TOO_LOW"),
-            @ApiErrorCodeExample(value = ErrorStatus.class, name = "_BAD_REQUEST"),
-            @ApiErrorCodeExample(value = ErrorStatus.class, name = "_INTERNAL_SERVER_ERROR"),
-    })
-    @Parameters({
-            @Parameter(name = "budgetId", description = "수정하려는 예산 아이디", example = "1", required = true),
-    })
-    @PatchMapping("/{budgetId}")
-    public ApiResponse<?> patchBudget(@Valid @RequestBody BudgetRequest.BudgetCreateDTO request,
-                                                                         @PathVariable Long budgetId) {
-        return ApiResponse.onSuccess(null);
-    }
+//    // 한 달 예산 수정
+//    @Operation(
+//            summary = "한 달 예산 수정 API",
+//            description = "아이디와 일치하는 한 달 예산 수정 API 입니다. " +
+//                    "총 예산과 카테고리별(기본, 사용자 정의, 소비 루틴) 예산 목록을 RequestBody로 입력받아 한 달 예산을 수정합니다."
+//    )
+//    @ApiSuccessCodeExample(resultClass = ApiResponse.class)
+//    @ApiErrorCodeExamples({
+//            @ApiErrorCodeExample(value = ErrorStatus.class, name = "USER_NOT_FOUND"),
+//            @ApiErrorCodeExample(value = ErrorStatus.class, name = "BUDGET_NOT_FOUND"),
+//            @ApiErrorCodeExample(value = ErrorStatus.class, name = "TOTAL_BUDGET_EXCEEDED"),
+//            @ApiErrorCodeExample(value = ErrorStatus.class, name = "TOTAL_BUDGET_TOO_LOW"),
+//            @ApiErrorCodeExample(value = ErrorStatus.class, name = "_BAD_REQUEST"),
+//            @ApiErrorCodeExample(value = ErrorStatus.class, name = "_INTERNAL_SERVER_ERROR"),
+//    })
+//    @Parameters({
+//            @Parameter(name = "budgetId", description = "수정하려는 예산 아이디", example = "1", required = true),
+//    })
+//    @PatchMapping("/{budgetId}")
+//    public ApiResponse<?> patchBudget(@Valid @RequestBody BudgetRequest.BudgetCreateDTO request,
+//                                                                         @PathVariable Long budgetId) {
+//        return ApiResponse.onSuccess(null);
+//    }
 
 
     // 한 달 예산 내역 조회
