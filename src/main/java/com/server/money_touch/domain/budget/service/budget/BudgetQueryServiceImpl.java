@@ -7,6 +7,11 @@ import com.server.money_touch.domain.budget.entity.BudgetCategory;
 import com.server.money_touch.domain.budget.enums.CategoryType;
 import com.server.money_touch.domain.budget.repository.budget.BudgetRepository;
 import com.server.money_touch.domain.budget.repository.budget_category.BudgetCategoryRepository;
+import com.server.money_touch.domain.consumptionRecord.converter.total_consumption.TotalConsumptionConverter;
+import com.server.money_touch.domain.consumptionRecord.entity.TotalConsumption;
+import com.server.money_touch.domain.consumptionRecord.repository.total_consumption.TotalConsumptionRepository;
+import com.server.money_touch.domain.user.entity.User;
+import com.server.money_touch.domain.user.respotiroy.user.UserRepository;
 import com.server.money_touch.global.apiPayload.code.status.ErrorStatus;
 import com.server.money_touch.global.apiPayload.exception.handler.ErrorHandler;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +20,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -29,6 +36,8 @@ import java.util.stream.Collectors;
 public class BudgetQueryServiceImpl implements BudgetQueryService {
     private final BudgetRepository budgetRepository;
     private final BudgetCategoryRepository budgetCategoryRepository;
+    private final TotalConsumptionRepository totalConsumptionRepository;
+    private final UserRepository userRepository;
 
     // 한 달 예산 내역 조회 (소비 루틴 등록 시 나의 한 달 예산 정보를 불러오는 용도)
     @Override
@@ -84,5 +93,36 @@ public class BudgetQueryServiceImpl implements BudgetQueryService {
                 .stream()
                 .map(mapper)
                 .toList();
+    }
+
+    // 예산 아이디 및 총 소비 금액 조회
+    @Transactional
+    @Override
+    public BudgetResponse.TotalConsumptionResultDTO findBudgetByIdAndTotalConsumption(Long userId, Integer year, Integer month) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ErrorHandler(ErrorStatus.USER_NOT_FOUND));
+
+        // 해당 월의 시작일과 종료일 계산
+        LocalDateTime startOfMonth = LocalDate.of(year, month, 1).atStartOfDay();
+        LocalDateTime endOfMonth = startOfMonth.plusMonths(1).minusNanos(1);
+
+        // 해당 월의 총 소비 금액 조회, 데이터가 없다면 생성
+        TotalConsumption totalConsumption = totalConsumptionRepository
+                .findByUserAndCreatedAtBetween(user, startOfMonth, endOfMonth)
+                .orElseGet(() -> {
+                    TotalConsumption newConsumption = TotalConsumptionConverter.toTotalConsumption(user);
+                    return totalConsumptionRepository.save(newConsumption);
+                });
+
+        // 해당 월의 예산 조회
+        Budget budget = budgetRepository.findByUserAndCreatedAtBetween(user, startOfMonth, endOfMonth)
+                .orElseThrow(() -> new ErrorHandler(ErrorStatus.BUDGET_NOT_EXIST));
+
+        Long budgetId = budget.getId();
+        log.info("예산 아이디 및 총 소비 금액 조회, budgetId: {}", budgetId);
+        return BudgetResponse.TotalConsumptionResultDTO.builder()
+                .budgetId(budgetId)
+                .totalConsumption(totalConsumption.getTotalConsumptionAmount())
+                .build();
     }
 }

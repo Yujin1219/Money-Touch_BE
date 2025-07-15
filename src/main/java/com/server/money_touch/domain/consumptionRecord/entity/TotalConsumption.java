@@ -12,7 +12,8 @@ import lombok.*;
 @Entity
 public class TotalConsumption extends BaseEntity {
     @Column(columnDefinition = "INT DEFAULT 0", nullable = false)
-    private Integer totalConsumptionAmount; // 총 소비 금액
+    @Builder.Default
+    private Integer totalConsumptionAmount = 0; // 총 소비 금액
 
     // 총 소비-유저 다대일 연관관계
     @ManyToOne(fetch = FetchType.LAZY)

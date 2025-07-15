@@ -52,32 +52,6 @@ public class BudgetController {
         return ApiResponse.onSuccess(response);
     }
 
-
-//    // 한 달 예산 수정
-//    @Operation(
-//            summary = "한 달 예산 수정 API",
-//            description = "아이디와 일치하는 한 달 예산 수정 API 입니다. " +
-//                    "총 예산과 카테고리별(기본, 사용자 정의, 소비 루틴) 예산 목록을 RequestBody로 입력받아 한 달 예산을 수정합니다."
-//    )
-//    @ApiSuccessCodeExample(resultClass = ApiResponse.class)
-//    @ApiErrorCodeExamples({
-//            @ApiErrorCodeExample(value = ErrorStatus.class, name = "USER_NOT_FOUND"),
-//            @ApiErrorCodeExample(value = ErrorStatus.class, name = "BUDGET_NOT_FOUND"),
-//            @ApiErrorCodeExample(value = ErrorStatus.class, name = "TOTAL_BUDGET_EXCEEDED"),
-//            @ApiErrorCodeExample(value = ErrorStatus.class, name = "TOTAL_BUDGET_TOO_LOW"),
-//            @ApiErrorCodeExample(value = ErrorStatus.class, name = "_BAD_REQUEST"),
-//            @ApiErrorCodeExample(value = ErrorStatus.class, name = "_INTERNAL_SERVER_ERROR"),
-//    })
-//    @Parameters({
-//            @Parameter(name = "budgetId", description = "수정하려는 예산 아이디", example = "1", required = true),
-//    })
-//    @PatchMapping("/{budgetId}")
-//    public ApiResponse<?> patchBudget(@Valid @RequestBody BudgetRequest.BudgetCreateDTO request,
-//                                                                         @PathVariable Long budgetId) {
-//        return ApiResponse.onSuccess(null);
-//    }
-
-
     // 한 달 예산 내역 조회
     @Operation(
             summary = "한 달 예산 내역 조회 API",
@@ -99,11 +73,10 @@ public class BudgetController {
         return ApiResponse.onSuccess(response);
     }
 
-
-    // 한 달 예산 대비 총 소비 사용 금액 조회
+    // 한 달 예산 기준 총 소비 사용 금액 조회
     @Operation(
-            summary = "한 달 총 소비 금액 조회 API",
-            description = "한 달 예산을 기준으로 예산 아이디 및 현재까지의 총 소비 금액과 예산 소진 비율을 반환합니다. " +
+            summary = "예산 아이디 및 한 달 총 소비 금액 조회 API",
+            description = "한 달 예산을 기준으로 예산 아이디 및 현재까지의 총 소비 금액을 반환합니다. " +
                     "등록된 예산이 없는 경우, 에러 메시지를 반환합니다."
     )
     @ApiSuccessCodeExample(resultClass = BudgetResponse.TotalConsumptionResultDTO.class)
@@ -113,9 +86,14 @@ public class BudgetController {
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "_BAD_REQUEST"),
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "_INTERNAL_SERVER_ERROR"),
     })
+    @Parameters({
+            @Parameter(name = "year", description = "조회하려는 연도", example = "2025", required = true),
+            @Parameter(name = "month", description = "조회하려는 월", example = "7", required = true),
+    })
     @GetMapping("/total-consumption")
-    public ApiResponse<BudgetResponse.TotalConsumptionResultDTO> getTotalConsumption() {
-        BudgetResponse.TotalConsumptionResultDTO response = BudgetResponse.TotalConsumptionResultDTO.builder().build();
+    public ApiResponse<BudgetResponse.TotalConsumptionResultDTO> getTotalConsumption(@RequestParam Integer year, @RequestParam Integer month) {
+        // 로그인 전까지 userId 1로 임시 세팅
+        BudgetResponse.TotalConsumptionResultDTO response = budgetQueryService.findBudgetByIdAndTotalConsumption(1L, year, month);
         return ApiResponse.onSuccess(response);
     }
 }

@@ -26,11 +26,8 @@ public class BudgetResponse {
         @Schema(description = "예산 아이디", example = "1")
         private Long budgetId;
 
-        @Schema(description = "한 달 총 소비 금액", example = "78000")
+        @Schema(description = "한 달 총 소비 금액", example = "21000")
         private Integer totalConsumption;
-
-        @Schema(description = "한 달 예산 대비 총 소비 금액 퍼센트", example = "50")
-        private Integer percent;
     }
 
     @Builder
