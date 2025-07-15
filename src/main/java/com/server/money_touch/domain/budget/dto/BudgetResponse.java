@@ -27,7 +27,7 @@ public class BudgetResponse {
         private Long budgetId;
 
         @Schema(description = "한 달 총 소비 금액", example = "21000")
-        private Integer totalConsumption;
+        private Integer totalConsumptionAmount;
     }
 
     @Builder

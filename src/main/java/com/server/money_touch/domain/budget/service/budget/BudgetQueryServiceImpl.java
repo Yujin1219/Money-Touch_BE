@@ -39,6 +39,12 @@ public class BudgetQueryServiceImpl implements BudgetQueryService {
     private final TotalConsumptionRepository totalConsumptionRepository;
     private final UserRepository userRepository;
 
+    // 예산 존재 여부 검증
+    @Override
+    public Boolean existsBudgetById(Long budgetId) {
+        return budgetRepository.findById(budgetId).isPresent();
+    }
+
     // 한 달 예산 내역 조회 (소비 루틴 등록 시 나의 한 달 예산 정보를 불러오는 용도)
     @Override
     public BudgetResponse.BudgetDetailDTO findBudgetById(Long userId, Long budgetId) {
@@ -80,12 +86,6 @@ public class BudgetQueryServiceImpl implements BudgetQueryService {
         return BudgetConverter.toBudgetDetailDTO(budget, defaultCategories, customCategories, routineCategories);
     }
 
-    // 예산 존재 여부 검증
-    @Override
-    public Boolean existsBudgetById(Long budgetId) {
-        return budgetRepository.findById(budgetId).isPresent();
-    }
-
     // 반복되는 category DTO 변환 로직을 공통 메서드로 추출
     private <T> List<T> convertBudgetCategories(List<BudgetCategory> categories, Function<BudgetCategory, T> mapper) {
         return Optional.ofNullable(categories)
@@ -120,9 +120,6 @@ public class BudgetQueryServiceImpl implements BudgetQueryService {
 
         Long budgetId = budget.getId();
         log.info("예산 아이디 및 총 소비 금액 조회, budgetId: {}", budgetId);
-        return BudgetResponse.TotalConsumptionResultDTO.builder()
-                .budgetId(budgetId)
-                .totalConsumption(totalConsumption.getTotalConsumptionAmount())
-                .build();
+        return BudgetConverter.toTotalConsumptionResultDto(budgetId, totalConsumption.getTotalConsumptionAmount());
     }
 }

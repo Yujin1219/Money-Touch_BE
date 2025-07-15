@@ -24,7 +24,7 @@ public class BudgetConverter {
                 .build();
     }
 
-    // 내 예산 조회 DTO 반환
+    // 내 예산 조회 응답 DTO 반환
     public static BudgetResponse.BudgetDetailDTO toBudgetDetailDTO(Budget budget,
                                                                    List<BudgetResponse.DefaultCategoryBudgetResponse> defaultCategories,
                                                                    List<BudgetResponse.CustomCategoryBudgetResponse> customCategories,
@@ -34,6 +34,14 @@ public class BudgetConverter {
                 .defaultCategoryBudgets(defaultCategories)
                 .customCategoryBudgets(customCategories)
                 .routineCategoryBudgets(routineCategories)
+                .build();
+    }
+
+    // 예산 아이디 및 총 소비 금액 조회 응답 DTO 반환
+    public static BudgetResponse.TotalConsumptionResultDTO toTotalConsumptionResultDto(Long budgetId, Integer totalConsumptionAmount) {
+        return BudgetResponse.TotalConsumptionResultDTO.builder()
+                .budgetId(budgetId)
+                .totalConsumptionAmount(totalConsumptionAmount)
                 .build();
     }
 }
