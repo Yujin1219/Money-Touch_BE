@@ -26,11 +26,6 @@ public class RoutineRequest {
         @Size(max = 20, message = "소비 루틴 이름은 20자 이하로 입력해주세요.")
         private String routineName;
 
-        @Schema(description = "소비 루틴 소개", example = "적당히 놀고 쓸만큼 써도 50만원이면 해결할 수 있어요!")
-        @NotNull(message = "소비 루틴 소개는 필수입니다.")
-        @Size(max = 1000, message = "소비 루틴 소개는 1000자 이하로 입력해주세요.")
-        private String routineContent;
-
         @Schema(description = "소비 루틴 이미지 url", example = "https://")
         String routineImgUrl;
 

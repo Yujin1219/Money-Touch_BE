@@ -29,7 +29,7 @@ public class RoutineResponse {
         @Schema(description = "내가 등록한 소비 루틴 목록")
         List<RoutineThumbnailDTO> routineList;
 
-        @Schema(description = "현재 페이지의 소비 루틴 개수", example = "20")
+        @Schema(description = "현재 페이지의 소비 루틴 개수", example = "1")
         Integer routineListSize;
 
         @Schema(description = "페이지 처음 여부", example = "true")
@@ -40,6 +40,9 @@ public class RoutineResponse {
 
         @Schema(description = "다음 페이지가 있는지 여부", example = "true")
         Boolean hasNext;
+
+        @Schema(description = "다음 요청에 사용할 커서 ID", example = "20")
+        private Long nextCursorId;
     }
 
     @Getter
@@ -118,9 +121,6 @@ public class RoutineResponse {
 
         @Schema(description = "소비 루틴 이름", example = "50만원으로 한 달 살기 루틴")
         private String routineName;
-
-        @Schema(description = "소비 루틴 소개", example = "적당히 놀고 쓸만큼 써도 50만원이면 해결할 수 있어요!")
-        private String routineContent;
 
         @Schema(description = "카테고리별 예산 목록", example = """
         [
@@ -225,5 +225,16 @@ public class RoutineResponse {
     public static class ApplyRoutineSuccessDTO {
         @Schema(description = "응답 메시지", example = "예산에 성공적으로 반영되었습니다.")
         private String message;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    @Schema(description = "소비 루틴 이미지 등록 응답 정보")
+    public static class RoutineImageUrlDTO {
+        @Schema(description = "업로드된 소비 루틴 이미지", example = "https://")
+        private String routineImageUrl;
     }
 }

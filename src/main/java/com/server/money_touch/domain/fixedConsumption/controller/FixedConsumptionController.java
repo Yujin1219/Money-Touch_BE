@@ -47,7 +47,6 @@ public class FixedConsumptionController {
             description = "고정비 ID를 통해 등록된 항목을 찾아, 금액·카테고리·항목명·메모를 수정하는 API입니다. " +
                     "ID는 Path 파라미터로, 수정 정보는 RequestBody로 입력받습니다."
     )
-    @ApiSuccessCodeExample(resultClass = ApiResponse.class)
     @ApiErrorCodeExamples({
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "USER_NOT_FOUND"),
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "FIXED_CONSUMPTION_NOT_FOUND"),
@@ -58,9 +57,9 @@ public class FixedConsumptionController {
             @Parameter(name = "fixedConsumptionId", description = "수정하려는 고정비 아이디", example = "1", required = true),
     })
     @PatchMapping("/{fixedConsumptionId}")
-    public ApiResponse<?> postFixedConsumption(@Valid @RequestBody FixedConsumptionRequest.FixedConsumptionCreateDTO request,
+    public ApiResponse<String> postFixedConsumption(@Valid @RequestBody FixedConsumptionRequest.FixedConsumptionCreateDTO request,
                                                @PathVariable Long fixedConsumptionId) {
-        return ApiResponse.onSuccess(null);
+        return ApiResponse.onSuccess("고정비 수정 성공");
     }
 
 
@@ -68,7 +67,6 @@ public class FixedConsumptionController {
             summary = "고정비 삭제 API",
             description = "고정비 ID를 통해 등록된 항목을 찾아, 고정비를 삭제하는 API 입니다."
     )
-    @ApiSuccessCodeExample(resultClass = ApiResponse.class)
     @ApiErrorCodeExamples({
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "USER_NOT_FOUND"),
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "FIXED_CONSUMPTION_NOT_FOUND"),
@@ -79,7 +77,7 @@ public class FixedConsumptionController {
             @Parameter(name = "fixedConsumptionId", description = "삭제하려는 고정비 아이디", example = "1", required = true),
     })
     @DeleteMapping("/{fixedConsumptionId}")
-    public ApiResponse<?> postFixedConsumption(@PathVariable Long fixedConsumptionId) {
-        return ApiResponse.onSuccess(null);
+    public ApiResponse<String> postFixedConsumption(@PathVariable Long fixedConsumptionId) {
+        return ApiResponse.onSuccess("고정비 삭제 성공");
     }
 }

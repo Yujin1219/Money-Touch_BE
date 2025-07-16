@@ -60,10 +60,10 @@ public class HouseholdConsumptionController {
             @Parameter(name = "consumptionRecordId", description = "수정하려는 소비 기록 아이디", example = "1", required = true),
     })
     @PatchMapping("/daily/{consumptionRecordId}")
-    public ApiResponse<?> patchDailyConsumptionRecord(@Valid @RequestBody HouseholdConsumptionRequest.DailyConsumptionCreateDTO request,
+    public ApiResponse<String> patchDailyConsumptionRecord(@Valid @RequestBody HouseholdConsumptionRequest.DailyConsumptionCreateDTO request,
                                                       @PathVariable Long consumptionRecordId){
 
-        return ApiResponse.onSuccess(null);
+        return ApiResponse.onSuccess("일일 소비 수정 성공");
     }
 
     // 가계부 일일 소비 삭제
@@ -81,10 +81,9 @@ public class HouseholdConsumptionController {
             @Parameter(name = "consumptionRecordId", description = "삭제하려는 소비 기록 아이디", example = "1", required = true),
     })
     @DeleteMapping("/daily/{consumptionRecordId}")
-    public ApiResponse<?> deleteDailyConsumptionRecord(@Valid @RequestBody HouseholdConsumptionRequest.DailyConsumptionCreateDTO request,
-                                                       @PathVariable Long consumptionRecordId){
+    public ApiResponse<String> deleteDailyConsumptionRecord(@PathVariable Long consumptionRecordId){
 
-        return ApiResponse.onSuccess(null);
+        return ApiResponse.onSuccess("일일 소비 삭제 성공");
     }
 
     // 가계부 일일 소비 내역 조회
@@ -112,9 +111,8 @@ public class HouseholdConsumptionController {
     // 가계부 해당 월의 소비 내역 목록 조회
     @Operation(
             summary = "해당 월의 일일 소비 내역 목록 조회 API",
-            description = "가계부에서 특정 월의 일일 소비 내역 목록을 조회하는 API입니다. 연도(year)와 월(month)을 쿼리 파라미터로 입력하세요."
+            description = "가계부에서 특정 월의 일일 소비 내역 목록을 스크롤 형식으로 조회하는 API입니다. 연도(year)와 월(month)을 쿼리 파라미터로 입력하세요."
     )
-//    @ApiSuccessCodeExample(resultClass = ConsumptionRecordResponse.MonthlyHistoryResponseDTO.class)
     @ApiErrorCodeExamples({
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "USER_NOT_FOUND"),
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "_BAD_REQUEST"),
@@ -123,10 +121,11 @@ public class HouseholdConsumptionController {
     @Parameters({
             @Parameter(name = "year", description = "조회하려는 소비 연도", example = "2025", required = true),
             @Parameter(name = "month", description = "조회하려는 소비 월", example = "7", required = true),
+            @Parameter(name = "cursorId", description = "커서 (이전 요청의 마지막 consumptionRecordId). 첫 요청 시 생략", example = "3", required = false)
     })
     @GetMapping("/monthly")
-    public ApiResponse<HouseholdConsumptionResponse.MonthlyHistoryResponseDTO> getConsumptionRecordByMonth(@RequestParam Integer year,
-                                                                                                        @RequestParam Integer month) {
+    public ApiResponse<HouseholdConsumptionResponse.MonthlyHistoryResponseDTO> getConsumptionRecordByMonth(@RequestParam Integer year, @RequestParam Integer month,
+                                                                                                           @RequestParam(required = false) Long cursorId) {
         HouseholdConsumptionResponse.MonthlyHistoryResponseDTO response = HouseholdConsumptionResponse.MonthlyHistoryResponseDTO.builder().build();
         return ApiResponse.onSuccess(response);
     }

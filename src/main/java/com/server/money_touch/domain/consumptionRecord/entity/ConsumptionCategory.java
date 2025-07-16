@@ -13,7 +13,7 @@ import lombok.*;
 @Entity
 public class ConsumptionCategory extends BaseEntity {
     // 예산 카테고리 이름: 배달/외식, 교통비 등
-    @Column(length = 8, nullable = false)
+    @Column(length = 8, nullable = false, unique = true)
     private String budgetCategoryName;
 
     // 예산 카테고리 타입: 기본 카테고리 / 내 카테고리 / 소비 루틴 카테고리
