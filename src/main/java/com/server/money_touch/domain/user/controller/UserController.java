@@ -7,6 +7,8 @@ import com.server.money_touch.global.validation.annotation.ApiErrorCodeExample;
 import com.server.money_touch.global.validation.annotation.ApiErrorCodeExamples;
 import com.server.money_touch.global.validation.annotation.ApiSuccessCodeExample;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -121,8 +123,10 @@ public class UserController{
     @PostMapping("/social-login")
     public ApiResponse<UserResponse.LoginResultDTO> socialLogin(
             @Valid @RequestBody UserRequest.SocialLoginRequest request
-    ){
+    ) {
         UserResponse.LoginResultDTO response = UserResponse.LoginResultDTO.builder().build();
+        return ApiResponse.onSuccess(response);
+    }
 
     // 마이페이지
     @Operation(

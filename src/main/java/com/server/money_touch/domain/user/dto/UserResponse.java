@@ -44,7 +44,10 @@ public class UserResponse {
         private String refreshToken;
     }
 
-
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
     @Schema(description = "마이페이지 프로필 정보")
     public static class MyPageResponseDTO {
         @Schema(description = "사용자 ID", example = "1")
