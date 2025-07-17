@@ -16,6 +16,7 @@ import com.server.money_touch.domain.user.entity.User;
 import com.server.money_touch.domain.user.respotiroy.user.UserRepository;
 import com.server.money_touch.global.apiPayload.code.status.ErrorStatus;
 import com.server.money_touch.global.apiPayload.exception.handler.ErrorHandler;
+import com.server.money_touch.global.constants.DefaultCategoryConstants;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.YearMonth;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -40,47 +42,36 @@ public class BudgetCommandServiceImpl implements BudgetCommandService {
     private final BudgetCategoryRepository budgetCategoryRepository;
     private final UserRepository userRepository;
 
-    /**
-     * 한 달 예산 및 카테고리별 예산을 등록합니다.
-     *
-     * @param userId  사용자 ID
-     * @param request 예산 등록 요청 DTO
-     * @return 등록된 예산 ID
-     */
+    // 예산 등롥 또는 수정
     @Transactional
     @Override
-    public BudgetResponse.BudgetCreateResultDTO saveBudgetWithCategories(Long userId, BudgetRequest.BudgetCreateDTO request) {
+    public BudgetResponse.BudgetCreateResultDTO registerOrUpdateBudgetWithCategories(Long userId, BudgetRequest.BudgetCreateDTO request) {
         // 1. 사용자 조회
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ErrorHandler(ErrorStatus.USER_NOT_FOUND));
 
-        // 2. 현재 달에 예산이 이미 등록되었는지 확인
+        // 2. 이번 달 기준 예산 조회
         YearMonth now = YearMonth.now();
-        LocalDateTime startOfMonth = now.atDay(1).atStartOfDay();
-        LocalDateTime endOfMonth = now.atEndOfMonth().atTime(23, 59, 59);
+        LocalDateTime start = now.atDay(1).atStartOfDay(); // 월 시작 00:00:00
+        LocalDateTime end = now.atEndOfMonth().atTime(LocalTime.MAX);
 
-        boolean alreadyExists = budgetRepository
-                .findByUserAndCreatedAtBetween(user, startOfMonth, endOfMonth)
-                .isPresent();
+        Optional<Budget> optionalBudget = budgetRepository.findByUserAndCreatedAtBetween(user, start, end);
 
-        if (alreadyExists) {
-            throw new ErrorHandler(ErrorStatus.BUDGET_ALREADY_EXIST);
-        }
-
-        // 3. 모든 카테고리 예산 금액 합산
+        // 3. 카테고리 총합 계산
         int totalCategoryBudget = Stream.of(
-                        request.getDefaultCategoryBudgets(),
-                        request.getCustomCategoryBudgets())
-                .filter(Objects::nonNull)
+                        Optional.ofNullable(request.getDefaultCategoryBudgets()).orElse(List.of()),
+                        Optional.ofNullable(request.getCustomCategoryBudgets()).orElse(List.of()),
+                        Optional.ofNullable(request.getRoutineCategoryBudgets()).orElse(List.of()))
                 .flatMap(List::stream)
-                .mapToInt(budget -> {
-                    if (budget instanceof BudgetRequest.DefaultCategoryBudget def) return def.getAmount();
-                    if (budget instanceof BudgetRequest.CustomCategoryBudget custom) return custom.getAmount();
+                .mapToInt(budgetDTO -> {
+                    if (budgetDTO instanceof BudgetRequest.DefaultCategoryBudget def) return def.getAmount();
+                    if (budgetDTO instanceof BudgetRequest.CustomCategoryBudget custom) return custom.getAmount();
+                    if (budgetDTO instanceof BudgetRequest.RoutineCategoryBudget routine) return routine.getAmount();
                     return 0;
                 })
                 .sum();
 
-        // 4. 전체 예산과 합계 비교
+        // 4. 예산 총액과 일치 여부 확인
         if (totalCategoryBudget > request.getTotalBudget()) {
             throw new ErrorHandler(ErrorStatus.TOTAL_BUDGET_EXCEEDED);
         }
@@ -88,108 +79,180 @@ public class BudgetCommandServiceImpl implements BudgetCommandService {
             throw new ErrorHandler(ErrorStatus.TOTAL_BUDGET_TOO_LOW);
         }
 
-        // 5. 예산 엔티티 저장 (Converter 사용)
-        Budget budget = BudgetConverter.toBudgetEntity(user, request);
-        budgetRepository.save(budget);
+        Budget budget;
 
-        // 6. 기본 및 사용자 정의 카테고리 예산 등록
-        registerDefaultCategoryBudgets(request.getDefaultCategoryBudgets(), user, budget);
-        registerCustomCategoryBudgets(request.getCustomCategoryBudgets(), user, budget);
+        if (optionalBudget.isPresent()) {
+            // 5-A. 예산 존재: 수정
+            budget = optionalBudget.get();
+            budget.updateTotalBudget(request.getTotalBudget());
 
-        // 7. 응답 반환
-        Long budgetId = budget.getId();
-        log.info("예산 등록 완료, budgetId: {}", budgetId);
-        return BudgetConverter.toBudgetCreateResultDto(budgetId);
+            List<BudgetCategory> allBudgetCategories = budgetCategoryRepository.findAllWithCategoryByBudget(budget);
+
+            Map<CategoryType, Map<String, BudgetCategory>> existingMapByType = allBudgetCategories.stream()
+                    .collect(Collectors.groupingBy(
+                            bc -> bc.getConsumptionCategory().getBudgetCategoryType(),
+                            Collectors.toMap(
+                                    bc -> bc.getConsumptionCategory().getBudgetCategoryName(),
+                                    bc -> bc
+                            )
+                    ));
+
+            updateCategoryBudgetsByType(request.getDefaultCategoryBudgets(), user, budget, CategoryType.DEFAULT, existingMapByType.getOrDefault(CategoryType.DEFAULT, Map.of()));
+            updateCategoryBudgetsByType(request.getCustomCategoryBudgets(), user, budget, CategoryType.CUSTOM, existingMapByType.getOrDefault(CategoryType.CUSTOM, Map.of()));
+            updateCategoryBudgetsByType(request.getRoutineCategoryBudgets(), user, budget, CategoryType.ROUTINE_CATEGORY, existingMapByType.getOrDefault(CategoryType.ROUTINE_CATEGORY, Map.of()));
+
+            log.info("예산 수정 완료, budgetId: {}", budget.getId());
+        } else {
+            // 5-B. 예산 없음: 새로 등록
+            budget = BudgetConverter.toBudgetEntity(user, request);
+            budgetRepository.save(budget);
+
+            registerCategoryBudgetsByType(request.getDefaultCategoryBudgets(), user, budget, CategoryType.DEFAULT);
+            registerCategoryBudgetsByType(request.getCustomCategoryBudgets(), user, budget, CategoryType.CUSTOM);
+            registerCategoryBudgetsByType(request.getRoutineCategoryBudgets(), user, budget, CategoryType.ROUTINE_CATEGORY);
+
+            log.info("예산 등록 완료, budgetId: {}", budget.getId());
+        }
+
+        return BudgetConverter.toBudgetCreateResultDto(budget.getId());
+    }
+
+    // 기본, 커스텀, 소비루틴 카테고리 수정
+    @Override
+    public void updateCategoryBudgetsByType(List<? extends Object> requestList,
+                                            User user, Budget budget,
+                                            CategoryType type,
+                                            Map<String, BudgetCategory> existingMap) {
+        saveOrUpdateCategoryBudgetsByType(requestList, user, budget, type, existingMap);
+    }
+
+    // 기본, 커스텀, 소비루틴 카테고리 등록
+    @Override
+    public void registerCategoryBudgetsByType(List<? extends Object> requestList,
+                                              User user, Budget budget,
+                                              CategoryType type) {
+        List<BudgetCategory> existingList = budgetCategoryRepository.findAllWithCategoryByBudgetAndType(budget, type);
+        Map<String, BudgetCategory> existingMap = existingList.stream()
+                .collect(Collectors.toMap(
+                        bc -> bc.getConsumptionCategory().getBudgetCategoryName(),
+                        bc -> bc
+                ));
+
+        // DEFAULT 타입일 경우만 유효성 검사 및 누락 보정 적용
+        if (type == CategoryType.DEFAULT) {
+            // 요청된 이름-금액 쌍 추출
+            Map<String, Integer> nameToAmount = Optional.ofNullable(requestList).orElse(List.of()).stream()
+                    .filter(Objects::nonNull)
+                    .map(dto -> {
+                        if (dto instanceof BudgetRequest.DefaultCategoryBudget def)
+                            return Map.entry(def.getCategoryName(), def.getAmount());
+                        return null;
+                    })
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+            // 예외 발생: 요청에 기본 카테고리 외의 이름이 포함된 경우
+            boolean hasInvalidName = nameToAmount.keySet().stream()
+                    .anyMatch(name -> !DefaultCategoryConstants.DEFAULT_CATEGORY_NAMES.contains(name));
+            if (hasInvalidName) {
+                throw new ErrorHandler(ErrorStatus.CONSUMPTION_CATEGORY_NOT_FOUND);
+            }
+
+            // 누락된 기본 카테고리 이름은 0원으로 보정
+            DefaultCategoryConstants.DEFAULT_CATEGORY_NAMES.stream()
+                    .filter(defaultName -> !nameToAmount.containsKey(defaultName))
+                    .forEach(missing -> nameToAmount.put(missing, 0));
+
+            // 수정 공통 메서드 호출
+            saveOrUpdateCategoryBudgetsByNameMap(nameToAmount, user, budget, type, existingMap);
+        } else {
+            // 그 외 타입은 기존 처리 방식 유지
+            saveOrUpdateCategoryBudgetsByType(requestList, user, budget, type, existingMap);
+        }
     }
 
     /**
-     * 기본 카테고리는 사전에 등록된 것을 조회하여 연결하며,
-     * 금액이 비어 있을 경우 0원으로 저장합니다.
+     * BudgetCategory를 저장 또는 수정하는 공통 로직.
+     * - 요청된 DTO 리스트에서 이름과 금액을 추출한 후
+     * - 기존 BudgetCategory 존재 여부에 따라 수정 또는 새로 생성
+     *
+     * @param requestList  카테고리별 DTO 목록 (Default, Custom, Routine)
+     * @param user         사용자
+     * @param budget       예산 엔티티
+     * @param type         카테고리 타입 (DEFAULT, CUSTOM, ROUTINE_CATEGORY)
+     * @param existingMap  이미 저장된 BudgetCategory의 이름 → 엔티티 매핑 맵
      */
     @Transactional
-    @Override
-    public void registerDefaultCategoryBudgets(List<BudgetRequest.DefaultCategoryBudget> defaultCategoryBudgets, User user, Budget budget) {
-        // 1. 사전 정의된 기본 카테고리 이름 목록
-        List<String> defaultCategoryNames = List.of("배달/외식", "패션/쇼핑", "교통", "카페", "기타");
+    void saveOrUpdateCategoryBudgetsByType(List<? extends Object> requestList,
+                                           User user,
+                                           Budget budget,
+                                           CategoryType type,
+                                           Map<String, BudgetCategory> existingMap) {
+        if (requestList == null) return;
 
-        // 2. 사용자에 대해 등록된 기본 카테고리 조회 (N+1 방지 위해 한 번에 조회)
-        List<ConsumptionCategory> existingDefaultCategories = consumptionCategoryRepository
-                .findAllByUserAndBudgetCategoryType(user, CategoryType.DEFAULT);
+        // 1. 요청된 DTO에서 카테고리 이름과 금액을 추출하여 Map 생성
+        Map<String, Integer> nameToAmount = requestList.stream()
+                .map(dto -> {
+                    if (dto instanceof BudgetRequest.DefaultCategoryBudget def)
+                        return Map.entry(def.getCategoryName(), def.getAmount());
+                    if (dto instanceof BudgetRequest.CustomCategoryBudget custom)
+                        return Map.entry(custom.getCategoryName(), custom.getAmount());
+                    if (dto instanceof BudgetRequest.RoutineCategoryBudget routine)
+                        return Map.entry(routine.getCategoryName(), routine.getAmount());
+                    return null;
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-        // 3. 기존 카테고리를 맵으로 구성
-        Map<String, ConsumptionCategory> existingCategoryMap = existingDefaultCategories.stream()
-                .collect(Collectors.toMap(ConsumptionCategory::getBudgetCategoryName, c -> c));
+        // 2. 실제 저장 또는 수정 로직 위임
+        saveOrUpdateCategoryBudgetsByNameMap(nameToAmount, user, budget, type, existingMap);
+    }
 
-        // 4. 아직 등록되지 않은 카테고리만 추출하여 엔티티 생성
-        List<ConsumptionCategory> toBeCreated = defaultCategoryNames.stream()
-                .filter(name -> !existingCategoryMap.containsKey(name))
-                .map(name -> ConsumptionCategoryConverter.toConsumptionCategory(user, name, CategoryType.DEFAULT))
-                .toList();
+    /**
+     * 카테고리 이름과 금액 맵 기반으로 BudgetCategory 저장 또는 수정
+     * - 기존 BudgetCategory가 있으면 금액만 수정
+     * - 없으면 ConsumptionCategory를 조회 또는 생성 후 BudgetCategory 생성
+     *
+     * @param nameToAmount 카테고리 이름 → 금액 매핑
+     * @param user         사용자
+     * @param budget       예산 엔티티
+     * @param type         카테고리 타입
+     * @param existingMap  기존 BudgetCategory 엔티티 맵 (이름 → BudgetCategory)
+     */
+    @Transactional
+    void saveOrUpdateCategoryBudgetsByNameMap(Map<String, Integer> nameToAmount,
+                                              User user,
+                                              Budget budget,
+                                              CategoryType type,
+                                              Map<String, BudgetCategory> existingMap) {
 
-        // 5. 새로운 카테고리를 일괄 저장 (N+1 방지)
-        if (!toBeCreated.isEmpty()) {
-            List<ConsumptionCategory> saved = consumptionCategoryRepository.saveAll(toBeCreated);
-            // 저장된 항목도 map에 추가
-            saved.forEach(c -> existingCategoryMap.put(c.getBudgetCategoryName(), c));
-        }
+        // 1. 각 이름-금액 쌍에 대해 저장 또는 수정 처리
+        List<BudgetCategory> toSave = nameToAmount.entrySet().stream()
+                .map(entry -> {
+                    String name = entry.getKey();
+                    Integer amount = entry.getValue();
 
-        // 6. 입력된 예산 금액을 categoryName 기준으로 Map에 구성
-        Map<String, Integer> inputBudgetMap = defaultCategoryBudgets == null ? Map.of() :
-                defaultCategoryBudgets.stream()
-                        .collect(Collectors.toMap(BudgetRequest.DefaultCategoryBudget::getCategoryName, BudgetRequest.DefaultCategoryBudget::getAmount));
+                    // 이미 존재하는 BudgetCategory가 있으면 금액만 업데이트
+                    BudgetCategory existing = existingMap.get(name);
+                    if (existing != null) {
+                        existing.updateAmount(amount);
+                        return null;
+                    }
 
-        // 7. 기본 카테고리 순서대로 BudgetCategory 생성
-        List<BudgetCategory> budgetCategories = defaultCategoryNames.stream()
-                .map(name -> {
-                    ConsumptionCategory category = existingCategoryMap.get(name);
-                    int amount = inputBudgetMap.getOrDefault(name, 0); // 입력 없으면 0원
+                    // 없으면 ConsumptionCategory를 찾거나 생성하고 BudgetCategory 생성
+                    ConsumptionCategory category = consumptionCategoryRepository
+                            .findByUserAndBudgetCategoryNameAndBudgetCategoryType(user, name, type)
+                            .orElseGet(() -> consumptionCategoryRepository.save(
+                                    ConsumptionCategoryConverter.toConsumptionCategory(user, name, type)
+                            ));
                     return BudgetCategoryConverter.toBudgetCategory(budget, category, amount);
                 })
+                .filter(Objects::nonNull) // 새로 생성된 것만 저장 대상
                 .toList();
 
-        // 8. 예산-카테고리 항목을 일괄 저장
-        budgetCategoryRepository.saveAll(budgetCategories);
-    }
-
-    /**
-     * 사용자 정의 카테고리 및 카테고리 예산을 저장합니다.
-     */
-    @Transactional
-    @Override
-    public void registerCustomCategoryBudgets(List<BudgetRequest.CustomCategoryBudget> customCategoryBudgets, User user, Budget budget) {
-        if (customCategoryBudgets == null || customCategoryBudgets.isEmpty()) return;
-
-        // 기존 사용자 정의 카테고리 조회
-        Map<String, ConsumptionCategory> existingCategoryMap = customCategoryBudgets.stream()
-                .map(dto -> dto.getCategoryName())
-                .distinct()
-                .map(name -> consumptionCategoryRepository
-                        .findByUserAndBudgetCategoryNameAndBudgetCategoryType(user, name, CategoryType.CUSTOM)
-                        .orElse(null))
-                .filter(Objects::nonNull)
-                .collect(Collectors.toMap(ConsumptionCategory::getBudgetCategoryName, c -> c));
-
-        // 새로 만들어야 하는 카테고리
-        List<ConsumptionCategory> newCategories = customCategoryBudgets.stream()
-                .map(BudgetRequest.CustomCategoryBudget::getCategoryName)
-                .filter(name -> !existingCategoryMap.containsKey(name))
-                .distinct()
-                .map(name -> ConsumptionCategoryConverter.toConsumptionCategory(user, name, CategoryType.CUSTOM))
-                .collect(Collectors.toList());
-
-        if (!newCategories.isEmpty()) {
-            consumptionCategoryRepository.saveAll(newCategories);
-            newCategories.forEach(c -> existingCategoryMap.put(c.getBudgetCategoryName(), c));
+        // 2. 새로 생성된 BudgetCategory 저장
+        if (!toSave.isEmpty()) {
+            budgetCategoryRepository.saveAll(toSave);
         }
-
-        // 예산-카테고리 연결
-        List<BudgetCategory> budgetCategories = customCategoryBudgets.stream()
-                .map(dto -> {
-                    ConsumptionCategory category = existingCategoryMap.get(dto.getCategoryName());
-                    return BudgetCategoryConverter.toBudgetCategory(budget, category, dto.getAmount());
-                })
-                .collect(Collectors.toList());
-
-        budgetCategoryRepository.saveAll(budgetCategories);
     }
 }

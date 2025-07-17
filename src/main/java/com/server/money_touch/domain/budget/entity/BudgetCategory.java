@@ -23,4 +23,8 @@ public class BudgetCategory extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "consumption_category_id")
     private ConsumptionCategory consumptionCategory;
+
+    public void updateAmount(Integer newAmount) {
+        this.budgetCategoryMoney = newAmount;
+    }
 }

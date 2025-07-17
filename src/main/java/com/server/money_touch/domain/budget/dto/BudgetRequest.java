@@ -18,7 +18,7 @@ public class BudgetRequest {
     @Schema(description = "한 달 예산 등록 요청 정보")
     public static class BudgetCreateDTO {
 
-        @Schema(description = "한 달 전체 예산", example = "250000")
+        @Schema(description = "한 달 전체 예산", example = "350000")
         @NotNull(message = "전체 예산은 필수 입력 항목입니다.")
         private Integer totalBudget;
 
@@ -31,9 +31,9 @@ public class BudgetRequest {
         @Valid
         private List<BudgetRequest.CustomCategoryBudget> customCategoryBudgets;
 
-//        @Schema(description = "소비 루틴 카테고리 예산 목록")
-//        @Valid
-//        private List<BudgetRequest.RoutineCategoryBudget> routineCategoryBudgets;
+        @Schema(description = "소비 루틴 카테고리 예산 목록")
+        @Valid
+        private List<BudgetRequest.RoutineCategoryBudget> routineCategoryBudgets;
     }
 
     @Getter

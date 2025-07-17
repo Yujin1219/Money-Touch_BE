@@ -23,4 +23,8 @@ public class Budget extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    public void updateTotalBudget(Integer budgetTotal) {
+        this.budgetTotal = budgetTotal;
+    }
 }
