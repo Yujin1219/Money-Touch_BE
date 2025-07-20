@@ -2,6 +2,7 @@ package com.server.money_touch.domain.consumptionRecord.converter.consumptionRec
 
 import com.server.money_touch.domain.consumptionRecord.dto.ConsumptionRecordResponse;
 import com.server.money_touch.domain.consumptionRecord.dto.HouseholdConsumptionRequest;
+import com.server.money_touch.domain.consumptionRecord.dto.HouseholdConsumptionResponse;
 import com.server.money_touch.domain.consumptionRecord.entity.ConsumptionCategory;
 import com.server.money_touch.domain.consumptionRecord.entity.ConsumptionRecord;
 import com.server.money_touch.domain.user.entity.User;
@@ -29,6 +30,17 @@ public class ConsumptionRecordConverter {
     public static ConsumptionRecordResponse.ConsumptionRecordCreateResultDTO toConsumptionRecordCreateResultDTO(Long consumptionRecordId){
         return ConsumptionRecordResponse.ConsumptionRecordCreateResultDTO.builder()
                 .consumptionRecordId(consumptionRecordId)
+                .build();
+    }
+
+    // 일일 소비 기럭 내역 조회 응답
+    public static HouseholdConsumptionResponse.DailyConsumptionDetailDTO toDailyConsumptionDetailDTO(ConsumptionRecord consumptionRecord, ConsumptionCategory consumptionCategory){
+        return HouseholdConsumptionResponse.DailyConsumptionDetailDTO.builder()
+                .categoryName(consumptionCategory.getBudgetCategoryName())
+                .amount(consumptionRecord.getAmount())
+                .content(consumptionRecord.getContent())
+                .memo(consumptionRecord.getMemo())
+                .consumeDate(consumptionRecord.getConsumeDate())
                 .build();
     }
 }

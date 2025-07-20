@@ -2,6 +2,7 @@ package com.server.money_touch.domain.consumptionRecord.controller;
 
 import com.server.money_touch.domain.consumptionRecord.dto.ConsumptionRecordResponse;
 import com.server.money_touch.domain.consumptionRecord.service.ConsumptionRecordCommandService;
+import com.server.money_touch.domain.consumptionRecord.service.ConsumptionRecordQueryService;
 import com.server.money_touch.global.apiPayload.ApiResponse;
 import com.server.money_touch.global.apiPayload.code.status.ErrorStatus;
 import com.server.money_touch.global.validation.annotation.ApiErrorCodeExample;
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.*;
 public class HouseholdConsumptionController {
 
     private final ConsumptionRecordCommandService consumptionRecordCommandService;
+    private final ConsumptionRecordQueryService consumptionRecordQueryService;
 
     // 가계부 일일 소비 등록
     @Operation(
@@ -114,7 +116,8 @@ public class HouseholdConsumptionController {
     @GetMapping("/daily/{consumptionRecordId}")
     public ApiResponse<HouseholdConsumptionResponse.DailyConsumptionDetailDTO> getDailyConsumptionRecord(@PathVariable Long consumptionRecordId){
 
-        HouseholdConsumptionResponse.DailyConsumptionDetailDTO response = HouseholdConsumptionResponse.DailyConsumptionDetailDTO.builder().build();
+        // 로그인 전까지 userId 1로 임시 세팅
+        HouseholdConsumptionResponse.DailyConsumptionDetailDTO response = consumptionRecordQueryService.getDailyConsumptionRecordDetail(1L, consumptionRecordId);
         return ApiResponse.onSuccess(response);
     }
 

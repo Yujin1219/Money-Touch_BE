@@ -4,6 +4,8 @@ import com.server.money_touch.domain.budget.enums.CategoryType;
 import com.server.money_touch.domain.consumptionRecord.entity.ConsumptionCategory;
 import com.server.money_touch.domain.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,4 +16,10 @@ public interface ConsumptionCategoryRepository extends JpaRepository<Consumption
 
     // 카테고리 이름으로 유저의 소비 카테고리 조회
     Optional<ConsumptionCategory> findByUserAndBudgetCategoryName(User user, String budgetCategoryName);
+
+    // 소비 기록과 연관된 소비 카테고리 조회
+    @Query("SELECT cc FROM ConsumptionRecord cr " +
+            "JOIN cr.consumptionCategory cc " +
+            "WHERE cr.id = :consumptionRecordId")
+    Optional<ConsumptionCategory> findCategoryByConsumptionRecordId(@Param("consumptionRecordId") Long consumptionRecordId);
 }
