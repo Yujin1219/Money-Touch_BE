@@ -68,7 +68,6 @@ public class HouseholdConsumptionController {
     @PatchMapping("/daily/{consumptionRecordId}")
     public ApiResponse<String> patchDailyConsumptionRecord(@Valid @RequestBody HouseholdConsumptionRequest.DailyConsumptionCreateDTO request,
                                                       @PathVariable Long consumptionRecordId){
-
         // 로그인 전까지 userId 1로 임시 세팅
         consumptionRecordCommandService.updateDailyConsumptionRecord(1L, consumptionRecordId, request);
 
@@ -91,6 +90,8 @@ public class HouseholdConsumptionController {
     })
     @DeleteMapping("/daily/{consumptionRecordId}")
     public ApiResponse<String> deleteDailyConsumptionRecord(@PathVariable Long consumptionRecordId){
+        // 로그인 전까지 userId 1로 임시 세팅
+        consumptionRecordCommandService.deleteDailyConsumptionRecord(1L, consumptionRecordId);
 
         return ApiResponse.onSuccess("일일 소비 삭제 성공");
     }

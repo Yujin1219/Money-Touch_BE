@@ -12,4 +12,6 @@ public interface ConsumptionRecordCommandService {
     // 일일 소비 기록 수정
     void updateDailyConsumptionRecord(@ExistUser Long userId, @ExistConsumptionRecord Long consumptionRecordId, HouseholdConsumptionRequest.DailyConsumptionCreateDTO request);
 
+    // 일일 소비 기록 삭제
+    void deleteDailyConsumptionRecord(@ExistUser Long userId, @ExistConsumptionRecord Long consumptionRecordId);
 }

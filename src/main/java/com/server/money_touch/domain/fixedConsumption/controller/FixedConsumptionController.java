@@ -57,7 +57,7 @@ public class FixedConsumptionController {
             @Parameter(name = "fixedConsumptionId", description = "수정하려는 고정비 아이디", example = "1", required = true),
     })
     @PatchMapping("/{fixedConsumptionId}")
-    public ApiResponse<String> postFixedConsumption(@Valid @RequestBody FixedConsumptionRequest.FixedConsumptionCreateDTO request,
+    public ApiResponse<String> patchFixedConsumption(@Valid @RequestBody FixedConsumptionRequest.FixedConsumptionCreateDTO request,
                                                @PathVariable Long fixedConsumptionId) {
         return ApiResponse.onSuccess("고정비 수정 성공");
     }
@@ -77,7 +77,7 @@ public class FixedConsumptionController {
             @Parameter(name = "fixedConsumptionId", description = "삭제하려는 고정비 아이디", example = "1", required = true),
     })
     @DeleteMapping("/{fixedConsumptionId}")
-    public ApiResponse<String> postFixedConsumption(@PathVariable Long fixedConsumptionId) {
+    public ApiResponse<String> deleteFixedConsumption(@PathVariable Long fixedConsumptionId) {
         return ApiResponse.onSuccess("고정비 삭제 성공");
     }
 }

@@ -21,12 +21,12 @@ public class TotalConsumption extends BaseEntity {
     private User user;
 
     // 총 소비 금액 증가
-    public void setAddTotalConsumptionAmount(int amount) {
+    public void updateAddTotalConsumptionAmount(int amount) {
         this.totalConsumptionAmount += amount;
     }
 
     // 총 소비 금액 감소
-    public void setSubstractTotalConsumptionAmount(int amount) {
+    public void updateSubstractTotalConsumptionAmount(int amount) {
         this.totalConsumptionAmount -= amount;
     }
 
