@@ -139,7 +139,8 @@ public class HouseholdConsumptionController {
     @GetMapping("/monthly")
     public ApiResponse<HouseholdConsumptionResponse.MonthlyHistoryResponseDTO> getConsumptionRecordByMonth(@RequestParam Integer year, @RequestParam Integer month,
                                                                                                            @RequestParam(required = false) Long cursorId) {
-        HouseholdConsumptionResponse.MonthlyHistoryResponseDTO response = HouseholdConsumptionResponse.MonthlyHistoryResponseDTO.builder().build();
+        // 로그인 전까지 userId 1로 임시 세팅
+        HouseholdConsumptionResponse.MonthlyHistoryResponseDTO response = consumptionRecordQueryService.getMonthlyConsumptionRecords(1L, year, month, cursorId);
         return ApiResponse.onSuccess(response);
     }
 

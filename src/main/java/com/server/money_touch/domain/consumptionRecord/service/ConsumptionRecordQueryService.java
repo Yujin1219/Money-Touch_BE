@@ -16,4 +16,7 @@ public interface ConsumptionRecordQueryService {
 
     // 가계부 달력 - 월별 소비 금액 조회
     HouseholdConsumptionResponse.CalendarDateAmountMapDTO getMonthlyConsumptionCalendar(@ExistUser Long userId, int year, int month);
+
+    // 가계부 달력 - 해당 월의 소비 내역 목록 조회
+    HouseholdConsumptionResponse.MonthlyHistoryResponseDTO getMonthlyConsumptionRecords(@ExistUser Long userId, int year, int month, Long cursorId);
 }

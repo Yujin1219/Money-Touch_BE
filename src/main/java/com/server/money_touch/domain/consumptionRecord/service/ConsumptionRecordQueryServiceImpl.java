@@ -5,6 +5,7 @@ import com.server.money_touch.domain.consumptionRecord.dto.HouseholdConsumptionR
 import com.server.money_touch.domain.consumptionRecord.entity.ConsumptionCategory;
 import com.server.money_touch.domain.consumptionRecord.entity.ConsumptionRecord;
 import com.server.money_touch.domain.consumptionRecord.projection.DailyAmountProjection;
+import com.server.money_touch.domain.consumptionRecord.projection.DailyConsumptionItemDetailProjection;
 import com.server.money_touch.domain.consumptionRecord.projection.DailyConsumptionItemProjection;
 import com.server.money_touch.domain.consumptionRecord.repository.consumptionCategory.ConsumptionCategoryRepository;
 import com.server.money_touch.domain.consumptionRecord.repository.consumptionRecord.ConsumptionRecordRepository;
@@ -19,10 +20,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
 import java.time.LocalDate;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.time.LocalDateTime;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -35,6 +34,7 @@ public class ConsumptionRecordQueryServiceImpl implements ConsumptionRecordQuery
     private final ConsumptionRecordRepository consumptionRecordRepository;
     private final UserRepository userRepository;
     private final ConsumptionCategoryRepository consumptionCategoryRepository;
+    private static final Integer PAGE_SIZE = 15;
 
     // 소비 기록 존재 여부 검증
     @Override
@@ -72,7 +72,7 @@ public class ConsumptionRecordQueryServiceImpl implements ConsumptionRecordQuery
         LocalDate targetDate = LocalDate.of(year, month, day);
 
         // 3. 해당 날짜의 소비 내역 조회 (Projection 형태)
-        List<DailyConsumptionItemProjection> projections = consumptionRecordRepository.findDailyConsumptionItems(userId, targetDate);
+        List<DailyConsumptionItemDetailProjection> projections = consumptionRecordRepository.findDailyConsumptionItems(userId, targetDate);
 
         // 4. Projection → DTO 변환
         List<HouseholdConsumptionResponse.ConsumeItemDTO> items = projections.stream()
@@ -119,5 +119,58 @@ public class ConsumptionRecordQueryServiceImpl implements ConsumptionRecordQuery
 
         // 5. DTO 생성 후 반환
         return HouseholdConsumptionResponse.CalendarDateAmountMapDTO.builder().data(result).build();
+    }
+
+    // 가계부 달력 해당 월의 소비 내역 목록 조회 (커서 기반 무한스크롤)
+    @Override
+    public HouseholdConsumptionResponse.MonthlyHistoryResponseDTO getMonthlyConsumptionRecords(Long userId, int year, int month, Long cursorId) {
+        // 사용자 조회
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ErrorHandler(ErrorStatus.USER_NOT_FOUND));
+
+        // 해당 월의 시작일과 종료일 계산
+        LocalDate startDate = LocalDate.of(year, month, 1);
+        LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
+
+        // 커서 ID가 존재할 경우, 해당 ID의 consumeDate 조회
+        LocalDateTime cursorConsumeDate = null;
+        if (cursorId != null) {
+            cursorConsumeDate = consumptionRecordRepository.findConsumeDateById(cursorId);
+        }
+
+        // 소비 기록 페이징 조회 (consumeDate + id 최신순 기준)
+        List<DailyConsumptionItemProjection> fetched = consumptionRecordRepository
+                .findMonthlyConsumptionItems(userId, startDate, endDate, cursorId, cursorConsumeDate, PAGE_SIZE);
+
+        // 다음 페이지 존재 여부 판단
+        boolean hasNext = fetched.size() > PAGE_SIZE;
+        List<DailyConsumptionItemProjection> content = hasNext ? fetched.subList(0, PAGE_SIZE) : fetched;
+
+        // 날짜(LocalDate) 기준으로 그룹핑 (TreeMap: 날짜 오름차순 정렬)
+        Map<LocalDate, List<HouseholdConsumptionResponse.DailyRecordDTO>> grouped = content.stream()
+                .collect(Collectors.groupingBy(
+                        p -> p.getConsumeDate().toLocalDate(),
+                        TreeMap::new,
+                        Collectors.mapping(ConsumptionRecordConverter::toDailyRecordDTO, Collectors.toList())
+                ));
+
+        // 그룹핑된 데이터를 DTO로 변환 + 날짜 최신순 정렬
+        List<HouseholdConsumptionResponse.DailyHistoryDTO> dailyHistory = grouped.entrySet().stream()
+                .map(entry -> ConsumptionRecordConverter.toDailyHistoryDTO(entry.getKey(), entry.getValue()))
+                .sorted(Comparator.comparing(HouseholdConsumptionResponse.DailyHistoryDTO::getDate).reversed())
+                .toList();
+
+        // 다음 커서 ID 설정
+        Long nextCursorId = content.isEmpty() ? null : content.get(content.size() - 1).getConsumptionRecordId();
+
+        log.info("달력 - 해당 월의 소비 내역 목록 조회(커서 기반 무한스크롤) 완료, year: {}, month: {}, cursorId: {}, nextCursorId: {}", year, month, cursorId, nextCursorId);
+
+        // 최종 응답 DTO 반환
+        return ConsumptionRecordConverter.toMonthlyHistoryResponseDTO(
+                dailyHistory,
+                cursorId == null,   // isFirst
+                hasNext,
+                nextCursorId
+        );
     }
 }
