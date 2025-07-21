@@ -22,6 +22,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class NotificationServiceImpl implements NotificationService {
 
+    private static final Integer PAGE_SIZE = 10;
+
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
 
@@ -30,13 +32,13 @@ public class NotificationServiceImpl implements NotificationService {
      */
     @Override
     public NotificationResponse.NotificationListDTO getNotificationsByCursor(
-            Long userId, Long cursorId, int size) {
+            Long userId, Long cursorId) {
 
         // 사용자 존재 확인
         User user = userRepository.findById(userId)
                 .orElseThrow(() ->  new ErrorHandler(ErrorStatus.USER_NOT_FOUND));
 
-        Pageable pageable = PageRequest.of(0, size);
+        Pageable pageable = PageRequest.of(0, PAGE_SIZE);
 
         // 하나의 메서드로 커서 기반 조회 (cursorId가 null이면 첫 페이지)
         Slice<Notification> notificationSlice =

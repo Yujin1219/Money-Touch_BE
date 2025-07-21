@@ -37,27 +37,18 @@ import org.springframework.web.bind.annotation.*;
                 @ApiErrorCodeExample(value = ErrorStatus.class, name = "_INTERNAL_SERVER_ERROR"),
         })
         @Parameters({
-                @Parameter(name = "cursor", description = "커서 ID (첫 조회시 null)", example = "123"),
-                @Parameter(name = "size", description = "한 번에 가져올 알림 개수", example = "20")
+                @Parameter(name = "cursor", description = "커서 ID (첫 조회시 null)", example = "123")
         })
         @GetMapping("/list")
         public ApiResponse<NotificationResponse.NotificationListDTO> getNotificationList(
-                @Parameter(description = "커서 ID (첫 조회시 null)", example = "123")
-                @RequestParam(required = false) Long cursor,
+                @Parameter(description = "커서 ID (첫 조회시 null)", example = "10")
+                @RequestParam(required = false) Long cursor) {
 
-                @Parameter(description = "한 번에 가져올 알림 개수", example = "20")
-                @RequestParam(defaultValue = "20") int size) {
-
-            // size 제한 (너무 많은 데이터 방지)
-            if (size > 100) {
-                size = 100;
-            }
-
-            log.info("알림 목록 조회 요청 - cursor: {}, size: {}", cursor, size);
+            log.info("알림 목록 조회 요청 - cursor: {}", cursor);
 
             // userId 임시로 1로 지정 (추후 JWT 토큰에서 추출)
             NotificationResponse.NotificationListDTO response =
-                    notificationService.getNotificationsByCursor(1L, cursor, size);
+                    notificationService.getNotificationsByCursor(1L, cursor);
 
             return ApiResponse.onSuccess(response);
         }
