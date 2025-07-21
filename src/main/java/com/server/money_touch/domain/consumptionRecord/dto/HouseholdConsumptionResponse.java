@@ -163,7 +163,7 @@ public class HouseholdConsumptionResponse {
     @AllArgsConstructor
     @Schema(description = "달력 특정 날짜의 소비 상세 내역", example = """
 {
-  "date": "2025-07-02",
+  "date": "2025-07-23",
   "items": [
     {
       "consumptionRecordId": 1,

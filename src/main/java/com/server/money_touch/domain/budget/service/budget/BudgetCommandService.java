@@ -13,7 +13,7 @@ import java.util.Map;
 
 public interface BudgetCommandService {
     // 예산 수정
-    BudgetResponse.BudgetCreateResultDTO registerOrUpdateBudgetWithCategories(@ExistUser Long userId, BudgetRequest.BudgetCreateDTO request);
+    BudgetResponse.BudgetCreateResultDTO saveOrUpdateBudgetWithCategories(@ExistUser Long userId, BudgetRequest.BudgetCreateDTO request);
 
     // 기본 & 사용자 정의 & 소비 루틴 카테고리별 예산 수정
     void updateCategoryBudgetsByType(List<? extends Object> requestList,
@@ -22,8 +22,10 @@ public interface BudgetCommandService {
                                 Map<String, BudgetCategory> existingMap);
 
     // 기본 & 사용자 정의 & 소비 루틴 카테고리별 예산 등록
-    void registerCategoryBudgetsByType(List<? extends Object> requestList,
-                                       User user, Budget budget,
-                                       CategoryType type);
+    void saveCategoryBudgetsByType(List<? extends Object> requestList,
+                                   User user, Budget budget,
+                                   CategoryType type);
+
+    Budget createOrFindBudgetForMonth(User user);
 }
 

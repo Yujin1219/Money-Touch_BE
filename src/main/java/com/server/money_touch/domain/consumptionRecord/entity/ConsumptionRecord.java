@@ -3,12 +3,11 @@ package com.server.money_touch.domain.consumptionRecord.entity;
 import com.server.money_touch.domain.user.entity.User;
 import com.server.money_touch.global.apiPayload.code.BaseEntity;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Builder
@@ -38,7 +37,7 @@ public class ConsumptionRecord extends BaseEntity {
 
     @Column(length = 1000)
     private String memo;
-    
+
     @ColumnDefault("0")
     private Integer commentCount = 0;
 
@@ -50,4 +49,15 @@ public class ConsumptionRecord extends BaseEntity {
 
     @ColumnDefault("0")
     private Integer viewCount = 0;
+
+    private LocalDateTime consumeDate; // 일일 소비 기록 날짜
+
+    // 일일 소비 기록 수정
+    public void updateDailyConsumptionRecord(ConsumptionCategory category, int amount, String content, String memo, LocalDateTime consumeDate) {
+        this.consumptionCategory = category;
+        this.amount = amount;
+        this.content = content;
+        this.memo = memo;
+        this.consumeDate = consumeDate;
+    }
 }

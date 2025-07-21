@@ -42,14 +42,14 @@ public class BudgetController {
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "TOTAL_BUDGET_EXCEEDED"),
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "TOTAL_BUDGET_TOO_LOW"),
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "BUDGET_ALREADY_EXIST"),
-            @ApiErrorCodeExample(value = ErrorStatus.class, name = "CONSUMPTION_CATEGORY_NOT_FOUND"),
+            @ApiErrorCodeExample(value = ErrorStatus.class, name = "CONSUMPTION_CATEGORY_TYPE_NOT_FOUND"),
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "_BAD_REQUEST"),
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "_INTERNAL_SERVER_ERROR"),
     })
     @PostMapping()
     public ApiResponse<BudgetResponse.BudgetCreateResultDTO> postBudget(@Valid @RequestBody BudgetRequest.BudgetCreateDTO request) {
         // 로그인 전까지 userId 1로 임시 세팅
-        BudgetResponse.BudgetCreateResultDTO response = budgetCommandService.registerOrUpdateBudgetWithCategories(1L, request);
+        BudgetResponse.BudgetCreateResultDTO response = budgetCommandService.saveOrUpdateBudgetWithCategories(1L, request);
         return ApiResponse.onSuccess(response);
     }
 
@@ -97,4 +97,6 @@ public class BudgetController {
         BudgetResponse.TotalConsumptionResultDTO response = budgetQueryService.findBudgetByIdAndTotalConsumption(1L, year, month);
         return ApiResponse.onSuccess(response);
     }
+
+    //
 }

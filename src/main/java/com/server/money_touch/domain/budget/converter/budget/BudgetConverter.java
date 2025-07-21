@@ -5,15 +5,19 @@ import com.server.money_touch.domain.budget.dto.BudgetResponse;
 import com.server.money_touch.domain.budget.entity.Budget;
 import com.server.money_touch.domain.user.entity.User;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class BudgetConverter {
 
     // BudgetCreateDTO → Budget Entity 변환
-    public static Budget toBudgetEntity(User user, BudgetRequest.BudgetCreateDTO request) {
+    public static Budget toBudgetEntity(User user, Integer budgetTotal) {
+        String currentMonth = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"));
         return Budget.builder()
                 .user(user)
-                .budgetTotal(request.getTotalBudget())
+                .budgetTotal(budgetTotal)
+                .createdMonth(currentMonth)
                 .build();
     }
 

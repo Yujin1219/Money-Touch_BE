@@ -30,7 +30,9 @@ public enum ErrorStatus implements BaseErrorCode {
     MBTI_NOT_FOUND(HttpStatus.BAD_REQUEST, "MBTI4001", "해당하는 소비 MBTI가 없습니다."),
 
     // 소비 카테고리 관련 에러
-    CONSUMPTION_CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "CONSUMPTION_CATEGORY4001", "해당 예산 카테고리 타입을 찾을 수 없습니다."),
+    CONSUMPTION_CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "CONSUMPTION_CATEGORY4001", "해당 카테고리 테이블을 찾을 수 없습니다."),
+    CONSUMPTION_CATEGORY_TYPE_NOT_FOUND(HttpStatus.NOT_FOUND, "CONSUMPTION_CATEGORY4001", "해당 카테고리 타입을 찾을 수 없습니다."),
+    CONSUMPTION_CATEGORY_NAME_NOT_FOUND(HttpStatus.NOT_FOUND, "CONSUMPTION_CATEGORY4002", "해당 카테고리 이름을 찾을 수 없습니다."),
 
     // 소비 기록 에러
     CONSUMPTION_RECORD_NOT_FOUND(HttpStatus.NOT_FOUND, "CONSUMPTION4001", "일치하는 소비기록이 존재하지 않습니다."),
