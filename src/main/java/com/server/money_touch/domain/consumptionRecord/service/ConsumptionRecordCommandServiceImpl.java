@@ -11,7 +11,7 @@ import com.server.money_touch.domain.consumptionRecord.repository.consumptionCat
 import com.server.money_touch.domain.consumptionRecord.repository.consumptionRecord.ConsumptionRecordRepository;
 import com.server.money_touch.domain.consumptionRecord.repository.totalConsumption.TotalConsumptionRepository;
 import com.server.money_touch.domain.user.entity.User;
-import com.server.money_touch.domain.user.respotiroy.user.UserRepository;
+import com.server.money_touch.domain.user.repository.user.UserRepository;
 import com.server.money_touch.global.apiPayload.code.status.ErrorStatus;
 import com.server.money_touch.global.apiPayload.exception.handler.ErrorHandler;
 import lombok.RequiredArgsConstructor;

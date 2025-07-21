@@ -3,7 +3,7 @@ package com.server.money_touch.domain.budget.service.budget;
 import com.server.money_touch.domain.budget.entity.Budget;
 import com.server.money_touch.domain.budget.enums.CategoryType;
 import com.server.money_touch.domain.user.entity.User;
-import com.server.money_touch.domain.user.respotiroy.user.UserRepository;
+import com.server.money_touch.domain.user.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;

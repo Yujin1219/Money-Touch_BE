@@ -4,7 +4,7 @@ package com.server.money_touch.domain.consumptionRecord.service.totalConsumption
 import com.server.money_touch.domain.consumptionRecord.converter.totalConsumption.TotalConsumptionConverter;
 import com.server.money_touch.domain.consumptionRecord.repository.totalConsumption.TotalConsumptionRepository;
 import com.server.money_touch.domain.user.entity.User;
-import com.server.money_touch.domain.user.respotiroy.user.UserRepository;
+import com.server.money_touch.domain.user.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
