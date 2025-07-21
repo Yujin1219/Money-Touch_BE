@@ -1,6 +1,8 @@
 package com.server.money_touch.domain.consumptionRecord.service;
 
+import com.server.money_touch.domain.budget.enums.CategoryType;
 import com.server.money_touch.domain.consumptionRecord.converter.totalConsumption.TotalConsumptionConverter;
+import com.server.money_touch.domain.consumptionRecord.dto.ConsumptionCategoryResponse;
 import com.server.money_touch.domain.consumptionRecord.dto.ConsumptionRecordRequest;
 import com.server.money_touch.domain.consumptionRecord.dto.ConsumptionRecordResponse;
 import com.server.money_touch.domain.consumptionRecord.entity.ConsumptionCategory;
@@ -19,6 +21,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -83,6 +88,24 @@ public class ConsumptionRecordServiceImpl implements ConsumptionRecordService{
 
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<ConsumptionCategoryResponse.CategoryInfoDTO> getSortedCategoriesForUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.USER_NOT_FOUND));
+
+        List<ConsumptionCategory> allCategories = consumptionCategoryRepository.findAllByUser(user);
+
+        return allCategories.stream()
+                .sorted(Comparator.comparingInt(cat -> {
+                    CategoryType type = cat.getBudgetCategoryType();
+                    if (type == CategoryType.DEFAULT) return 0;
+                    if (type == CategoryType.CUSTOM) return 1;
+                    return 2; // ROUTINE_CATEGORY
+                }))
+                .map(ConsumptionCategoryResponse.CategoryInfoDTO::fromEntity)
+                .collect(Collectors.toList());
+    }
 
 
 }
