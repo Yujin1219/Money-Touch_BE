@@ -3,14 +3,18 @@ package com.server.money_touch.domain.consumptionRecord.entity;
 import com.server.money_touch.domain.user.entity.User;
 import com.server.money_touch.global.apiPayload.code.BaseEntity;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
+@Builder
 @Getter
 @NoArgsConstructor
+@AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 public class ConsumptionRecord extends BaseEntity {
 

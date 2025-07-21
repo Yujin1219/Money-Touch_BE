@@ -13,7 +13,7 @@ import com.server.money_touch.domain.budget.repository.budgetCategory.BudgetCate
 import com.server.money_touch.domain.consumptionRecord.repository.consumptionCategory.ConsumptionCategoryRepository;
 import com.server.money_touch.domain.consumptionRecord.entity.ConsumptionCategory;
 import com.server.money_touch.domain.user.entity.User;
-import com.server.money_touch.domain.user.respotiroy.user.UserRepository;
+import com.server.money_touch.domain.user.repository.user.UserRepository;
 import com.server.money_touch.global.apiPayload.code.status.ErrorStatus;
 import com.server.money_touch.global.apiPayload.exception.handler.ErrorHandler;
 import com.server.money_touch.global.constants.DefaultCategoryConstants;
@@ -42,7 +42,7 @@ public class BudgetCommandServiceImpl implements BudgetCommandService {
     private final BudgetCategoryRepository budgetCategoryRepository;
     private final UserRepository userRepository;
 
-    // 예산 등롥 또는 수정
+    // 예산 등록 또는 수정
     @Transactional
     @Override
     public BudgetResponse.BudgetCreateResultDTO registerOrUpdateBudgetWithCategories(Long userId, BudgetRequest.BudgetCreateDTO request) {
