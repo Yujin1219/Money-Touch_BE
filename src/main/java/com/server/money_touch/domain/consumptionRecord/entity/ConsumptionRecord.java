@@ -9,11 +9,11 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
-@Builder
-@AllArgsConstructor
 @Entity
+@Builder
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor
+@AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 public class ConsumptionRecord extends BaseEntity {
 
@@ -37,7 +37,7 @@ public class ConsumptionRecord extends BaseEntity {
 
     @Column(length = 1000)
     private String memo;
-    
+
     @ColumnDefault("0")
     private Integer commentCount = 0;
 

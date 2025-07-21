@@ -1,6 +1,6 @@
 package com.server.money_touch.domain.user.service.user;
 
-import com.server.money_touch.domain.user.respotiroy.user.UserRepository;
+import com.server.money_touch.domain.user.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

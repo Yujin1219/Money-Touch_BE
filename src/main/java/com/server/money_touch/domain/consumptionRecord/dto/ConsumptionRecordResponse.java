@@ -7,11 +7,13 @@ public class ConsumptionRecordResponse {
 
     @Builder
     @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
     @Schema(description = "소비 기록 등록 응답 정보")
     public static class ConsumptionRecordCreateResultDTO {
 
         @Schema(description = "소비 기록 아이디", example = "1")
-        private Long consumptionRecordId = 1L;
+        private Long consumptionRecordId;
 
     }
 }
