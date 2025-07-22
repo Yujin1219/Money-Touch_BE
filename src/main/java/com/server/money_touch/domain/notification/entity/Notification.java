@@ -38,4 +38,9 @@ public class Notification extends BaseEntity {
 
     @Column(nullable = false)
     private Long targetId;
+
+    // 읽음 처리
+    public void markAsRead() {
+        this.isRead = true;
+    }
 }

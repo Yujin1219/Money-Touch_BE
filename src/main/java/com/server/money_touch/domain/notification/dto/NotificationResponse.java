@@ -1,8 +1,12 @@
 package com.server.money_touch.domain.notification.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class NotificationResponse {
@@ -19,14 +23,17 @@ public class NotificationResponse {
         @Schema(description = "현재 페이지의 알림 개수", example = "10")
         Integer notificationListSize;
 
-        @Schema(description = "페이지 처음 여부", example = "true")
-        Boolean isFirst;
+        @Schema(description = "첫 페이지 여부", example = "true")
+        private boolean isFirst;
 
-        @Schema(description = "페이지 마지막 여부", example = "false")
-        Boolean isLast;
+        @Schema(description = "마지막 페이지 여부", example = "false")
+        private boolean isLast;
 
-        @Schema(description = "다음 페이지가 있는지 여부", example = "true")
-        Boolean hasNext;
+        @Schema(description = "다음 페이지 존재 여부", example = "true")
+        private boolean hasNext;
+
+        @Schema(description = "다음 커서 ID (무한스크롤용)", example = "123")
+        private Long nextCursorId;
     }
 
     @Builder
@@ -59,6 +66,9 @@ public class NotificationResponse {
 
         @Schema(description = "읽음 여부", example = "false")
         private Boolean isRead;
+
+        @Schema(description = "알림 생성 일시", example = "2025-01-15T14:30:25")
+        private LocalDateTime createdAt;
 
     }
 

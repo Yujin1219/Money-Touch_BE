@@ -57,7 +57,12 @@ public enum ErrorStatus implements BaseErrorCode {
     ERROR_UPLOAD_ROUTINE_IMG(HttpStatus.INTERNAL_SERVER_ERROR, "ROUTINE5001", "소비 루틴 이미지 등록에 실패하였습니다."),
 
     // 리액션 관련 에러
-    REACTION_NOT_FOUND(HttpStatus.NOT_FOUND, "REACTION4001", "반응을 찾을 수 없습니다.");
+    REACTION_NOT_FOUND(HttpStatus.NOT_FOUND, "REACTION4001", "반응을 찾을 수 없습니다."),
+
+    // 알림 관련 에러
+    NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "NOTIFICATION4001", "존재하지 않는 알림입니다."),
+    NO_PERMISSION_FOR_NOTIFICATION(HttpStatus.FORBIDDEN, "NOTIFICATION4002", " 해당 알림에 접근할 권한이 없습니다."),
+    ALREADY_READ_NOTIFICATION(HttpStatus.CONFLICT, "NOTIFICATION4003", "이미 읽음 처리된 알림입니다.");
 
     private final HttpStatus httpStatus;
     private final String code;
