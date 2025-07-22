@@ -1,6 +1,7 @@
 package com.server.money_touch.domain.home.controller;
 
 import com.server.money_touch.domain.home.dto.HomeResponse;
+import com.server.money_touch.domain.home.service.HomeService;
 import com.server.money_touch.global.apiPayload.ApiResponse;
 import com.server.money_touch.global.apiPayload.code.status.ErrorStatus;
 import com.server.money_touch.global.validation.annotation.ApiErrorCodeExample;
@@ -23,6 +24,8 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/home")
 public class HomeController {
+
+    private final HomeService homeService;
 
     @Operation(
             summary = "소비 통계 조회 API",
@@ -87,9 +90,7 @@ public class HomeController {
 
     @Operation(
             summary = "소비왕 랭킹 조회 API",
-            description = "이번 주 기준 현명해요 수가 가장 많은 유저 10명 + 내 순위를 반환합니다."+
-                    "Try it out -> Execute 로 리스트 확인 가능합니다. " +
-                    "임시 더미데이터 입력한 상태")
+            description = "지난 주 기준 현명해요 수가 가장 많은 유저 10명 + 내 순위를 반환합니다.")
     @ApiErrorCodeExamples({
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "USER_NOT_FOUND"),
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "_BAD_REQUEST"),
@@ -98,25 +99,9 @@ public class HomeController {
     @GetMapping("/ranking")
     public ApiResponse<HomeResponse.WiseRankingResponseDTO> getWiseRanking() {
 
-        // TODO: 실제 데이터로 교체 예정. 임시 더미데이터
-        List<HomeResponse.RankingUserDTO> top10 = List.of(
-                new HomeResponse.RankingUserDTO("제이", "https://", 100, "SAME"),
-                new HomeResponse.RankingUserDTO("영이", "https://", 92, "UP"),
-                new HomeResponse.RankingUserDTO("앨빈", "https://", 87, "DOWN"),
-                new HomeResponse.RankingUserDTO("재현", "https://", 80, "UP"),
-                new HomeResponse.RankingUserDTO("도영", "https://", 75, "DOWN"),
-                new HomeResponse.RankingUserDTO("마크", "https://", 70, "SAME"),
-                new HomeResponse.RankingUserDTO("해찬", "https://", 60, "SAME"),
-                new HomeResponse.RankingUserDTO("유타", "https://", 55, "UP"),
-                new HomeResponse.RankingUserDTO("태용", "https://", 40, "DOWN"),
-                new HomeResponse.RankingUserDTO("정우", "https://", 35, "SAME")
-        );
+        // 임시 유저 지정
+        return ApiResponse.onSuccess(homeService.getWeeklyWiseRanking(1L));
 
-        HomeResponse.MyRankingDTO myRank = new HomeResponse.MyRankingDTO(
-                "라인", "https://", 89, 11
-        );
-
-        return ApiResponse.onSuccess(new HomeResponse.WiseRankingResponseDTO(top10, myRank));
     }
 
     @Operation(
@@ -163,6 +148,15 @@ public class HomeController {
         );
 
         return ApiResponse.onSuccess(routines);
+    }
+
+    @Operation(
+            summary = "[관리자용] 랭킹 수동 갱신 API",
+            description = "지난 주 소비 기록 기준으로 랭킹을 수동으로 계산, 저장합니다.")
+    @GetMapping("/ranking/refresh")
+    public ApiResponse<String> refreshWiseRankingManually() {
+        homeService.calculateAndSaveWeeklyWiseRanking();
+        return ApiResponse.onSuccess("주간 랭킹 수동 갱신 완료");
     }
 
 }
