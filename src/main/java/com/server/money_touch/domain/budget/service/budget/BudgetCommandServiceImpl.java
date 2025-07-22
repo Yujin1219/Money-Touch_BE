@@ -198,7 +198,6 @@ public class BudgetCommandServiceImpl implements BudgetCommandService {
                                            Budget budget,
                                            CategoryType type,
                                            Map<String, BudgetCategory> existingMap) {
-//        if (requestList == null) return;
 
         // 1. 요청된 DTO에서 카테고리 이름과 금액을 추출하여 Map 생성
         // null 또는 비어있을 경우 삭제만 처리되도록 빈 맵으로 처리

@@ -35,7 +35,7 @@ public class RoutineRequest {
         @Schema(description = "카테고리별 예산 목록")
         @NotNull(message = "카테고리별 예산 목록은 비어 있을 수 없습니다.")
         @Valid
-        private List<CategoryBudgetDTO> categoryBudgeList;
+        private List<CategoryBudgetDTO> budgetList;
     }
 
     @Getter

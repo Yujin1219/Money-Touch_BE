@@ -1,8 +1,6 @@
 package com.server.money_touch.domain.consumptionRecord.repository.consumptionRecord;
 
 import com.querydsl.core.types.Expression;
-import com.querydsl.core.types.Order;
-import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
