@@ -25,4 +25,9 @@ public class RoutineConverter {
                 .routineId(routineId)
                 .build();
     }
+
+    // 루틴 이미지 생성 응답 DTO
+    public static RoutineResponse.RoutineImageUrlDTO toRoutineImageUrlDTO(String imageUrl) {
+        return RoutineResponse.RoutineImageUrlDTO.builder().routineImageUrl(imageUrl).build();
+    }
 }

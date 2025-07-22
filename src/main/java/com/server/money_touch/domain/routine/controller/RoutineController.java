@@ -1,10 +1,12 @@
 package com.server.money_touch.domain.routine.controller;
 
+import com.server.money_touch.domain.routine.converter.RoutineConverter;
 import com.server.money_touch.domain.routine.dto.RoutineRequest;
 import com.server.money_touch.domain.routine.dto.RoutineResponse;
 import com.server.money_touch.domain.routine.service.RoutineCommandService;
 import com.server.money_touch.global.apiPayload.ApiResponse;
 import com.server.money_touch.global.apiPayload.code.status.ErrorStatus;
+import com.server.money_touch.global.s3.S3Manager;
 import com.server.money_touch.global.validation.annotation.ApiErrorCodeExample;
 import com.server.money_touch.global.validation.annotation.ApiErrorCodeExamples;
 import com.server.money_touch.global.validation.annotation.ApiSuccessCodeExample;
@@ -31,6 +33,7 @@ import java.util.List;
 public class RoutineController {
 
     private final RoutineCommandService routineCommandService;
+    private final S3Manager s3Manager;
 
     // 소비 루틴 등록
     @Operation(
@@ -139,8 +142,12 @@ public class RoutineController {
     })
     @PostMapping(value = "/img", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public ApiResponse<RoutineResponse.RoutineImageUrlDTO> setRoutineImage(@RequestPart("file") MultipartFile multipartFile) {
-        RoutineResponse.RoutineImageUrlDTO response = RoutineResponse.RoutineImageUrlDTO.builder().build();
-        return ApiResponse.onSuccess(response);
+        try {
+            String url = s3Manager.upload(multipartFile, "routine");
+            return ApiResponse.onSuccess(RoutineConverter.toRoutineImageUrlDTO(url));
+        } catch (Exception e) {
+            return ApiResponse.onFailure("S3_UPLOAD_FAIL", e.getMessage(), null);
+        }
     }
 
     @Operation(
