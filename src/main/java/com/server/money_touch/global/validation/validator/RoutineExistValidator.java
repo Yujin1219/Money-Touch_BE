@@ -1,10 +1,9 @@
 package com.server.money_touch.global.validation.validator;
 
-import com.server.money_touch.domain.budget.service.budget.BudgetQueryService;
 import com.server.money_touch.domain.consumptionRecord.service.ConsumptionRecordQueryService;
+import com.server.money_touch.domain.routine.service.RoutineQueryService;
 import com.server.money_touch.global.apiPayload.code.status.ErrorStatus;
-import com.server.money_touch.global.validation.annotation.ExistBudget;
-import com.server.money_touch.global.validation.annotation.ExistConsumptionRecord;
+import com.server.money_touch.global.validation.annotation.ExistRoutine;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import lombok.RequiredArgsConstructor;
@@ -15,24 +14,24 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @RequiredArgsConstructor
 @Component
-public class ConsumptionRecordExistValidator implements ConstraintValidator<ExistConsumptionRecord,Long> {
+public class RoutineExistValidator implements ConstraintValidator<ExistRoutine,Long> {
 
-    private final ConsumptionRecordQueryService consumptionRecordQueryService;
+    private final RoutineQueryService routineQueryService;
 
     @Override
-    public void initialize(ExistConsumptionRecord constraintAnnotation) {
+    public void initialize(ExistRoutine constraintAnnotation) {
         ConstraintValidator.super.initialize(constraintAnnotation);
     }
 
     @Override
     public boolean isValid(Long value, ConstraintValidatorContext context) {
         // 파라미터로 넘어온 소비 기록 아이디가 존재하는 아이디인지 검증
-        boolean isValid = consumptionRecordQueryService.existsConsumptionRecordById(value);
-        log.info("ExistConsumptionRecord consumptionRecordId: {}, isValid: {}", value, isValid);
+        boolean isValid = routineQueryService.existsRoutineById(value);
+        log.info("ExistRoutine routineId: {}, isValid: {}", value, isValid);
 
         if(!isValid){
             context.disableDefaultConstraintViolation();
-            context.buildConstraintViolationWithTemplate(ErrorStatus.CONSUMPTION_RECORD_NOT_FOUND.toString()).addConstraintViolation();
+            context.buildConstraintViolationWithTemplate(ErrorStatus.ROUTINE_NOT_FOUND.toString()).addConstraintViolation();
         }
 
         return isValid;

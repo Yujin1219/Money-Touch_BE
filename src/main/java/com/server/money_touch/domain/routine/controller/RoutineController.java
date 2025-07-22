@@ -4,6 +4,7 @@ import com.server.money_touch.domain.routine.converter.RoutineConverter;
 import com.server.money_touch.domain.routine.dto.RoutineRequest;
 import com.server.money_touch.domain.routine.dto.RoutineResponse;
 import com.server.money_touch.domain.routine.service.RoutineCommandService;
+import com.server.money_touch.domain.routine.service.RoutineQueryService;
 import com.server.money_touch.global.apiPayload.ApiResponse;
 import com.server.money_touch.global.apiPayload.code.status.ErrorStatus;
 import com.server.money_touch.global.s3.S3Manager;
@@ -33,6 +34,7 @@ import java.util.List;
 public class RoutineController {
 
     private final RoutineCommandService routineCommandService;
+    private final RoutineQueryService routineQueryService;
     private final S3Manager s3Manager;
 
     // 소비 루틴 등록
@@ -62,7 +64,7 @@ public class RoutineController {
 
     // 내 소비 루틴 목록 조회
     @Operation(
-            summary = "내 소비 루틴 목록 조회 API",
+            summary = "내 소비 루틴 목록 조회 API (커서 기반 무한스크롤)",
             description = "가계부에서 사용자가 등록한 소비 루틴 목록을 스크롤 형식으로 조회하는 API입니다."
     )
     @ApiErrorCodeExamples({
@@ -73,7 +75,8 @@ public class RoutineController {
     @Parameter(name = "cursorId", description = "커서(이전 요청에서 마지막 소비 루틴 아이디), 첫번째 요청일 시에는 파라미터에 포함하지 않아도 됩니다.", example = "10", required = false)
     @GetMapping("/users")
     public ApiResponse<RoutineResponse.MyRoutineListDTO> getMyRoutines(@RequestParam(required = false) Long cursorId) {
-        RoutineResponse.MyRoutineListDTO response = RoutineResponse.MyRoutineListDTO.builder().build();
+        // 로그인 전까지 userId 1로 임시 세팅
+        RoutineResponse.MyRoutineListDTO response = routineQueryService.getMyRoutineList(1L, cursorId);
         return ApiResponse.onSuccess(response);
     }
 
@@ -124,7 +127,8 @@ public class RoutineController {
     })
     @GetMapping("/users/{routineId}")
     public ApiResponse<RoutineResponse.RoutineDetailDTO> getMyDetailRoutine(@PathVariable Long routineId) {
-        RoutineResponse.RoutineDetailDTO response = RoutineResponse.RoutineDetailDTO.builder().build();
+        // 로그인 전까지 userId 1로 임시 세팅
+        RoutineResponse.RoutineDetailDTO response = routineQueryService.getUserRoutineDetail(1L, routineId);
         return ApiResponse.onSuccess(response);
     }
 
