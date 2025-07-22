@@ -123,8 +123,8 @@ public class HouseholdConsumptionController {
 
     // 가계부 해당 월의 소비 내역 목록 조회
     @Operation(
-            summary = "해당 월의 일일 소비 내역 목록 조회 API",
-            description = "가계부에서 특정 월의 일일 소비 내역 목록을 스크롤 형식으로 조회하는 API입니다. 연도(year)와 월(month)을 쿼리 파라미터로 입력하세요."
+            summary = "특정 월의 일일 소비 내역 목록을 커서 기반 무한스크롤로 조회 API",
+            description = "가계부에서 특정 월의 일일 소비 내역 목록을 스크롤 형식으로 조회하는 API입니다. 연도(year)와 월(month), 커서를 쿼리 파라미터로 입력해 주세요."
     )
     @ApiErrorCodeExamples({
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "USER_NOT_FOUND"),
