@@ -1,6 +1,7 @@
 package com.server.money_touch.domain.home.service;
 
 import com.server.money_touch.domain.home.dto.HomeResponse;
+import com.server.money_touch.domain.user.entity.User;
 
 public interface HomeService {
 
@@ -8,4 +9,7 @@ public interface HomeService {
 
     void calculateAndSaveWeeklyWiseRanking();
 
+    HomeResponse.ConsumptionStatisticsTopResponseDTO getTopStatistics(User user);
+
+    HomeResponse.OtherCategoryStatisticsResponseDTO getOtherStatistics(User user);
 }

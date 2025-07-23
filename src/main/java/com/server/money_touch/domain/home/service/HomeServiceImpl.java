@@ -16,10 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -31,7 +28,7 @@ public class HomeServiceImpl implements HomeService {
 
     @Override
     @Transactional
-    public void calculateAndSaveWeeklyWiseRanking(){
+    public void calculateAndSaveWeeklyWiseRanking() {
 
         LocalDate rankingWeekStart = LocalDate.now().minusWeeks(1).with(DayOfWeek.MONDAY);
         LocalDate rankingWeekEnd = rankingWeekStart.plusDays(6);
@@ -53,7 +50,7 @@ public class HomeServiceImpl implements HomeService {
                 .toList();
 
         int rank = 1;
-        for(Map.Entry<User, Integer> entry : sorted){
+        for (Map.Entry<User, Integer> entry : sorted) {
             User user = entry.getKey();
             int wiseCount = entry.getValue();
 
@@ -141,6 +138,123 @@ public class HomeServiceImpl implements HomeService {
                 }).orElse("UP"); // 순위권 밖에 존재하다 순위를 얻게 되면 UP
     }
 
-}
 
+    @Override
+    @Transactional(readOnly = true)
+    public HomeResponse.ConsumptionStatisticsTopResponseDTO getTopStatistics(User user) {
+
+        LocalDateTime startOfMonth = LocalDateTime.now().withDayOfMonth(1).toLocalDate().atStartOfDay();
+        LocalDateTime endOfMonth = LocalDateTime.now().plusMonths(1).withDayOfMonth(1).minusNanos(1);
+
+        // 카테고리 별로 금액 합산
+        List<Object[]> results = consumptionRecordRepository.findCategorySpendingBetween(user, startOfMonth, endOfMonth);
+
+        // 소비 기록 없다면 빈 리스트&null 반환
+        if (results.isEmpty()) {
+            return new HomeResponse.ConsumptionStatisticsTopResponseDTO(List.of(), false, 0.0,null);
+        }
+
+        // 카테고리 별로 Map 생성하고 총합 계산
+        Map<String, Integer> amountMap = new HashMap<>();
+        int total = 0;
+        for (Object[] row : results) {
+            String category = (String) row[0];
+            int amount = ((Long) row[1]).intValue();
+            amountMap.put(category, amount);
+            total += amount;
+        }
+
+        // 소비 금액 내림차순 정렬
+        List<Map.Entry<String, Integer>> sorted = new ArrayList<>(amountMap.entrySet());
+        sorted.sort((a, b) -> b.getValue().compareTo(a.getValue()));
+
+        // 상위 5개 카테고리 추출하고 퍼센트 계산(소수점 1자리, 2자리에서 반올림)
+        List<HomeResponse.ConsumptionStatisticsDTO> top5 = new ArrayList<>();
+        double percentageSum = 0.0;
+        int topCount = Math.min(5, sorted.size());
+        for (int i = 0; i < topCount; i++) {
+            Map.Entry<String, Integer> entry = sorted.get(i);
+            double percent = Math.round((entry.getValue() * 1000.0 / total)) / 10.0;
+            top5.add(new HomeResponse.ConsumptionStatisticsDTO(entry.getKey(), percent));
+            percentageSum += percent;
+        }
+
+        // 기타 카테고리 계산
+        boolean hasOthers = sorted.size() > 5;
+        double othersPercent = 0.0;
+        if (hasOthers) {
+            othersPercent = Math.round((100.0 - percentageSum) * 10.0) / 10.0;
+            percentageSum += othersPercent;
+        }
+
+        // 퍼센트 총합이 100% 되도록 오차 보정
+        double correction = Math.round((100.0 - percentageSum) * 10.0) / 10.0;
+        if (!top5.isEmpty()) {
+            HomeResponse.ConsumptionStatisticsDTO maxCategory = Collections.max(
+                    top5,
+                    Comparator.comparingDouble(HomeResponse.ConsumptionStatisticsDTO::getPercentage));
+            maxCategory.setPercentage(Math.round((maxCategory.getPercentage() + correction) * 10.0) / 10.0);
+        }
+
+        // 최다 소비 카테고리명
+        String mostSpentCategoryName = sorted.get(0).getKey();
+
+        //최종 응답
+        return new HomeResponse.ConsumptionStatisticsTopResponseDTO(
+                top5,
+                hasOthers,
+                othersPercent,
+                mostSpentCategoryName
+        );
+
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public HomeResponse.OtherCategoryStatisticsResponseDTO getOtherStatistics(User user) {
+
+        LocalDateTime startOfMonth = LocalDateTime.now().withDayOfMonth(1).toLocalDate().atStartOfDay();
+        LocalDateTime endOfMonth = LocalDateTime.now().plusMonths(1).withDayOfMonth(1).minusNanos(1);
+
+        // 카테고리 별 금액 합산
+        List<Object[]> results = consumptionRecordRepository.findCategorySpendingBetween(user, startOfMonth, endOfMonth);
+
+        // 소비 기록이 없다면 빈 리스트 반환
+        if (results.isEmpty()) {
+            return new HomeResponse.OtherCategoryStatisticsResponseDTO(List.of());
+        }
+
+        // 카테고리 별로 Map 생성하고 총합 계산
+        Map<String, Integer> amountMap = new HashMap<>();
+        int total = 0;
+        for (Object[] row : results) {
+            String category = (String) row[0];
+            int amount = ((Long) row[1]).intValue();
+            amountMap.put(category, amount);
+            total += amount;
+        }
+
+        // 소비 금액 내림차순 정렬
+        List<Map.Entry<String, Integer>> sorted = new ArrayList<>(amountMap.entrySet());
+        sorted.sort((a, b) -> b.getValue().compareTo(a.getValue()));
+
+        // 상위 5개를 제외한 나머지를 그외로 간주
+        int topCount = Math.min(5, sorted.size());
+        List<Map.Entry<String, Integer>> others = sorted.subList(topCount, sorted.size());
+
+        // 그외 항목이 없다면 빈 리스트 반환
+        if (others.isEmpty()) {
+            return new HomeResponse.OtherCategoryStatisticsResponseDTO(List.of());
+        }
+
+        // 그외 카테고리 개별 항목 퍼센트 계산 (소수점 1자리 반올림)
+        List<HomeResponse.ConsumptionStatisticsDTO> othersList = new ArrayList<>();
+        for (Map.Entry<String, Integer> entry : others) {
+            double percent = Math.round((entry.getValue() * 1000.0 / total)) / 10.0;
+            othersList.add(new HomeResponse.ConsumptionStatisticsDTO(entry.getKey(), percent));
+        }
+
+        return new HomeResponse.OtherCategoryStatisticsResponseDTO(othersList);
+    }
+}
 

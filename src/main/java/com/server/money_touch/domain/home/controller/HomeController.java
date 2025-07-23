@@ -2,8 +2,11 @@ package com.server.money_touch.domain.home.controller;
 
 import com.server.money_touch.domain.home.dto.HomeResponse;
 import com.server.money_touch.domain.home.service.HomeService;
+import com.server.money_touch.domain.user.entity.User;
+import com.server.money_touch.domain.user.repository.user.UserRepository;
 import com.server.money_touch.global.apiPayload.ApiResponse;
 import com.server.money_touch.global.apiPayload.code.status.ErrorStatus;
+import com.server.money_touch.global.apiPayload.exception.GeneralException;
 import com.server.money_touch.global.validation.annotation.ApiErrorCodeExample;
 import com.server.money_touch.global.validation.annotation.ApiErrorCodeExamples;
 import io.swagger.v3.oas.annotations.Operation;
@@ -26,13 +29,11 @@ import java.util.List;
 public class HomeController {
 
     private final HomeService homeService;
+    private final UserRepository userRepository;
 
     @Operation(
             summary = "소비 통계 조회 API",
-            description = "이번 달 상위 5개 소비 카테고리 + 기타 여부 + 최다 소비 항목 반환. " +
-                    "Try it out -> Execute 로 리스트 확인 가능합니다. " +
-                    "임시 더미데이터 입력한 상태")
-    // @ApiSuccessCodeExample(resultClass = HomeResponse.ConsumptionStatisticsTopResponseDTO.class)
+            description = "이번 달 상위 5개 소비 카테고리(카테고리명, 퍼센트) + 그외 여부 + 그외(hasothers) 퍼센트(없으면 0.0) + 최다 소비 항목 반환.")
     @ApiErrorCodeExamples({
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "USER_NOT_FOUND"),
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "_BAD_REQUEST"),
@@ -42,31 +43,16 @@ public class HomeController {
     @GetMapping("/statistics")
     public ApiResponse<HomeResponse.ConsumptionStatisticsTopResponseDTO> getTopStatistics(){
 
-        // TODO: 실제 데이터로 교체 예정. 임시 더미데이터
-        List<HomeResponse.ConsumptionStatisticsDTO> top5 = List.of(
-                new HomeResponse.ConsumptionStatisticsDTO("배달/외식", 35.0),
-                new HomeResponse.ConsumptionStatisticsDTO("카페", 25.0),
-                new HomeResponse.ConsumptionStatisticsDTO("고정비", 13.0),
-                new HomeResponse.ConsumptionStatisticsDTO("패션/쇼핑", 10.0),
-                new HomeResponse.ConsumptionStatisticsDTO("교통", 10.0)
-
-        );
-
-        boolean hasOthers = true;
-        String mostSpentCategoryName = "배달/외식";
-
-        return ApiResponse.onSuccess(
-                new HomeResponse.ConsumptionStatisticsTopResponseDTO(top5, hasOthers, mostSpentCategoryName)
-        );
+        User user = userRepository.findById(1L)
+                .orElseThrow(()-> new GeneralException(ErrorStatus.USER_NOT_FOUND));
+        return ApiResponse.onSuccess(homeService.getTopStatistics(user));
 
     }
 
     @Operation(
-            summary = "기타 카테고리 통계 조회 API",
-            description = "'그 외'를 클릭했을 때 상위 5개를 제외한 카테고리들의 소비 퍼센트 반환. " +
-                    "Try it out -> Execute 로 리스트 확인 가능합니다. " +
-                    "임시 더미데이터 입력한 상태")
-    //@ApiSuccessCodeExample(resultClass = HomeResponse.OtherCategoryStatisticsResponseDTO.class)
+            summary = "그외 카테고리 통계 조회 API",
+            description = "'그 외'를 클릭했을 때 상위 5개를 제외한 카테고리들의 소비 퍼센트 반환"+
+                            "반올림으로 인해 그외 카테고리 퍼센트 합계시 '그외'의 전체 퍼센트와 0.1% 차이가 발생할 수 있습니다.")
     @ApiErrorCodeExamples({
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "USER_NOT_FOUND"),
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "_BAD_REQUEST"),
@@ -75,16 +61,9 @@ public class HomeController {
     @GetMapping("/statistics/others")
     public ApiResponse<HomeResponse.OtherCategoryStatisticsResponseDTO> getOtherStatistics(){
 
-
-        // TODO: 실제 데이터로 교체 예정. 임시 더미데이터
-        List<HomeResponse.ConsumptionStatisticsDTO> others = List.of(
-                new HomeResponse.ConsumptionStatisticsDTO("술/유흥", 2.0),
-                new HomeResponse.ConsumptionStatisticsDTO("교육비", 2.0),
-                new HomeResponse.ConsumptionStatisticsDTO("통신비", 2.0),
-                new HomeResponse.ConsumptionStatisticsDTO("여행", 1.0)
-        );
-
-        return ApiResponse.onSuccess(new HomeResponse.OtherCategoryStatisticsResponseDTO(others));
+        User user = userRepository.findById(1L)
+                .orElseThrow(()-> new GeneralException(ErrorStatus.USER_NOT_FOUND));
+        return ApiResponse.onSuccess(homeService.getOtherStatistics(user));
 
     }
 
