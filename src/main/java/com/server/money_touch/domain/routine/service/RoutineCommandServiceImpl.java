@@ -59,7 +59,6 @@ public class RoutineCommandServiceImpl implements RoutineCommandService {
         Budget budget = budgetRepository.findById(budgetId)
                 .orElseThrow(() -> new ErrorHandler(ErrorStatus.BUDGET_NOT_FOUND));
         budget.updateTotalBudget(request.getTotalBudget());
-        budget.updateIsFromRoutine(true); // 루틴 기반 예산임을 표시
 
         // 3. 요청된 카테고리 이름 → 금액 맵핑
         Map<String, Integer> requestMap = request.getBudgetList().stream()
