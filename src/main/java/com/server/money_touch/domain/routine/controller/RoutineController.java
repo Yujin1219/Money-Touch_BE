@@ -40,14 +40,17 @@ public class RoutineController {
     // 소비 루틴 등록
     @Operation(
             summary = "소비 루틴 등록 API",
-            description = "소비 루틴을 등록하는 API입니다. 예산 아이디는 Path Variable로 전달하며, 카테고리, 금액, 설명 등의 소비 루틴 정보는 RequestBody에 포함해 주세요. " +
-                    "한 달 예산 내역 조회 API를 통해 내 예산 목록을 조회한 후, 해당 예산 내역에서 카테고리에 바뀐 금액이 있다면, 금액을 수정한 후 요청해 주세요."
+            description = "해당 API는 소비 루틴을 등록하는 기능을 제공합니다. 예산 ID는 Path Variable로 전달하며, 카테고리, 금액, 설명 등의 루틴 정보는 RequestBody로 전달합니다. " +
+                    "먼저 '한 달 예산 내역 조회 API'를 통해 본인의 예산 목록을 확인한 후, 해당 예산에 포함된 모든 소비 카테고리를 기준으로 요청 데이터를 구성해 주세요. " +
+                    "카테고리별 예산 금액이 기존과 다를 경우, 수정된 금액으로 요청하시면 해당 금액이 반영됩니다."
     )
     @ApiSuccessCodeExample(resultClass = RoutineResponse.RoutineCreateResultDTO.class)
     @ApiErrorCodeExamples({
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "USER_NOT_FOUND"),
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "ROUTINE_ALREADY_EXIST"),
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "BUDGET_NOT_FOUND"),
+            @ApiErrorCodeExample(value = ErrorStatus.class, name = "TOTAL_BUDGET_EXCEEDED"),
+            @ApiErrorCodeExample(value = ErrorStatus.class, name = "TOTAL_BUDGET_TOO_LOW"),
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "_BAD_REQUEST"),
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "_INTERNAL_SERVER_ERROR"),
     })
