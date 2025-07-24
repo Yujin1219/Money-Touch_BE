@@ -24,8 +24,10 @@ import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.server.money_touch.global.apiPayload.code.status.ErrorStatus.*;
 
@@ -55,26 +57,41 @@ public class RoutineCommandServiceImpl implements RoutineCommandService {
             throw new ErrorHandler(ROUTINE_ALREADY_EXIST);
         }
 
-        // 2. 예산 조회 및 예산 총액/루틴 여부 수정
+        // 2. 카테고리 총합 계산
+        int totalCategoryBudget = Optional.ofNullable(request.getBudgetList())
+                .orElse(List.of())
+                .stream()
+                .mapToInt(RoutineRequest.CategoryBudgetDTO::getAmount)
+                .sum();
+
+        // 3. 예산 총액과 일치 여부 확인
+        if (totalCategoryBudget > request.getTotalBudget()) {
+            throw new ErrorHandler(ErrorStatus.TOTAL_BUDGET_EXCEEDED); // 총액 초과
+        }
+        if (totalCategoryBudget < request.getTotalBudget()) {
+            throw new ErrorHandler(ErrorStatus.TOTAL_BUDGET_TOO_LOW); // 총액 미달
+        }
+
+        // 4. 예산 조회 및 예산 총액/루틴 여부 수정
         Budget budget = budgetRepository.findById(budgetId)
                 .orElseThrow(() -> new ErrorHandler(ErrorStatus.BUDGET_NOT_FOUND));
         budget.updateTotalBudget(request.getTotalBudget());
 
-        // 3. 요청된 카테고리 이름 → 금액 맵핑
+        // 5. 요청된 카테고리 이름 → 금액 맵핑
         Map<String, Integer> requestMap = request.getBudgetList().stream()
                 .collect(Collectors.toMap(RoutineRequest.CategoryBudgetDTO::getCategoryName, RoutineRequest.CategoryBudgetDTO::getAmount));
 
-        // 4. 해당 예산에 연결된 예산 카테고리 + 소비 카테고리 조회 (JOIN FETCH 필요)
+        // 6. 해당 예산에 연결된 예산 카테고리 + 소비 카테고리 조회 (JOIN FETCH 필요)
         List<BudgetCategory> budgetCategories = budgetCategoryRepository.findAllByBudgetIdWithCategory(budgetId);
 
-        // 5. categoryName → BudgetCategory 맵핑
+        // 7. categoryName → BudgetCategory 맵핑
         Map<String, BudgetCategory> budgetCategoryMap = budgetCategories.stream()
                 .collect(Collectors.toMap(
                         bc -> bc.getConsumptionCategory().getBudgetCategoryName(),
                         Function.identity()
                 ));
 
-        // 6. 요청 기준으로 비교 후 금액 수정
+        // 8. 요청 기준으로 비교 후 금액 수정
         requestMap.forEach((categoryName, amount) -> {
             BudgetCategory category = budgetCategoryMap.get(categoryName);
             if (category == null) {
@@ -85,11 +102,11 @@ public class RoutineCommandServiceImpl implements RoutineCommandService {
             }
         });
 
-        // 7. 소비 루틴 저장
+        // 9. 소비 루틴 저장
         Routine routine = RoutineConverter.toRoutine(user, budget, request);
         routineRepository.save(routine);
 
-        // 8. 해시태그 저장
+        // 10. 해시태그 저장
         if (request.getHashtags() != null) {
             List<RoutineHashtag> hashtags = request.getHashtags().stream()
                     .map(tag -> RoutineHashtagConverter.toRoutineHashtag(routine, tag))
@@ -97,7 +114,7 @@ public class RoutineCommandServiceImpl implements RoutineCommandService {
             routineHashtagRepository.saveAll(hashtags);
         }
 
-        // 9. 결과 DTO 변환 후 반환
+        // 11. 결과 DTO 변환 후 반환
         Long routineId = routine.getId();
         log.info("소비 루틴 등록 완료 - userId: {}, routineId: {}", userId, routineId);
         return RoutineConverter.toRoutineCreateResultDTO(routineId);
