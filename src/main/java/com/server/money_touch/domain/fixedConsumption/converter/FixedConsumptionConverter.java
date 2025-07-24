@@ -5,6 +5,8 @@ import com.server.money_touch.domain.fixedConsumption.dto.FixedConsumptionRespon
 import com.server.money_touch.domain.fixedConsumption.entity.FixedConsumption;
 import com.server.money_touch.domain.user.entity.User;
 
+import java.util.List;
+
 public class FixedConsumptionConverter {
 
     // 고정비 엔티티 생성
@@ -22,6 +24,33 @@ public class FixedConsumptionConverter {
     public static FixedConsumptionResponse.FixedConsumptionCreateResultDTO toFixedConsumptionCreateResultDTO(Long fixedConsumptionId) {
         return FixedConsumptionResponse.FixedConsumptionCreateResultDTO.builder()
                 .fixedConsumptionId(fixedConsumptionId)
+                .build();
+    }
+
+    // FixedConsumption → FixedConsumptionDetailDTO 변환
+    public static FixedConsumptionResponse.FixedConsumptionDetailDTO toFixedConsumptionDetailDTO(FixedConsumption entity) {
+        return FixedConsumptionResponse.FixedConsumptionDetailDTO.builder()
+                .fixedConsumptionId(entity.getId())
+                .categoryName(entity.getCategoryName())
+                .amount(entity.getFixedConsumptionAmount())
+                .memo(entity.getFixedConsumptionMemo())
+                .build();
+    }
+
+    // FixedConsumptionDetailDTO -> FixedConsumptionCursorResultDTO로 변환
+    public static FixedConsumptionResponse.FixedConsumptionCursorResultDTO toFixedConsumptionCursorResultDTO(
+            List<FixedConsumptionResponse.FixedConsumptionDetailDTO> content,
+            boolean hasNext,
+            Long nextCursorId,
+            boolean isFirst
+    ) {
+        return FixedConsumptionResponse.FixedConsumptionCursorResultDTO.builder()
+                .fixedConsumptions(content)
+                .fixedConsumptionSize(content.size())
+                .isFirst(isFirst)
+                .isLast(!hasNext)
+                .hasNext(hasNext)
+                .nextCursorId(nextCursorId)
                 .build();
     }
 }

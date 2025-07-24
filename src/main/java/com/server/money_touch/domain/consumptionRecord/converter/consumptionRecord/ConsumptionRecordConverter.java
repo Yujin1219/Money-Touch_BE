@@ -40,15 +40,20 @@ public class ConsumptionRecordConverter {
     }
 
     // 일일 소비 기럭 내역 조회 응답
-    public static HouseholdConsumptionResponse.DailyConsumptionDetailDTO toDailyConsumptionDetailDTO(ConsumptionRecord consumptionRecord, ConsumptionCategory consumptionCategory){
+    public static HouseholdConsumptionResponse.DailyConsumptionDetailDTO toDailyConsumptionDetailDTO(
+            ConsumptionRecord record, ConsumptionCategory category) {
+
+        String categoryName = record.getIsFixed() ? "고정비" : category.getBudgetCategoryName();
+
         return HouseholdConsumptionResponse.DailyConsumptionDetailDTO.builder()
-                .categoryName(consumptionCategory.getBudgetCategoryName())
-                .amount(consumptionRecord.getAmount())
-                .content(consumptionRecord.getContent())
-                .memo(consumptionRecord.getMemo())
-                .consumeDate(consumptionRecord.getConsumeDate())
+                .amount(record.getAmount())
+                .content(record.getContent())
+                .memo(record.getMemo())
+                .consumeDate(record.getConsumeDate())
+                .categoryName(categoryName)
                 .build();
     }
+
 
     // 달력 - 특정 날짜의 소비 내역 조회 응답
     public static HouseholdConsumptionResponse.CalendarDailyConsumeDetailDTO toCalendarDailyConsumeDetailDTO(

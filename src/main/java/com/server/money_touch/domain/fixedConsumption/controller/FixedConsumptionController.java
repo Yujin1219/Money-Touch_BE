@@ -3,6 +3,7 @@ package com.server.money_touch.domain.fixedConsumption.controller;
 import com.server.money_touch.domain.fixedConsumption.dto.FixedConsumptionRequest;
 import com.server.money_touch.domain.fixedConsumption.dto.FixedConsumptionResponse;
 import com.server.money_touch.domain.fixedConsumption.service.FixedConsumptionCommandService;
+import com.server.money_touch.domain.fixedConsumption.service.FixedConsumptionQueryService;
 import com.server.money_touch.global.apiPayload.ApiResponse;
 import com.server.money_touch.global.apiPayload.code.status.ErrorStatus;
 import com.server.money_touch.global.validation.annotation.ApiErrorCodeExample;
@@ -27,6 +28,7 @@ import org.springframework.web.bind.annotation.*;
 public class FixedConsumptionController {
 
     private final FixedConsumptionCommandService fixedConsumptionCommandService;
+    private final FixedConsumptionQueryService fixedConsumptionQueryService;
 
     @Operation(
             summary = "고정비 등록 API",
@@ -89,4 +91,24 @@ public class FixedConsumptionController {
         fixedConsumptionCommandService.deleteFixedConsumption(1L, fixedConsumptionId);
         return ApiResponse.onSuccess("고정비 삭제 성공");
     }
+
+    @Operation(
+            summary = "고정비 목록 조회 API",
+            description = "사용자의 고정비 목록을 커서 기반 무한스크롤로 조회하는 API 입니다. 커서를 쿼리 파라미터로 입력해 주세요."
+    )
+    @ApiErrorCodeExamples({
+            @ApiErrorCodeExample(value = ErrorStatus.class, name = "USER_NOT_FOUND"),
+            @ApiErrorCodeExample(value = ErrorStatus.class, name = "_BAD_REQUEST"),
+            @ApiErrorCodeExample(value = ErrorStatus.class, name = "_INTERNAL_SERVER_ERROR"),
+    })
+    @Parameters({
+            @Parameter(name = "cursorId", description = "커서 (이전 요청의 마지막 consumptionRecordId). 첫 요청 시 생략", example = "3", required = false)
+    })
+    @GetMapping("list")
+    public ApiResponse<FixedConsumptionResponse.FixedConsumptionCursorResultDTO> getFixedConsumptions(@RequestParam(required = false) Long cursorId) {
+        // 로그인 전까지 userId 1로 임시 세팅
+        FixedConsumptionResponse.FixedConsumptionCursorResultDTO response = fixedConsumptionQueryService.getFixedConsumptions(1L, cursorId);
+        return ApiResponse.onSuccess(response);
+    }
+
 }

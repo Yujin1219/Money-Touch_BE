@@ -35,7 +35,7 @@ public class ConsumptionRecordQueryServiceImpl implements ConsumptionRecordQuery
     private final ConsumptionRecordRepository consumptionRecordRepository;
     private final UserRepository userRepository;
     private final ConsumptionCategoryRepository consumptionCategoryRepository;
-    private static final Integer PAGE_SIZE = 15;
+    private static final Integer PAGE_SIZE = 10;
 
     // 소비 기록 존재 여부 검증
     @Override

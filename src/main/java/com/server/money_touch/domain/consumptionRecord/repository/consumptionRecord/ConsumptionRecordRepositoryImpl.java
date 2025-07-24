@@ -55,7 +55,9 @@ public class ConsumptionRecordRepositoryImpl implements ConsumptionRecordReposit
                 .select(Projections.fields(
                         DailyConsumptionItemDetailProjection.class,
                         record.id.as("consumptionRecordId"),
-                        category.budgetCategoryName.as("categoryName"),
+                        Expressions.cases()
+                                .when(record.isFixed.isTrue()).then("고정비")
+                                .otherwise(category.budgetCategoryName).as("categoryName"),
                         record.content,
                         record.amount
                 ))
@@ -129,7 +131,9 @@ public class ConsumptionRecordRepositoryImpl implements ConsumptionRecordReposit
                         DailyConsumptionItemProjection.class,
                         record.id.as("consumptionRecordId"),
                         record.consumeDate,
-                        category.budgetCategoryName.as("categoryName"),
+                        Expressions.cases()
+                                .when(record.isFixed.isTrue()).then("고정비")
+                                .otherwise(category.budgetCategoryName).as("categoryName"),
                         record.content,
                         record.amount
                 ))
