@@ -48,4 +48,50 @@ public class FixedConsumptionCommandServiceImpl implements FixedConsumptionComma
         return FixedConsumptionConverter.toFixedConsumptionCreateResultDTO(fixedConsumption.getId());
     }
 
+    // 고정비 수정
+    @Transactional
+    @Override
+    public void updateFixedConsumption(
+            Long userId, Long fixedConsumptionId, FixedConsumptionRequest.FixedConsumptionCreateDTO request) {
+
+        // 카테고리 이름 유효성 검사 - 고정비는 기본 소비 카테고리만 등록 가능
+        if (!DefaultCategoryConstants.DEFAULT_CATEGORY_NAMES.contains(request.getCategoryName())) {
+            throw new ErrorHandler(ErrorStatus.CONSUMPTION_CATEGORY_NAME_NOT_FOUND);
+        }
+
+        // 사용자 조회
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ErrorHandler(ErrorStatus.USER_NOT_FOUND));
+
+        // 기존 고정비 조회 및 사용자 일치 확인
+        FixedConsumption fixedConsumption = fixedConsumptionRepository.findById(fixedConsumptionId)
+                .orElseThrow(() -> new ErrorHandler(ErrorStatus.FIXED_CONSUMPTION_NOT_FOUND));
+
+        // 고정비 정보 수정
+        fixedConsumption.updateInfo(
+                request.getAmount(),
+                request.getContent(),
+                request.getMemo(),
+                request.getCategoryName()
+        );
+
+        log.info("고정비 수정 완료 - userId: {}, fixedConsumptionId: {}", userId, fixedConsumption.getId());
+    }
+
+    // 고정비 삭제
+    @Transactional
+    @Override
+    public void deleteFixedConsumption(Long userId, Long fixedConsumptionId) {
+        // 사용자 존재 확인
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ErrorHandler(ErrorStatus.USER_NOT_FOUND));
+
+        // 고정비 존재 여부 및 사용자 일치 확인
+        FixedConsumption fixedConsumption = fixedConsumptionRepository.findById(fixedConsumptionId)
+                .orElseThrow(() -> new ErrorHandler(ErrorStatus.FIXED_CONSUMPTION_NOT_FOUND));
+
+        fixedConsumptionRepository.delete(fixedConsumption);
+        log.info("고정비 삭제 완료 - userId: {}, fixedConsumptionId: {}", userId, fixedConsumptionId);
+    }
+
 }

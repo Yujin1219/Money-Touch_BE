@@ -64,6 +64,8 @@ public class FixedConsumptionController {
     @PatchMapping("/{fixedConsumptionId}")
     public ApiResponse<String> patchFixedConsumption(@Valid @RequestBody FixedConsumptionRequest.FixedConsumptionCreateDTO request,
                                                @PathVariable Long fixedConsumptionId) {
+        // 로그인 전까지 userId 1로 임시 세팅
+        fixedConsumptionCommandService.updateFixedConsumption(1L, fixedConsumptionId, request);
         return ApiResponse.onSuccess("고정비 수정 성공");
     }
 
@@ -83,6 +85,8 @@ public class FixedConsumptionController {
     })
     @DeleteMapping("/{fixedConsumptionId}")
     public ApiResponse<String> deleteFixedConsumption(@PathVariable Long fixedConsumptionId) {
+        // 로그인 전까지 userId 1로 임시 세팅
+        fixedConsumptionCommandService.deleteFixedConsumption(1L, fixedConsumptionId);
         return ApiResponse.onSuccess("고정비 삭제 성공");
     }
 }

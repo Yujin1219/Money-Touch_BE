@@ -28,8 +28,10 @@ public class FixedConsumption extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-//    // 고정비-카테고리별 예산 다대일
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "budget_category_id")
-//    private BudgetCategory budgetCategory;
+    public void updateInfo(Integer amount, String content, String memo, String categoryName) {
+        this.fixedConsumptionAmount = amount;
+        this.fixedConsumptionContent = content;
+        this.fixedConsumptionMemo = memo;
+        this.categoryName = categoryName;
+    }
 }
