@@ -42,4 +42,25 @@ public class BadgeResponse {
         private String description;
     }
 
+
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Schema(description = "대표 배지 설정 응답")
+    public static class RepresentativeBadgeResultDTO {
+
+        @Schema(description = "설정된 대표 배지 ID", example = "1")
+        private Long badgeId;
+
+        @Schema(description = "배지 이름", example = "절약왕")
+        private String badgeName;
+
+        @Schema(description = "배지 이미지 URL", example = "https://example.com/badge.png")
+        private String badgeImageUrl;
+
+        @Schema(description = "배지 설명", example = "똑똑소비왕 10위권 달성 시")
+        private String badgeDescription;
+
+    }
 }
