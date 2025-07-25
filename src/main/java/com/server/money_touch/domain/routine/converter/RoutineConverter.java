@@ -16,7 +16,6 @@ public class RoutineConverter {
                 .user(user)
                 .budget(budget)
                 .routineName(routineCreateDTO.getRoutineName())
-                .routineContent("") // 루틴 설명은 삭제 됐기 때문에 추후 수정
                 .routineImageUrl(routineCreateDTO.getRoutineImgUrl())
                 .viewCount(0)
                 .build();

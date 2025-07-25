@@ -19,7 +19,7 @@ public class FixedConsumptionRequest {
         @NotNull(message = "고정비 금액은 필수입니다.")
         private Integer amount;
 
-        @Schema(description = "소비 카테고리 이름", example = "배달/외식")
+        @Schema(description = "소비 카테고리 이름", example = "기타")
         @NotNull(message = "소비 카테고리 이름은 필수입니다.")
         private String categoryName;
 

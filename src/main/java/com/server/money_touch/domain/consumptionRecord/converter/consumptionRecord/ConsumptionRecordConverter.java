@@ -6,9 +6,11 @@ import com.server.money_touch.domain.consumptionRecord.dto.HouseholdConsumptionR
 import com.server.money_touch.domain.consumptionRecord.entity.ConsumptionCategory;
 import com.server.money_touch.domain.consumptionRecord.entity.ConsumptionRecord;
 import com.server.money_touch.domain.consumptionRecord.projection.DailyConsumptionItemProjection;
+import com.server.money_touch.domain.fixedConsumption.entity.FixedConsumption;
 import com.server.money_touch.domain.user.entity.User;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class ConsumptionRecordConverter {
@@ -38,15 +40,20 @@ public class ConsumptionRecordConverter {
     }
 
     // 일일 소비 기럭 내역 조회 응답
-    public static HouseholdConsumptionResponse.DailyConsumptionDetailDTO toDailyConsumptionDetailDTO(ConsumptionRecord consumptionRecord, ConsumptionCategory consumptionCategory){
+    public static HouseholdConsumptionResponse.DailyConsumptionDetailDTO toDailyConsumptionDetailDTO(
+            ConsumptionRecord record, ConsumptionCategory category) {
+
+        String categoryName = record.getIsFixed() ? "고정비" : category.getBudgetCategoryName();
+
         return HouseholdConsumptionResponse.DailyConsumptionDetailDTO.builder()
-                .categoryName(consumptionCategory.getBudgetCategoryName())
-                .amount(consumptionRecord.getAmount())
-                .content(consumptionRecord.getContent())
-                .memo(consumptionRecord.getMemo())
-                .consumeDate(consumptionRecord.getConsumeDate())
+                .amount(record.getAmount())
+                .content(record.getContent())
+                .memo(record.getMemo())
+                .consumeDate(record.getConsumeDate())
+                .categoryName(categoryName)
                 .build();
     }
+
 
     // 달력 - 특정 날짜의 소비 내역 조회 응답
     public static HouseholdConsumptionResponse.CalendarDailyConsumeDetailDTO toCalendarDailyConsumeDetailDTO(
@@ -93,6 +100,24 @@ public class ConsumptionRecordConverter {
                 .categoryName(projection.getCategoryName())
                 .content(projection.getContent())
                 .amount(projection.getAmount())
+                .build();
+    }
+
+    // 고정비용 소비 기록 생성
+    public static ConsumptionRecord toConsumptionRecordForFix(User user, ConsumptionCategory consumptionCategory, FixedConsumption fixedConsumption, LocalDateTime startOfMonth){
+        return ConsumptionRecord.builder()
+                .user(user)
+                .consumptionCategory(consumptionCategory)
+                .amount(fixedConsumption.getFixedConsumptionAmount())
+                .content(fixedConsumption.getFixedConsumptionContent())
+                .memo(fixedConsumption.getFixedConsumptionMemo())
+                .consumeDate(startOfMonth)
+                .isPublic(true) // 가계부에만 등록
+                .isFixed(true) // 고정비 여부
+                .commentCount(0)
+                .wiseCount(0)
+                .wasteCount(0)
+                .viewCount(0)
                 .build();
     }
 }

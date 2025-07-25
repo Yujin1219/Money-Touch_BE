@@ -11,7 +11,7 @@ import lombok.*;
 @AllArgsConstructor
 @Entity
 public class BudgetCategory extends BaseEntity {
-    @Column(columnDefinition = "INT DEFAULT 0", nullable = false)
+    @Column(columnDefinition = "INT DEFAULT 0", length = 8, nullable = false)
     private Integer budgetCategoryMoney; // 예산 카테고리 금액
 
     // 카테고리별 예산-예산 다대일
