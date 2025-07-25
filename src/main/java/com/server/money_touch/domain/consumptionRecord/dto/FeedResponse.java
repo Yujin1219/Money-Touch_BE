@@ -39,6 +39,82 @@ public class FeedResponse {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
+    @Schema(description = "최적화된 피드 리스트 (N+1 문제 해결)")
+    public static class OptimizedFeedListResultDTO {
+
+        @Schema(description = "게시글 목록")
+        List<OptimizedFeedItemDTO> feedList;
+
+        @Schema(description = "현재 페이지의 피드 개수", example = "10")
+        Integer feedListSize;
+
+        @Schema(description = "페이지 처음 여부", example = "true")
+        Boolean isFirst;
+
+        @Schema(description = "페이지 마지막 여부", example = "false")
+        Boolean isLast;
+
+        @Schema(description = "다음 페이지가 있는지 여부", example = "true")
+        Boolean hasNext;
+
+        @Schema(description = "다음 커서 ID", example = "123")
+        Long nextCursorId;
+
+        @Schema(description = "다음 커서 생성일시", example = "2024-03-15T14:30:00")
+        LocalDateTime nextCursorCreatedAt;
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Schema(description = "최적화된 피드 아이템 (리액션 정보 포함)")
+    public static class OptimizedFeedItemDTO {
+
+        @Schema(description = "소비 기록 ID", example = "1")
+        private Long consumptionRecordId;
+
+        @Schema(description = "사용자 정보")
+        private UserInfo user;
+
+        @Schema(description = "카테고리 정보")
+        private CategoryInfo consumptionCategory;
+
+        @Schema(description = "소비 금액", example = "12000")
+        private Integer amount;
+
+        @Schema(description = "소비 내용", example = "신라방 마라탕")
+        private String content;
+
+        @Schema(description = "이미지 URL", example = "https://example.com/image.jpg")
+        private String imageUrl;
+
+        @Schema(description = "메모", example = "친구랑 같이 먹었어요!")
+        private String memo;
+
+        @Schema(description = "생성일시", example = "2024-03-15T14:30:00")
+        private LocalDateTime createdAt;
+
+        @Schema(description = "현명해요 수", example = "5")
+        private Integer wiseCount;
+
+        @Schema(description = "낭비에요 수", example = "2")
+        private Integer wasteCount;
+
+        @Schema(description = "댓글 수", example = "3")
+        private Integer commentCount;
+
+        @Schema(description = "조회 수", example = "21")
+        private Integer viewCount;
+
+        @Schema(description = "현재 내가 누른 리액션 타입 (없으면 null)", example = "WISE")
+        private String myReaction;
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
     @Schema(description = "피드 상세 정보")
     public static class FeedDetailResultDTO {
 

@@ -21,4 +21,7 @@ public interface ConsumptionRecordRepositoryCustom {
 
     // 특정 소비 기록 ID에 대한 consumeDate를 조회
     LocalDateTime findConsumeDateById(Long recordId);
+    
+    // 공개된 피드 리스트를 커서 기반 무한스크롤로 조회 (N+1 문제 방지를 위한 최적화)
+    List<DailyConsumptionItemProjection> findPublicFeedList(Long cursorId, LocalDateTime cursorCreatedAt, int pageSize);
 }

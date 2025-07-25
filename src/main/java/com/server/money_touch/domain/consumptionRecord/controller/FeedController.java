@@ -2,6 +2,7 @@ package com.server.money_touch.domain.consumptionRecord.controller;
 
 import com.server.money_touch.domain.consumptionRecord.dto.FeedRequest;
 import com.server.money_touch.domain.consumptionRecord.dto.FeedResponse;
+import com.server.money_touch.domain.consumptionRecord.service.feed.FeedService;
 import com.server.money_touch.domain.consumptionRecord.service.reaction.ReactionService;
 import com.server.money_touch.global.apiPayload.ApiResponse;
 import com.server.money_touch.global.apiPayload.code.status.ErrorStatus;
@@ -26,8 +27,9 @@ import org.springframework.web.bind.annotation.*;
 public class FeedController {
 
     private final ReactionService reactionService;
+    private final FeedService feedService;
 
-    // 피드 홈 (피드 리스트) 조회
+    // 피드 홈 (피드 리스트) 조회 - 기존 API (호환성 유지)
     @Operation(
             summary = "피드 홈(피드 리스트) API",
             description = "공개된 소비 기록 피드를 조회하는 API입니다"
@@ -41,6 +43,42 @@ public class FeedController {
     @GetMapping("/home")
     public ApiResponse<FeedResponse.FeedListResultDTO> getFeedList() {
         FeedResponse.FeedListResultDTO response = FeedResponse.FeedListResultDTO.builder().build();
+        return ApiResponse.onSuccess(response);
+    }
+
+    // 최적화된 피드 홈 (피드 리스트) 조회 - N+1 문제 해결
+    @Operation(
+            summary = "최적화된 피드 홈(피드 리스트) API",
+            description = "공개된 소비 기록 피드를 커서 기반 무한스크롤로 조회하는 최적화된 API입니다. N+1 문제가 해결되어 성능이 향상되었습니다."
+    )
+//    @ApiSuccessCodeExample(resultClass = FeedResponse.OptimizedFeedListResultDTO.class)
+    @ApiErrorCodeExamples({
+            @ApiErrorCodeExample(value = ErrorStatus.class, name = "_BAD_REQUEST"),
+            @ApiErrorCodeExample(value = ErrorStatus.class, name = "_INTERNAL_SERVER_ERROR"),
+    })
+    @Parameters({
+            @Parameter(name = "cursorId", description = "커서 ID (첫 페이지는 null)", example = "123"),
+            @Parameter(name = "cursorCreatedAt", description = "커서 생성일시 (첫 페이지는 null)", example = "2024-03-15T14:30:00"),
+            @Parameter(name = "pageSize", description = "페이지 크기", example = "20")
+    })
+    @GetMapping("/home/optimized")
+    public ApiResponse<FeedResponse.OptimizedFeedListResultDTO> getOptimizedFeedList(
+//            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @RequestParam(required = false) Long cursorId,
+            @RequestParam(required = false) String cursorCreatedAt,
+            @RequestParam(defaultValue = "20") int pageSize
+    ) {
+        // TODO: 실제 인증 구현 시 userPrincipal에서 userId 추출
+        Long userId = 1L; // 임시 사용자 ID (null 가능)
+        
+        // String을 LocalDateTime으로 변환
+        java.time.LocalDateTime cursorDateTime = null;
+        if (cursorCreatedAt != null && !cursorCreatedAt.isEmpty()) {
+            cursorDateTime = java.time.LocalDateTime.parse(cursorCreatedAt);
+        }
+        
+        FeedResponse.OptimizedFeedListResultDTO response = feedService.getPublicFeedList(
+                userId, cursorId, cursorDateTime, pageSize);
         return ApiResponse.onSuccess(response);
     }
 

@@ -147,4 +147,37 @@ public class ConsumptionRecordRepositoryImpl implements ConsumptionRecordReposit
                 .where(record.id.eq(recordId))
                 .fetchOne();
     }
+
+    // 공개된 피드 리스트를 커서 기반 무한스크롤로 조회 (N+1 문제 방지를 위한 최적화)
+    @Override
+    public List<DailyConsumptionItemProjection> findPublicFeedList(Long cursorId, LocalDateTime cursorCreatedAt, int pageSize) {
+        // 기본 조건: 공개된 피드만 조회
+        BooleanExpression baseCondition = record.isPublic.isTrue();
+
+        // 커서 기반 페이징 조건:
+        // - createdAt이 기준 createdAt보다 이전이거나
+        // - createdAt이 같으면 ID가 작은 데이터만 조회
+        BooleanExpression cursorPredicate = null;
+        if (cursorId != null && cursorCreatedAt != null) {
+            cursorPredicate = record.createdAt.lt(cursorCreatedAt)
+                    .or(record.createdAt.eq(cursorCreatedAt).and(record.id.lt(cursorId)));
+        }
+
+        // 최종 QueryDSL 쿼리 실행
+        return queryFactory
+                .select(Projections.fields(
+                        DailyConsumptionItemProjection.class,
+                        record.id.as("consumptionRecordId"),
+                        record.createdAt.as("consumeDate"), // 피드에서는 생성일시를 사용
+                        category.budgetCategoryName.as("categoryName"),
+                        record.content,
+                        record.amount
+                ))
+                .from(record)
+                .join(record.consumptionCategory, category)
+                .where(baseCondition.and(cursorPredicate)) // 기본 조건 + 커서 조건
+                .orderBy(record.createdAt.desc(), record.id.desc()) // 최신순 정렬
+                .limit(pageSize + 1) // 다음 페이지 존재 여부 판단을 위한 +1
+                .fetch();
+    }
 }
