@@ -2,6 +2,7 @@ package com.server.money_touch.domain.consumptionRecord.controller;
 
 import com.server.money_touch.domain.consumptionRecord.dto.FeedRequest;
 import com.server.money_touch.domain.consumptionRecord.dto.FeedResponse;
+import com.server.money_touch.domain.consumptionRecord.service.reaction.ReactionService;
 import com.server.money_touch.global.apiPayload.ApiResponse;
 import com.server.money_touch.global.apiPayload.code.status.ErrorStatus;
 import com.server.money_touch.global.validation.annotation.ApiErrorCodeExample;
@@ -23,6 +24,8 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/feed")
 public class FeedController {
+
+    private final ReactionService reactionService;
 
     // 피드 홈 (피드 리스트) 조회
     @Operation(
@@ -129,7 +132,36 @@ public class FeedController {
             @PathVariable Long consumptionRecordId,
             @RequestBody @Valid FeedRequest.ReactionCreateDTO request
     ) {
-        FeedResponse.ReactionResultDTO response = FeedResponse.ReactionResultDTO.builder().build();
+        // TODO: 실제 인증 구현 시 userPrincipal에서 userId 추출
+        Long userId = 1L; // 임시 사용자 ID
+        
+        FeedResponse.ReactionResultDTO response = reactionService.addOrUpdateReaction(userId, consumptionRecordId, request);
+        return ApiResponse.onSuccess(response);
+    }
+
+    // 리액션 통계 조회
+    @Operation(
+            summary = "피드 리액션 통계 조회 API",
+            description = "특정 피드의 리액션 통계(현명해요/낭비에요 개수, 내 리액션)를 조회하는 API입니다."
+    )
+//    @ApiSuccessCodeExample(resultClass = FeedResponse.ReactionResultDTO.class)
+    @ApiErrorCodeExamples({
+            @ApiErrorCodeExample(value = ErrorStatus.class, name = "CONSUMPTION_RECORD_NOT_FOUND"),
+            @ApiErrorCodeExample(value = ErrorStatus.class, name = "_BAD_REQUEST"),
+            @ApiErrorCodeExample(value = ErrorStatus.class, name = "_INTERNAL_SERVER_ERROR")
+    })
+    @Parameters({
+            @Parameter(name = "consumptionRecordId", description = "소비 기록 ID", example = "1", required = true)
+    })
+    @GetMapping("/{consumptionRecordId}/reaction")
+    public ApiResponse<FeedResponse.ReactionResultDTO> getReactionStats(
+//            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            @PathVariable Long consumptionRecordId
+    ) {
+        // TODO: 실제 인증 구현 시 userPrincipal에서 userId 추출
+        Long userId = 1L; // 임시 사용자 ID
+        
+        FeedResponse.ReactionResultDTO response = reactionService.getReactionStats(consumptionRecordId, userId);
         return ApiResponse.onSuccess(response);
     }
 

@@ -4,6 +4,7 @@ import com.server.money_touch.domain.consumptionRecord.enums.ReactionType;
 import com.server.money_touch.domain.user.entity.User;
 import com.server.money_touch.global.apiPayload.code.BaseEntity;
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -29,5 +30,16 @@ public class Reaction extends BaseEntity {
     @Column(nullable = false)
     private ReactionType type;
 
+    @Builder
+    public Reaction(User user, ConsumptionRecord consumptionRecord, ReactionType type) {
+        this.user = user;
+        this.consumptionRecord = consumptionRecord;
+        this.type = type;
+    }
+
+    // 리액션 타입 변경
+    public void updateType(ReactionType type) {
+        this.type = type;
+    }
 }
 
