@@ -2,16 +2,14 @@ package com.server.money_touch.domain.user.entity;
 
 import com.server.money_touch.domain.user.enums.Gender;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@Builder
 public class UserDetail {
 
     @Id
