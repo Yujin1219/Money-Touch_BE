@@ -1,9 +1,7 @@
 package com.server.money_touch.global.validation.validator;
 
-import com.server.money_touch.domain.budget.service.budget.BudgetQueryService;
 import com.server.money_touch.domain.consumptionRecord.service.ConsumptionRecordQueryService;
 import com.server.money_touch.global.apiPayload.code.status.ErrorStatus;
-import com.server.money_touch.global.validation.annotation.ExistBudget;
 import com.server.money_touch.global.validation.annotation.ExistConsumptionRecord;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
@@ -28,7 +26,7 @@ public class ConsumptionRecordExistValidator implements ConstraintValidator<Exis
     public boolean isValid(Long value, ConstraintValidatorContext context) {
         // 파라미터로 넘어온 소비 기록 아이디가 존재하는 아이디인지 검증
         boolean isValid = consumptionRecordQueryService.existsConsumptionRecordById(value);
-        log.info("ExistConsumptionRecord userId: {}, isValid: {}", value, isValid);
+        log.info("ExistConsumptionRecord consumptionRecordId: {}, isValid: {}", value, isValid);
 
         if(!isValid){
             context.disableDefaultConstraintViolation();

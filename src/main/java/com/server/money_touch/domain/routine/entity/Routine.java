@@ -15,9 +15,6 @@ public class Routine extends BaseEntity {
     @Column(length = 20, nullable = false)
     private String routineName;
 
-    @Column(length = 1000, nullable = false)
-    private String routineContent;
-
     @Column(nullable = false)
     private String routineImageUrl;
 

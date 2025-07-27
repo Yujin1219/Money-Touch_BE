@@ -18,7 +18,7 @@ public class HomeResponse {
         @Schema(description = "카테고리 이름", example = "배달/외식")
         private String categoryName;
 
-        @Schema(description = "소비 비율(소수점 1자리까지. 합계 100%)", example = "35")
+        @Schema(description = "소비 비율(소수점 1자리까지. 합계 100%)", example = "35.0")
         private double percentage;
     }
 
@@ -32,6 +32,9 @@ public class HomeResponse {
 
         @Schema(description = "그 외 카테고리 존재 여부", example = "true")
         private boolean hasOthers;
+
+        @Schema(description = "기타 카테고리 퍼센트 총합", example = "7.0")
+        private double othersPercent;
 
         @Schema(description = "이번 달 최다 소비 항목", example = "배달/외식")
         private String mostSpentCategoryName;

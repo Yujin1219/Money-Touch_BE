@@ -195,7 +195,7 @@ public class SwaggerConfig {
                     field.set(instance, parsed);
                     log.info(parsed.toString());
                 } catch (DateTimeParseException e) {
-                    log.warn("LocalDateTime 파싱 실패: {}, 기본값 null 처리", exampleValue);
+//                    log.warn("LocalDateTime 파싱 실패: {}, 기본값 null 처리", exampleValue);
                     field.set(instance, null);
                 }
             } else if (List.class.isAssignableFrom(fieldType)) {

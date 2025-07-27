@@ -34,7 +34,7 @@ public class BudgetController {
     @Operation(
             summary = "월간 예산 등록 또는 수정 API",
             description = "총 예산과 기본, 사용자 정의, 소비 루틴 카테고리별 예산 목록을 RequestBody로 입력받아 해당 월의 예산을 등록하거나 수정합니다. " +
-                    "이미 등록된 예산이 있는 경우에는 수정됩니다."
+                    "이미 등록된 예산이 있는 경우에는 수정됩니다. 등록하거나 수정할 내 카테고리나 소비 루틴 카테고리가 없다면 해당 리스트는 요청에서 생략하셔도 됩니다."
     )
     @ApiSuccessCodeExample(resultClass = BudgetResponse.BudgetCreateResultDTO.class)
     @ApiErrorCodeExamples({
@@ -97,6 +97,4 @@ public class BudgetController {
         BudgetResponse.TotalConsumptionResultDTO response = budgetQueryService.findBudgetByIdAndTotalConsumption(1L, year, month);
         return ApiResponse.onSuccess(response);
     }
-
-    //
 }

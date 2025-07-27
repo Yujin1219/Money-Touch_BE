@@ -28,7 +28,7 @@ public class BudgetExistValidator implements ConstraintValidator<ExistBudget,Lon
     public boolean isValid(Long value, ConstraintValidatorContext context) {
         // 파라미터로 넘어온 예산 아이디가 존재하는 아이디인지 검증
         boolean isValid = budgetQueryService.existsBudgetById(value);
-        log.info("ExistBudget userId: {}, isValid: {}", value, isValid);
+        log.info("ExistBudget budgetId: {}, isValid: {}", value, isValid);
 
         if(!isValid){
             context.disableDefaultConstraintViolation();

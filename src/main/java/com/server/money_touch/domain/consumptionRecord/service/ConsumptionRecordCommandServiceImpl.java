@@ -64,7 +64,7 @@ public class ConsumptionRecordCommandServiceImpl implements ConsumptionRecordCom
         totalConsumption.updateAddTotalConsumptionAmount(request.getAmount());
 
         Long consumptionRecordId = dailyConsumptionRecord.getId();
-        log.info("일일 소비 기록 등록 완료, consumptionRecordId: {}", consumptionRecordId);
+        log.info("일일 소비 기록 등록 완료: userId: {}, consumptionRecordId: {}", userId, consumptionRecordId);
         return ConsumptionRecordConverter.toConsumptionRecordCreateResultDTO(consumptionRecordId);
     }
 
@@ -99,7 +99,7 @@ public class ConsumptionRecordCommandServiceImpl implements ConsumptionRecordCom
         // 5. 일일 소비 기록 수정
         consumptionRecord.updateDailyConsumptionRecord(consumptionCategory, request.getAmount(), request.getContent(),request.getMemo(), request.getConsumeDate());
 
-        log.info("일일 소비 기록 수정 완료, consumptionRecordId: {}", consumptionRecordId);
+        log.info("일일 소비 기록 수정 완료 - userId: {}, consumptionRecordId: {}", userId, consumptionRecordId);
     }
 
     // 일일 소비 기록 삭제
@@ -129,7 +129,7 @@ public class ConsumptionRecordCommandServiceImpl implements ConsumptionRecordCom
         // 6. 소비 기록 삭제
         consumptionRecordRepository.delete(consumptionRecord);
 
-        log.info("일일 소비 기록 삭제 완료, consumptionRecordId: {}", consumptionRecordId);
+        log.info("일일 소비 기록 삭제 완료 - userId: {}, consumptionRecordId: {}", userId, consumptionRecordId);
     }
 
 }

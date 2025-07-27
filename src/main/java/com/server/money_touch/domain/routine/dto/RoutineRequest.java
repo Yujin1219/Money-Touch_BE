@@ -14,7 +14,43 @@ public class RoutineRequest {
     @Getter
     @Setter
     @NoArgsConstructor
-    @Schema(description = "소비 루틴 등록 요청 정보")
+    @Schema(description = "소비 루틴 등록 요청 정보", example = """
+{
+  "totalBudget": 500000,
+  "routineName": "5만원으로 한 달 살기 루틴",
+  "routineImgUrl": "https://",
+  "hashtags": [
+    "#식비절약",
+    "#생활비"
+  ],
+  "budgetList": [
+    {
+      "categoryName": "배달/외식",
+      "amount": 150000
+    },
+    {
+      "categoryName": "패션/쇼핑",
+      "amount": 100000
+    },
+    {
+      "categoryName": "교통",
+      "amount": 100000
+    },
+    {
+      "categoryName": "카페",
+      "amount": 0
+    },
+    {
+      "categoryName": "기타",
+      "amount": 0
+    },
+    {
+      "categoryName": "교육비",
+      "amount": 150000
+    }
+  ]
+}
+""")
     public static class RoutineCreateDTO {
 
         @Schema(description = "한 달 전체 예산", example = "500000")
@@ -35,7 +71,7 @@ public class RoutineRequest {
         @Schema(description = "카테고리별 예산 목록")
         @NotNull(message = "카테고리별 예산 목록은 비어 있을 수 없습니다.")
         @Valid
-        private List<CategoryBudgetDTO> categoryBudgeList;
+        private List<CategoryBudgetDTO> budgetList;
     }
 
     @Getter

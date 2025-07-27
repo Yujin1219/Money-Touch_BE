@@ -8,6 +8,8 @@ import org.hibernate.annotations.ColumnDefault;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Builder
@@ -33,7 +35,8 @@ public class ConsumptionRecord extends BaseEntity {
 
     private boolean isPublic = true;
 
-    private String imageUrl;
+    @OneToMany(mappedBy = "consumptionRecord", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ConsumptionRecordImage> images = new ArrayList<>();
 
     @Column(length = 1000)
     private String memo;
@@ -50,7 +53,11 @@ public class ConsumptionRecord extends BaseEntity {
     @ColumnDefault("0")
     private Integer viewCount = 0;
 
-    private LocalDateTime consumeDate; // 일일 소비 기록 날짜
+    private LocalDateTime consumeDate; // 소비 기록 날짜
+
+    @Column(columnDefinition = "TINYINT(1) DEFAULT 0", nullable = false)
+    @Builder.Default
+    private Boolean isFixed = false; // 고정비 여부
 
     // 일일 소비 기록 수정
     public void updateDailyConsumptionRecord(ConsumptionCategory category, int amount, String content, String memo, LocalDateTime consumeDate) {

@@ -1,16 +1,19 @@
 package com.server.money_touch.domain.routine.controller;
 
+import com.server.money_touch.domain.routine.converter.RoutineConverter;
 import com.server.money_touch.domain.routine.dto.RoutineRequest;
 import com.server.money_touch.domain.routine.dto.RoutineResponse;
+import com.server.money_touch.domain.routine.service.RoutineCommandService;
+import com.server.money_touch.domain.routine.service.RoutineQueryService;
 import com.server.money_touch.global.apiPayload.ApiResponse;
 import com.server.money_touch.global.apiPayload.code.status.ErrorStatus;
+import com.server.money_touch.global.s3.S3Manager;
 import com.server.money_touch.global.validation.annotation.ApiErrorCodeExample;
 import com.server.money_touch.global.validation.annotation.ApiErrorCodeExamples;
 import com.server.money_touch.global.validation.annotation.ApiSuccessCodeExample;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -30,18 +33,22 @@ import java.util.List;
 @RequestMapping("/api/house-holds/routines")
 public class RoutineController {
 
+    private final RoutineCommandService routineCommandService;
+    private final RoutineQueryService routineQueryService;
+    private final S3Manager s3Manager;
+
     // 소비 루틴 등록
     @Operation(
             summary = "소비 루틴 등록 API",
-            description = "소비 루틴을 등록하는 API입니다. 예산 아이디는 Path Variable로 전달하며, 카테고리, 금액, 설명 등의 소비 루틴 정보는 RequestBody에 포함해 주세요."
+            description = "해당 API는 소비 루틴을 등록하는 기능을 제공합니다. 예산 ID는 Path Variable로 전달하며, 카테고리, 금액, 설명 등의 루틴 정보는 RequestBody로 전달합니다. " +
+                    "먼저 '한 달 예산 내역 조회 API'를 통해 본인의 예산 목록을 확인한 후, 해당 예산에 포함된 모든 소비 카테고리를 기준으로 요청 데이터를 구성해 주세요. " +
+                    "카테고리별 예산 금액이 기존과 다를 경우, 수정된 금액으로 요청하시면 해당 금액이 반영됩니다."
     )
     @ApiSuccessCodeExample(resultClass = RoutineResponse.RoutineCreateResultDTO.class)
     @ApiErrorCodeExamples({
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "USER_NOT_FOUND"),
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "ROUTINE_ALREADY_EXIST"),
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "BUDGET_NOT_FOUND"),
-            @ApiErrorCodeExample(value = ErrorStatus.class, name = "TOTAL_BUDGET_EXCEEDED"),
-            @ApiErrorCodeExample(value = ErrorStatus.class, name = "TOTAL_BUDGET_TOO_LOW"),
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "_BAD_REQUEST"),
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "_INTERNAL_SERVER_ERROR"),
     })
@@ -51,13 +58,14 @@ public class RoutineController {
     @PostMapping("/{budgetId}")
     public ApiResponse<RoutineResponse.RoutineCreateResultDTO> postRoutine(@Valid @RequestBody RoutineRequest.RoutineCreateDTO request,
                                                                            @PathVariable Long budgetId) {
-        RoutineResponse.RoutineCreateResultDTO response = RoutineResponse.RoutineCreateResultDTO.builder().build();
+        // 로그인 전까지 userId 1로 임시 세팅
+        RoutineResponse.RoutineCreateResultDTO response = routineCommandService.saveRoutineWithRoutineHashtags(1L, budgetId, request);
         return ApiResponse.onSuccess(response);
     }
 
     // 내 소비 루틴 목록 조회
     @Operation(
-            summary = "내 소비 루틴 목록 조회 API",
+            summary = "내 소비 루틴 목록 조회 API (커서 기반 무한스크롤)",
             description = "가계부에서 사용자가 등록한 소비 루틴 목록을 스크롤 형식으로 조회하는 API입니다."
     )
     @ApiErrorCodeExamples({
@@ -68,7 +76,8 @@ public class RoutineController {
     @Parameter(name = "cursorId", description = "커서(이전 요청에서 마지막 소비 루틴 아이디), 첫번째 요청일 시에는 파라미터에 포함하지 않아도 됩니다.", example = "10", required = false)
     @GetMapping("/users")
     public ApiResponse<RoutineResponse.MyRoutineListDTO> getMyRoutines(@RequestParam(required = false) Long cursorId) {
-        RoutineResponse.MyRoutineListDTO response = RoutineResponse.MyRoutineListDTO.builder().build();
+        // 로그인 전까지 userId 1로 임시 세팅
+        RoutineResponse.MyRoutineListDTO response = routineQueryService.getMyRoutineList(1L, cursorId);
         return ApiResponse.onSuccess(response);
     }
 
@@ -119,14 +128,15 @@ public class RoutineController {
     })
     @GetMapping("/users/{routineId}")
     public ApiResponse<RoutineResponse.RoutineDetailDTO> getMyDetailRoutine(@PathVariable Long routineId) {
-        RoutineResponse.RoutineDetailDTO response = RoutineResponse.RoutineDetailDTO.builder().build();
+        // 로그인 전까지 userId 1로 임시 세팅
+        RoutineResponse.RoutineDetailDTO response = routineQueryService.getUserRoutineDetail(1L, routineId);
         return ApiResponse.onSuccess(response);
     }
 
     // 소비 루틴 이미지 등록
     @Operation(
             summary = "소비 루틴 이미지 등록 API",
-            description = "가계부에서 소비 루틴 이미지를 등록하는 API입니다. 이미지 파일과 소비 루틴 아이디를 입력해 주세요."
+            description = "가계부에서 소비 루틴 이미지를 등록하는 API입니다. 이미지 파일을 MultipartFile 형태로 요청에 넘겨주세요."
     )
     @ApiErrorCodeExamples({
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "USER_NOT_FOUND"),
@@ -135,13 +145,14 @@ public class RoutineController {
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "_BAD_REQUEST"),
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "_INTERNAL_SERVER_ERROR"),
     })
-    @Parameters({
-            @Parameter(name = "routineId", description = "이미지를 등록하려는 소비 루틴 아이디", example = "1", required = true),
-    })
-    @PostMapping(value = "/users/{routineId}/img", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    public ApiResponse<RoutineResponse.RoutineImageUrlDTO> setRoutineImage(@RequestPart("file") MultipartFile multipartFile, @PathVariable("routineId") Long routineId) {
-        RoutineResponse.RoutineImageUrlDTO response = RoutineResponse.RoutineImageUrlDTO.builder().build();
-        return ApiResponse.onSuccess(response);
+    @PostMapping(value = "/img", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    public ApiResponse<RoutineResponse.RoutineImageUrlDTO> setRoutineImage(@RequestPart("file") MultipartFile multipartFile) {
+        try {
+            String url = s3Manager.upload(multipartFile, "routine");
+            return ApiResponse.onSuccess(RoutineConverter.toRoutineImageUrlDTO(url));
+        } catch (Exception e) {
+            return ApiResponse.onFailure("S3_UPLOAD_FAIL", e.getMessage(), null);
+        }
     }
 
     @Operation(

@@ -6,6 +6,7 @@ import com.server.money_touch.domain.consumptionRecord.dto.ConsumptionRecordResp
 import com.server.money_touch.domain.consumptionRecord.service.ConsumptionRecordService;
 import com.server.money_touch.global.apiPayload.ApiResponse;
 import com.server.money_touch.global.apiPayload.code.status.ErrorStatus;
+import com.server.money_touch.global.s3.S3Manager;
 import com.server.money_touch.global.validation.annotation.ApiErrorCodeExample;
 import com.server.money_touch.global.validation.annotation.ApiErrorCodeExamples;
 import com.server.money_touch.global.validation.annotation.ApiSuccessCodeExample;
@@ -14,8 +15,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -28,11 +31,13 @@ import java.util.List;
 public class ConsumptionRecordController {
 
     private final ConsumptionRecordService consumptionRecordService;
+    private final S3Manager s3Manager;
 
     // 소비 기록 등록
     @Operation(
             summary = "소비 기록 등록 API",
-            description = "소비 기록 등록 API 입니다."
+            description = "소비 기록 등록 API 입니다. 스웨거에서는 data 와 file을 같이 업로드하면 오류가 발생하기 때문에 포스트맨으로 테스트해주세요. 실제로는 정상동작합니다."+
+                    "포스트맨 테스트 방법은 노션 문서-> be 페이지에 작성해놓겠습니다."
     )
     @ApiSuccessCodeExample(resultClass = ConsumptionRecordResponse.ConsumptionRecordCreateResultDTO.class)
     @ApiErrorCodeExamples({
@@ -41,15 +46,31 @@ public class ConsumptionRecordController {
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "_INTERNAL_SERVER_ERROR"),
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "CONSUMPTION_CATEGORY_NOT_FOUND"),
     })
-    @PostMapping("/record")
+    @PostMapping(value = "/record", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<ConsumptionRecordResponse.ConsumptionRecordCreateResultDTO> postConsumptionRecord(
-            @Valid @RequestBody ConsumptionRecordRequest.ConsumptionRecordCreateDTO request){
+            @RequestPart("data") @Valid ConsumptionRecordRequest.ConsumptionRecordCreateDTO request,
+            @RequestPart(value = "file", required = false) MultipartFile file){
 
-        // 유저 아이디 임시 지정
-        ConsumptionRecordResponse.ConsumptionRecordCreateResultDTO response = consumptionRecordService.createConsumptionRecord(1L, request);
+        try{
+            // 이미지 업로드 처리 (dirName = "record")
+            String imageUrl = null;
+            if (file != null && !file.isEmpty()) {
+                imageUrl = s3Manager.upload(file, "record");
+            }
 
-        return ApiResponse.onSuccess(response);
+            // 소비기록 저장 (이미지 URL 포함)
+            ConsumptionRecordResponse.ConsumptionRecordCreateResultDTO response =
+                    consumptionRecordService.createConsumptionRecord(1L, request, imageUrl);
+
+            return ApiResponse.onSuccess(response);
+
+        }catch (Exception e){
+            log.error("소비 기록 등록 실패", e);
+            return ApiResponse.onFailure("S3_UPLOAD_FAIL", e.getMessage(), null);
+        }
+
     }
+
 
     // 소비 카테고리 목록 조회 API
     @Operation(summary = "소비 카테고리 목록 조회", description = "기본 + 커스텀 + 루틴 카테고리를 순서대로 반환합니다.")

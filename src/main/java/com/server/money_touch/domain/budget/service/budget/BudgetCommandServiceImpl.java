@@ -99,7 +99,7 @@ public class BudgetCommandServiceImpl implements BudgetCommandService {
             updateCategoryBudgetsByType(request.getCustomCategoryBudgets(), user, budget, CategoryType.CUSTOM, existingMapByType.getOrDefault(CategoryType.CUSTOM, Map.of()));
             updateCategoryBudgetsByType(request.getRoutineCategoryBudgets(), user, budget, CategoryType.ROUTINE_CATEGORY, existingMapByType.getOrDefault(CategoryType.ROUTINE_CATEGORY, Map.of()));
 
-            log.info("예산 수정 완료, budgetId: {}", budget.getId());
+            log.info("예산 수정 완료 - userId: {}, budgetId: {}", userId, budget.getId());
         } else {
             // 5-B. 예산 없음: 새로 등록
             budget = BudgetConverter.toBudgetEntity(user, request.getTotalBudget());
@@ -109,7 +109,7 @@ public class BudgetCommandServiceImpl implements BudgetCommandService {
             saveCategoryBudgetsByType(request.getCustomCategoryBudgets(), user, budget, CategoryType.CUSTOM);
             saveCategoryBudgetsByType(request.getRoutineCategoryBudgets(), user, budget, CategoryType.ROUTINE_CATEGORY);
 
-            log.info("예산 등록 완료, budgetId: {}", budget.getId());
+            log.info("예산 등록 완료 - userId: {}, budgetId: {}", user.getId(), budget.getId());
         }
 
         return BudgetConverter.toBudgetCreateResultDto(budget.getId());
@@ -198,10 +198,10 @@ public class BudgetCommandServiceImpl implements BudgetCommandService {
                                            Budget budget,
                                            CategoryType type,
                                            Map<String, BudgetCategory> existingMap) {
-        if (requestList == null) return;
 
         // 1. 요청된 DTO에서 카테고리 이름과 금액을 추출하여 Map 생성
-        Map<String, Integer> nameToAmount = requestList.stream()
+        // null 또는 비어있을 경우 삭제만 처리되도록 빈 맵으로 처리
+        Map<String, Integer> nameToAmount = Optional.ofNullable(requestList).orElse(List.of()).stream()
                 .map(dto -> {
                     if (dto instanceof BudgetRequest.DefaultCategoryBudget def)
                         return Map.entry(def.getCategoryName(), def.getAmount());
@@ -246,7 +246,7 @@ public class BudgetCommandServiceImpl implements BudgetCommandService {
                     BudgetCategory existing = existingMap.get(name);
                     if (existing != null) {
                         existing.updateAmount(amount);
-                        return null;
+                        return null; // 업데이트만, 새로 저장할 건 아님
                     }
 
                     // 없으면 ConsumptionCategory를 찾거나 생성하고 BudgetCategory 생성
@@ -263,6 +263,47 @@ public class BudgetCommandServiceImpl implements BudgetCommandService {
         // 2. 새로 생성된 BudgetCategory 저장
         if (!toSave.isEmpty()) {
             budgetCategoryRepository.saveAll(toSave);
+        }
+
+        // 3. 삭제 대상 처리 (요청에 포함되지 않은 기존 BudgetCategory 삭제)
+        // 요청된 nameToAmount에 없는 기존 항목은 삭제 대상이 됨
+        // 단, DEFAULT 타입은 삭제 금지
+        if (type != CategoryType.DEFAULT) { // 기본 카테고리는 삭제 금지
+
+            Set<String> requestedNames = (nameToAmount != null) ? nameToAmount.keySet() : Set.of();
+
+            List<BudgetCategory> toDelete = existingMap.entrySet().stream()
+                    .filter(entry -> !requestedNames.contains(entry.getKey()))
+                    .map(Map.Entry::getValue)
+                    .toList();
+
+            if (!toDelete.isEmpty()) {
+                log.info("[카테고리 삭제] 예산 ID={}, 타입={}, 삭제 대상(BudgetCategory)={}",
+                        budget.getId(), type.name(),
+                        toDelete.stream().map(BudgetCategory::getId).toList());
+
+                // 먼저 BudgetCategory 삭제
+                budgetCategoryRepository.deleteAllInBatch(toDelete);
+
+                // BudgetCategory 삭제 후 연결된 ConsumptionCategory도 고아이면 삭제
+                List<Long> categoryIds = toDelete.stream()
+                        .map(bc -> bc.getConsumptionCategory().getId())
+                        .distinct()
+                        .toList();
+
+                // 고아 상태인지 확인 후 삭제
+                List<ConsumptionCategory> consumptionToDelete = consumptionCategoryRepository
+                        .findAllById(categoryIds)
+                        .stream()
+                        .filter(cat -> budgetCategoryRepository.countByConsumptionCategory(cat) == 0)
+                        .toList();
+
+                if (!consumptionToDelete.isEmpty()) {
+                    log.info("[카테고리 삭제] 삭제 대상(ConsumptionCategory)={}",
+                            consumptionToDelete.stream().map(ConsumptionCategory::getId).toList());
+                    consumptionCategoryRepository.deleteAllInBatch(consumptionToDelete);
+                }
+            }
         }
     }
 

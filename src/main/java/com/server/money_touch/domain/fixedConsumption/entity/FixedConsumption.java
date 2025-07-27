@@ -1,6 +1,5 @@
 package com.server.money_touch.domain.fixedConsumption.entity;
 
-import com.server.money_touch.domain.budget.entity.BudgetCategory;
 import com.server.money_touch.domain.user.entity.User;
 import com.server.money_touch.global.apiPayload.code.BaseEntity;
 import jakarta.persistence.*;
@@ -21,13 +20,18 @@ public class FixedConsumption extends BaseEntity {
     @Column(nullable = false, length = 1000)
     private String fixedConsumptionMemo;
 
+    @Column(nullable = false, length = 20)
+    private String categoryName;
+
     // 고정비-유저 다대일 연관관계
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    // 고정비-카테고리별 예산 다대일
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "budget_category_id")
-    private BudgetCategory budgetCategory;
+    public void updateInfo(Integer amount, String content, String memo, String categoryName) {
+        this.fixedConsumptionAmount = amount;
+        this.fixedConsumptionContent = content;
+        this.fixedConsumptionMemo = memo;
+        this.categoryName = categoryName;
+    }
 }

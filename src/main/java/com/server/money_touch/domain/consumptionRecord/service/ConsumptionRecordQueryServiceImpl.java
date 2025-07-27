@@ -35,7 +35,7 @@ public class ConsumptionRecordQueryServiceImpl implements ConsumptionRecordQuery
     private final ConsumptionRecordRepository consumptionRecordRepository;
     private final UserRepository userRepository;
     private final ConsumptionCategoryRepository consumptionCategoryRepository;
-    private static final Integer PAGE_SIZE = 15;
+    private static final Integer PAGE_SIZE = 10;
 
     // 소비 기록 존재 여부 검증
     @Override
@@ -58,7 +58,7 @@ public class ConsumptionRecordQueryServiceImpl implements ConsumptionRecordQuery
         ConsumptionCategory consumptionCategory = consumptionCategoryRepository.findCategoryByConsumptionRecordId(consumptionRecordId)
                 .orElseThrow(() -> new IllegalArgumentException(" 소비 기록과 연관된 소비 카테고리 테이블이 존재하지 않습니다. 관리자에게 문의해 주세요."));
 
-        log.info("일일 소비 내역 조회 완료, consumptionRecordId: {}", consumptionRecordId);
+        log.info("일일 소비 내역 조회 완료: userId: {}, consumptionRecordId: {}", userId, consumptionRecordId);
         return ConsumptionRecordConverter.toDailyConsumptionDetailDTO(consumptionRecord, consumptionCategory);
     }
 
@@ -85,7 +85,7 @@ public class ConsumptionRecordQueryServiceImpl implements ConsumptionRecordQuery
                         .build())
                 .toList();
 
-        log.info("달력 - 특정 날짜의 소비 내역 조회 완료, targetDate: {}", targetDate);
+        log.info("달력 특정 날짜의 소비 내역 조회 완료 -userId: {}, targetDate: {}", userId, targetDate);
 
         // 5. 변환된 결과를 응답 DTO로 매핑하여 반환
         return ConsumptionRecordConverter.toCalendarDailyConsumeDetailDTO(targetDate, items);
@@ -116,7 +116,7 @@ public class ConsumptionRecordQueryServiceImpl implements ConsumptionRecordQuery
                         LinkedHashMap::new                      // 순서 유지
                 ));
 
-        log.info("달력 - 월별 소비 금액 조회 완료, year: {}, month: {}", year, month);
+        log.info("달력 월별 소비 금액 조회 완료: userId: {}, year: {}, month: {}", userId, year, month);
 
         // 5. DTO 생성 후 반환
         return HouseholdConsumptionResponse.CalendarDateAmountMapDTO.builder().data(result).build();
@@ -163,7 +163,7 @@ public class ConsumptionRecordQueryServiceImpl implements ConsumptionRecordQuery
         // 다음 커서 ID 설정 (마지막 요소의 ID 사용)
         Long nextCursorId = content.isEmpty() ? null : content.get(content.size() - 1).getConsumptionRecordId();
 
-        log.info("달력 - 해당 월의 소비 내역 목록 조회(커서 기반 무한스크롤) 완료, year: {}, month: {}, cursorId: {}, nextCursorId: {}", year, month, cursorId, nextCursorId);
+        log.info("달력 해당 월의 소비 내역 목록 조회(커서 기반 무한스크롤) 완료 - userId: {}, year: {}, month: {}, cursorId: {}, nextCursorId: {}", userId, year, month, cursorId, nextCursorId);
 
         // 최종 응답 DTO 반환
         return ConsumptionRecordConverter.toMonthlyHistoryResponseDTO(

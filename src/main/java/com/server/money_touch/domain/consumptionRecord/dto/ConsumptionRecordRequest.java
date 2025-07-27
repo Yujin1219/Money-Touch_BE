@@ -29,14 +29,8 @@ public class ConsumptionRecordRequest {
         @Size(max=20, message = "최대 20자까지만 입력할 수 있어요.")
         private String content;
 
-        @Schema(description = "사진 URL", example = "http://example.com/image.jpg")
-        private String imageUrl;
-
         @Schema(description = "메모" , example = "마라탕 맛있었다.")
         @Size(max=1000, message = "1000자 이내로 작성해 주세요.")
         private String memo;
-
-
-
     }
 }

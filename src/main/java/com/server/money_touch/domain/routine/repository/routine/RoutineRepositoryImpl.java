@@ -1,0 +1,84 @@
+package com.server.money_touch.domain.routine.repository.routine;
+
+import com.querydsl.core.types.Projections;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.server.money_touch.domain.routine.dto.RoutineResponse;
+import com.server.money_touch.domain.routine.entity.QRoutine;
+import com.server.money_touch.domain.routine.entity.QRoutineHashtag;
+import com.server.money_touch.domain.user.entity.QUser;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
+import org.springframework.stereotype.Repository;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
+@Slf4j
+@RequiredArgsConstructor
+@Repository
+public class RoutineRepositoryImpl implements RoutineRepositoryCustom {
+    private final JPAQueryFactory queryFactory;
+
+    QRoutine routine = QRoutine.routine;
+    QRoutineHashtag routineHashtag = QRoutineHashtag.routineHashtag;
+    QUser user = QUser.user;
+
+    // 사용자의 소비 루틴 목록을 커서 기반으로 조회하고, 각 루틴에 연결된 해시태그를 함께 반환
+    @Override
+    public Slice<RoutineResponse.RoutineThumbnailDTO> findUserRoutineList(Long userId, Long cursorId, Pageable pageable) {
+        // 1. 루틴 기본 정보 조회
+        List<RoutineResponse.RoutineThumbnailDTO> routines = queryFactory
+                .select(Projections.fields(RoutineResponse.RoutineThumbnailDTO.class,
+                        routine.id.as("routineId"),
+                        routine.createdAt.as("createDate"),
+                        routine.routineName,
+                        user.nickname,
+                        routine.routineImageUrl.as("routineImgUrl"),
+                        user.profileImgUrl.as("profileImgUrl")
+                ))
+                .from(routine)
+                .join(routine.user, user)
+                .where(
+                        routine.user.id.eq(userId),
+                        cursorId != null ? routine.id.lt(cursorId) : null
+                )
+                .orderBy(routine.createdAt.desc(), routine.id.desc()) // 소비 루틴 등록 날짜 내림차순(최신순)
+                .limit(pageable.getPageSize() + 1)
+                .fetch();
+
+        // 2. 다음 페이지 여부 판별
+        boolean hasNext = routines.size() > pageable.getPageSize();
+        if (hasNext) routines.remove(pageable.getPageSize());
+
+        // 3. 루틴 ID 리스트 추출
+        List<Long> routineIds = routines.stream()
+                .map(RoutineResponse.RoutineThumbnailDTO::getRoutineId)
+                .toList();
+
+        // 4. 루틴 해시태그 조회 후 Map으로 그룹핑
+        Map<Long, List<String>> hashtagMap = queryFactory
+                .select(routineHashtag.routine.id, routineHashtag.routineHashtagName)
+                .from(routineHashtag)
+                .where(routineHashtag.routine.id.in(routineIds))
+                .fetch()
+                .stream()
+                .collect(Collectors.groupingBy(
+                        tuple -> tuple.get(routineHashtag.routine.id),
+                        Collectors.mapping(
+                                tuple -> tuple.get(routineHashtag.routineHashtagName),
+                                Collectors.toList()
+                        )
+                ));
+
+        // 5. 루틴 DTO에 해시태그 추가
+        routines.forEach(r -> {
+            List<String> hashtags = hashtagMap.getOrDefault(r.getRoutineId(), List.of());
+            r.setHashtags(hashtags);
+        });
+
+        return new SliceImpl<>(routines, pageable, hasNext);
+    }
+}

@@ -24,6 +24,7 @@ public class User extends BaseEntity {
 
     private String profileImgUrl;
 
+    // 대표 배지 id
     private Long badgeId;
 
     // 권한 타입 : 기본값 USER

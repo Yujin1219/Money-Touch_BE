@@ -82,7 +82,7 @@ public class BudgetQueryServiceImpl implements BudgetQueryService {
                                 .build());
 
         // 4. 응답 DTO 구성
-        log.info("예산 조회 완료, budgetId: {}", budgetId);
+        log.info("예산 조회 완료 - userId: {}, budgetId: {}", userId, budgetId);
         return BudgetConverter.toBudgetDetailDTO(budget, defaultCategories, customCategories, routineCategories);
     }
 
@@ -119,7 +119,7 @@ public class BudgetQueryServiceImpl implements BudgetQueryService {
                 .orElseThrow(() -> new ErrorHandler(ErrorStatus.BUDGET_NOT_EXIST));
 
         Long budgetId = budget.getId();
-        log.info("예산 아이디 및 총 소비 금액 조회, budgetId: {}", budgetId);
+        log.info("예산 아이디 및 총 소비 금액 조회 - userId: {}, budgetId: {}", userId, budgetId);
         return BudgetConverter.toTotalConsumptionResultDto(budgetId, totalConsumption.getTotalConsumptionAmount());
     }
 }

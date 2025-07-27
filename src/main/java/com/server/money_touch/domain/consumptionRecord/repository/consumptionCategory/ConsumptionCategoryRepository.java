@@ -24,4 +24,10 @@ public interface ConsumptionCategoryRepository extends JpaRepository<Consumption
             "JOIN cr.consumptionCategory cc " +
             "WHERE cr.id = :consumptionRecordId")
     Optional<ConsumptionCategory> findCategoryByConsumptionRecordId(@Param("consumptionRecordId") Long consumptionRecordId);
+
+    // 요청한 이름 목록에 해당하는 소비 카테고리를 userId 기준으로 조회
+    @Query("SELECT c FROM ConsumptionCategory c WHERE c.user.id = :userId AND c.budgetCategoryName IN :names")
+    List<ConsumptionCategory> findAllByUserIdAndNames(@Param("userId") Long userId, @Param("names") List<String> names);
+
+    List<ConsumptionCategory> findAllByUserAndBudgetCategoryType(User user, CategoryType type);
 }

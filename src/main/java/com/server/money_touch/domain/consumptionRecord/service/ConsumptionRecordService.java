@@ -8,7 +8,9 @@ import java.util.List;
 
 public interface ConsumptionRecordService {
 
-    ConsumptionRecordResponse.ConsumptionRecordCreateResultDTO createConsumptionRecord(Long userId, ConsumptionRecordRequest.ConsumptionRecordCreateDTO request);
+    ConsumptionRecordResponse.ConsumptionRecordCreateResultDTO createConsumptionRecord(
+            Long userId, ConsumptionRecordRequest.ConsumptionRecordCreateDTO request,String imageUrl);
 
     List<ConsumptionCategoryResponse.CategoryInfoDTO> getSortedCategoriesForUser(Long userId);
 }
+

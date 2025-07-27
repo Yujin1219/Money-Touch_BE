@@ -1,8 +1,6 @@
 package com.server.money_touch.domain.consumptionRecord.repository.consumptionRecord;
 
 import com.querydsl.core.types.Expression;
-import com.querydsl.core.types.Order;
-import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
@@ -12,6 +10,7 @@ import com.server.money_touch.domain.consumptionRecord.entity.QConsumptionRecord
 import com.server.money_touch.domain.consumptionRecord.projection.DailyAmountProjection;
 import com.server.money_touch.domain.consumptionRecord.projection.DailyConsumptionItemDetailProjection;
 import com.server.money_touch.domain.consumptionRecord.projection.DailyConsumptionItemProjection;
+import com.server.money_touch.domain.fixedConsumption.entity.QFixedConsumption;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -32,6 +31,7 @@ public class ConsumptionRecordRepositoryImpl implements ConsumptionRecordReposit
 
     QConsumptionRecord record = QConsumptionRecord.consumptionRecord;
     QConsumptionCategory category = QConsumptionCategory.consumptionCategory;
+    QFixedConsumption fixed = QFixedConsumption.fixedConsumption;
 
     /**
      * 사용자의 특정 날짜에 해당하는 소비 기록 목록을 조회합니다.
@@ -55,7 +55,9 @@ public class ConsumptionRecordRepositoryImpl implements ConsumptionRecordReposit
                 .select(Projections.fields(
                         DailyConsumptionItemDetailProjection.class,
                         record.id.as("consumptionRecordId"),
-                        category.budgetCategoryName.as("categoryName"),
+                        Expressions.cases()
+                                .when(record.isFixed.isTrue()).then("고정비")
+                                .otherwise(category.budgetCategoryName).as("categoryName"),
                         record.content,
                         record.amount
                 ))
@@ -129,7 +131,9 @@ public class ConsumptionRecordRepositoryImpl implements ConsumptionRecordReposit
                         DailyConsumptionItemProjection.class,
                         record.id.as("consumptionRecordId"),
                         record.consumeDate,
-                        category.budgetCategoryName.as("categoryName"),
+                        Expressions.cases()
+                                .when(record.isFixed.isTrue()).then("고정비")
+                                .otherwise(category.budgetCategoryName).as("categoryName"),
                         record.content,
                         record.amount
                 ))
