@@ -1,4 +1,4 @@
-package com.server.money_touch.domain.consumptionRecord.repository.Reaction;
+package com.server.money_touch.domain.consumptionRecord.repository.reaction;
 
 import com.server.money_touch.domain.consumptionRecord.entity.ConsumptionRecord;
 import com.server.money_touch.domain.consumptionRecord.entity.Reaction;

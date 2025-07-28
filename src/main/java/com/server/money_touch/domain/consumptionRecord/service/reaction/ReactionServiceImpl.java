@@ -6,7 +6,7 @@ import com.server.money_touch.domain.consumptionRecord.dto.FeedResponse;
 import com.server.money_touch.domain.consumptionRecord.entity.ConsumptionRecord;
 import com.server.money_touch.domain.consumptionRecord.entity.Reaction;
 import com.server.money_touch.domain.consumptionRecord.enums.ReactionType;
-import com.server.money_touch.domain.consumptionRecord.repository.Reaction.ReactionRepository;
+import com.server.money_touch.domain.consumptionRecord.repository.reaction.ReactionRepository;
 import com.server.money_touch.domain.consumptionRecord.repository.consumptionRecord.ConsumptionRecordRepository;
 import com.server.money_touch.domain.user.entity.User;
 import com.server.money_touch.domain.user.repository.user.UserRepository;
