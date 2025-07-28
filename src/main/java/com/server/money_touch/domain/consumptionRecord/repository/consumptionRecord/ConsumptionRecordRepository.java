@@ -3,9 +3,7 @@ package com.server.money_touch.domain.consumptionRecord.repository.consumptionRe
 import com.server.money_touch.domain.consumptionRecord.entity.ConsumptionRecord;
 import com.server.money_touch.domain.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -21,14 +19,5 @@ public interface ConsumptionRecordRepository extends JpaRepository<ConsumptionRe
     WHERE cr.user = :user AND cr.consumeDate BETWEEN :start AND :end
     GROUP BY cr.consumptionCategory.budgetCategoryName """)
     List<Object[]> findCategorySpendingBetween(User user, LocalDateTime start, LocalDateTime end);
-
-    /**
-     * 댓글 수 증가
-     * @param consumptionRecordId 소비기록 ID
-     * @return 업데이트된 행 수
-     */
-    @Modifying(clearAutomatically = true)
-    @Query("UPDATE ConsumptionRecord c SET c.commentCount = c.commentCount + 1 WHERE c.id = :consumptionRecordId")
-    int incrementCommentCount(@Param("consumptionRecordId") Long consumptionRecordId);
 
 }
