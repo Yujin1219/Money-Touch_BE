@@ -67,10 +67,8 @@ public class CommentServiceImpl implements CommentService {
         // 7. 댓글 저장
         commentRepository.save(comment);
 
-        // 8. 댓글 수 재계산 후 소비기록에 반영
-        Integer commentCount = commentRepository.countByConsumptionRecordId(consumptionRecordId);
-        consumptionRecord.setCommentCount(commentCount);
-        consumptionRecordRepository.save(consumptionRecord);
+        // 8. 댓글 수 증가
+        consumptionRecordRepository.incrementCommentCount(consumptionRecordId);
 
         // 9. 응답 DTO 반환
         return FeedResponse.CommentResultDTO.builder()

@@ -3,10 +3,7 @@ package com.server.money_touch.domain.consumptionRecord.entity;
 import com.server.money_touch.domain.user.entity.User;
 import com.server.money_touch.global.apiPayload.code.BaseEntity;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -15,6 +12,7 @@ import java.util.List;
 
 @Entity
 @Getter
+@Setter
 @NoArgsConstructor
 @Builder
 @AllArgsConstructor
@@ -44,11 +42,4 @@ public class Comment extends BaseEntity {
     @OneToMany(mappedBy = "parent", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> replies = new ArrayList<>();
 
-    // 양방향 연관관계
-    public void setParent(Comment parent) {
-        this.parent = parent;
-        if (parent != null) {
-            parent.getReplies().add(this);
-        }
-    }
 }
