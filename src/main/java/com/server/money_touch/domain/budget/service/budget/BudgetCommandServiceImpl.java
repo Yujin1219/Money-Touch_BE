@@ -140,8 +140,11 @@ public class BudgetCommandServiceImpl implements BudgetCommandService {
 
         // DEFAULT 타입일 경우만 유효성 검사 및 누락 보정 적용
         if (type == CategoryType.DEFAULT) {
+            // ✅ 기본 카테고리 순서 유지를 위해 LinkedHashMap 사용
+            Map<String, Integer> nameToAmount = new LinkedHashMap<>();
+
             // 요청된 이름-금액 쌍 추출
-            Map<String, Integer> nameToAmount = Optional.ofNullable(requestList).orElse(List.of()).stream()
+            Optional.ofNullable(requestList).orElse(List.of()).stream()
                     .filter(Objects::nonNull)
                     .map(dto -> {
                         if (dto instanceof BudgetRequest.DefaultCategoryBudget def)
@@ -149,31 +152,32 @@ public class BudgetCommandServiceImpl implements BudgetCommandService {
                         return null;
                     })
                     .filter(Objects::nonNull)
-                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+                    .forEach(entry -> nameToAmount.put(entry.getKey(), entry.getValue()));
 
-            // 예외 발생: 요청에 기본 카테고리 외의 이름이 포함된 경우
+            // ✅ 유효하지 않은 이름이 포함된 경우 예외 발생
             boolean hasInvalidName = nameToAmount.keySet().stream()
                     .anyMatch(name -> !DefaultCategoryConstants.DEFAULT_CATEGORY_NAMES.contains(name));
             if (hasInvalidName) {
                 throw new ErrorHandler(ErrorStatus.CONSUMPTION_CATEGORY_TYPE_NOT_FOUND);
             }
 
-            // 누락된 기본 카테고리 이름 중, 기존에 존재하지 않는 항목만 0원으로 보정
-            DefaultCategoryConstants.DEFAULT_CATEGORY_NAMES.stream()
-                    .filter(defaultName -> !nameToAmount.containsKey(defaultName)) // 요청에 없는 이름
-                    .filter(defaultName -> !existingMap.containsKey(defaultName)) // 기존에도 없는 이름
-                    .forEach(missing -> nameToAmount.put(missing, 0));
+            // ✅ 누락된 기본 카테고리 중 기존에도 없는 항목은 0원으로 보정 (순서 유지)
+            DefaultCategoryConstants.DEFAULT_CATEGORY_NAMES.forEach(name -> {
+                if (!nameToAmount.containsKey(name) && !existingMap.containsKey(name)) {
+                    nameToAmount.put(name, 0);
+                }
+            });
 
-            // 요청에 포함되었지만 이미 존재하는 항목은 제외
+            // ✅ 이미 존재하는 항목은 제거
             nameToAmount.keySet().removeIf(existingMap::containsKey);
 
-            // 실제 추가/갱신할 항목이 없는 경우 종료
+            // ✅ 실제 추가/갱신할 항목이 없는 경우 종료
             if (nameToAmount.isEmpty()) {
                 log.info("[카테고리 등록] 모든 기본 카테고리가 이미 존재하여 저장할 항목이 없습니다. userId={}, budgetId={}", user.getId(), budget.getId());
                 return;
             }
 
-            // 수정 공통 메서드 호출
+            // ✅ 공통 저장 로직 호출
             saveOrUpdateCategoryBudgetsByNameMap(nameToAmount, user, budget, type, existingMap);
         } else {
             // 그 외 타입은 기존 처리 방식 유지
