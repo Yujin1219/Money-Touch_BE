@@ -178,6 +178,25 @@ public class TokenProvider {
         return claims.get("role", String.class);
     }
 
+    /*
+    * 토큰에서 claims 객체 추출
+    * */
+    public Claims extractAllClaims(String token) throws ExpiredJwtException {
+        return Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+    }
+
+    /*
+    *  토큰에서 userId 추출
+    * */
+    public Long extractUserId(String token){
+        Claims claims = extractAllClaims(token); // claims 객체 추출
+        return claims.get("userId", Long.class); // "userID" 클레임에서 값을 추출
+    }
+
     /**
      * Request에서 Authentication 추출
      */
