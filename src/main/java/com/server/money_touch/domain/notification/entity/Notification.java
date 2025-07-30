@@ -24,20 +24,22 @@ public class Notification extends BaseEntity {
     @JoinColumn(name = "notification_type_id", nullable = false)
     private NotificationType notificationType;
 
-    // 알림 발신자
-    @Column(nullable = false)
-    private Long senderId;
+    // 알림 발신자 이름
+    private String senderName;
 
     @Column(nullable = false, length = 20)
     private String title;
 
-    @Column(nullable = false, length = 50)
+    @Column(nullable = false, length = 70)
     private String content;
 
     private Boolean isRead = false;
 
     @Column(nullable = false)
     private Long targetId;
+
+    // 게시글에 관한 알림일 경우 게시글 사진
+    private String imageUrl;
 
     // 읽음 처리
     public void markAsRead() {
