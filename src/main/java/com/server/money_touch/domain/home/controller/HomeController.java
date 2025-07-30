@@ -7,10 +7,13 @@ import com.server.money_touch.domain.user.repository.user.UserRepository;
 import com.server.money_touch.global.apiPayload.ApiResponse;
 import com.server.money_touch.global.apiPayload.code.status.ErrorStatus;
 import com.server.money_touch.global.apiPayload.exception.GeneralException;
+import com.server.money_touch.global.apiPayload.exception.handler.ErrorHandler;
+import com.server.money_touch.global.config.jwt.TokenProvider;
 import com.server.money_touch.global.validation.annotation.ApiErrorCodeExample;
 import com.server.money_touch.global.validation.annotation.ApiErrorCodeExamples;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
@@ -30,6 +33,7 @@ public class HomeController {
 
     private final HomeService homeService;
     private final UserRepository userRepository;
+    private final TokenProvider tokenProvider;
 
     @Operation(
             summary = "소비 통계 조회 API",
@@ -41,9 +45,15 @@ public class HomeController {
     })
 
     @GetMapping("/statistics")
-    public ApiResponse<HomeResponse.ConsumptionStatisticsTopResponseDTO> getTopStatistics(){
+    public ApiResponse<HomeResponse.ConsumptionStatisticsTopResponseDTO> getTopStatistics(HttpServletRequest servletrequest){
 
-        User user = userRepository.findById(1L)
+
+        String token = TokenProvider.resolveToken(servletrequest);  // Authorization 헤더에서 토큰 추출
+        if (token == null) {
+            throw new ErrorHandler(ErrorStatus._BAD_REQUEST);  // or 인증 실패 예외
+        }
+        Long userId = tokenProvider.extractUserId(token);
+        User user = userRepository.findById(userId)
                 .orElseThrow(()-> new GeneralException(ErrorStatus.USER_NOT_FOUND));
         return ApiResponse.onSuccess(homeService.getTopStatistics(user));
 
@@ -59,9 +69,15 @@ public class HomeController {
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "_INTERNAL_SERVER_ERROR"),
     })
     @GetMapping("/statistics/others")
-    public ApiResponse<HomeResponse.OtherCategoryStatisticsResponseDTO> getOtherStatistics(){
+    public ApiResponse<HomeResponse.OtherCategoryStatisticsResponseDTO> getOtherStatistics(HttpServletRequest servletrequest){
 
-        User user = userRepository.findById(1L)
+
+        String token = TokenProvider.resolveToken(servletrequest);  // Authorization 헤더에서 토큰 추출
+        if (token == null) {
+            throw new ErrorHandler(ErrorStatus._BAD_REQUEST);  // or 인증 실패 예외
+        }
+        Long userId = tokenProvider.extractUserId(token);
+        User user = userRepository.findById(userId)
                 .orElseThrow(()-> new GeneralException(ErrorStatus.USER_NOT_FOUND));
         return ApiResponse.onSuccess(homeService.getOtherStatistics(user));
 
@@ -76,10 +92,16 @@ public class HomeController {
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "_INTERNAL_SERVER_ERROR"),
     })
     @GetMapping("/ranking")
-    public ApiResponse<HomeResponse.WiseRankingResponseDTO> getWiseRanking() {
+    public ApiResponse<HomeResponse.WiseRankingResponseDTO> getWiseRanking(HttpServletRequest servletrequest) {
+
+        String token = TokenProvider.resolveToken(servletrequest);  // Authorization 헤더에서 토큰 추출
+        if (token == null) {
+            throw new ErrorHandler(ErrorStatus._BAD_REQUEST);  // or 인증 실패 예외
+        }
+        Long userId = tokenProvider.extractUserId(token);
 
         // 임시 유저 지정
-        return ApiResponse.onSuccess(homeService.getWeeklyWiseRanking(1L));
+        return ApiResponse.onSuccess(homeService.getWeeklyWiseRanking(userId));
 
     }
 

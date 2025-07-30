@@ -9,4 +9,5 @@ import java.util.Optional;
 
 public interface BudgetRepository extends JpaRepository<Budget, Long> {
     Optional<Budget> findByUserAndCreatedAtBetween(User user, LocalDateTime start, LocalDateTime end);
+    Optional<Budget> findByUserIdAndCreatedMonth(Long userId, String createdMonth);
 }

@@ -3,6 +3,7 @@ package com.server.money_touch.domain.routine.service;
 import com.server.money_touch.domain.budget.entity.Budget;
 import com.server.money_touch.domain.budget.entity.BudgetCategory;
 import com.server.money_touch.domain.budget.enums.CategoryType;
+import com.server.money_touch.domain.budget.repository.budget.BudgetRepository;
 import com.server.money_touch.domain.budget.repository.budgetCategory.BudgetCategoryRepository;
 import com.server.money_touch.domain.routine.converter.RoutineConverter;
 import com.server.money_touch.domain.routine.dto.RoutineResponse;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -36,6 +38,7 @@ public class RoutineQueryServiceImpl implements RoutineQueryService {
     private final RoutineRepository routineRepository;
     private final UserRepository userRepository;
     private final BudgetCategoryRepository budgetCategoryRepository;
+    private final BudgetRepository budgetRepository;
 
     // 소비 루틴 존재 여부 검증
     @Override
@@ -94,5 +97,65 @@ public class RoutineQueryServiceImpl implements RoutineQueryService {
 
         log.info("내 소비 루틴 목록 조회(커서 기반 무한스크롤) 완료 - userId: {}, cursorId: {}", userId, cursorId);
         return RoutineConverter.toMyRoutineListDTO(routineList, slice);
+    }
+
+    @Override
+    public RoutineResponse.AllRoutineListDTO getAllRoutineList(Long cursorId) {
+
+        // 페이지 크기 10, 0페이지부터 시작
+        Pageable pageable = PageRequest.of(0, PAGE_SIZE);
+
+        // Repository 호출 → 커서 기반 + 해시태그 + NEW 여부
+        Slice<RoutineResponse.RoutineListDTO> slice = routineRepository.findAllRoutines(cursorId, pageable);
+
+        // 조회한 루틴 리스트 추출
+        List<RoutineResponse.RoutineListDTO> routineList = slice.getContent();
+
+        log.info("전체 소비 루틴 목록 조회(커서 기반 무한스크롤) 완료 - cursorId: {}", cursorId);
+        return RoutineConverter.toAllRoutineListDTO(routineList, slice);
+    }
+
+    // 타인 소비 루틴 상세 조회
+    @Override
+    public RoutineResponse.RoutineListDetailDTO getOtherRoutineDetail(Long userId, Long routineId) {
+        Routine routine = routineRepository.findById(routineId)
+                .orElseThrow(() -> new ErrorHandler(ErrorStatus.ROUTINE_NOT_FOUND));
+
+        Budget routineBudget = routine.getBudget();
+        List<BudgetCategory> budgetCategories = budgetCategoryRepository.findAllWithCategoryByBudgetId(routineBudget.getId());
+
+        // 금액이 0원인 카테고리 제외
+        List<RoutineResponse.CategoryBudgetDetailDTO> categoryBudgetList = budgetCategories.stream()
+                .filter(bc -> bc.getBudgetCategoryMoney() != null && bc.getBudgetCategoryMoney() > 0)
+                .map(bc -> RoutineResponse.CategoryBudgetDetailDTO.builder()
+                        .categoryName(bc.getConsumptionCategory().getBudgetCategoryName())
+                        .amount(bc.getBudgetCategoryMoney())
+                        .build())
+                .toList();
+
+        String createdMonth = LocalDate.now().withDayOfMonth(1).toString().substring(0, 7);
+        Optional<Budget> myBudgetOpt = budgetRepository.findByUserIdAndCreatedMonth(userId, createdMonth);
+
+        boolean canApply = true;
+        String message = null;
+        if (myBudgetOpt.isPresent() && Boolean.TRUE.equals(myBudgetOpt.get().getIsFromRoutine())) {
+            canApply = false;
+            message = "소비루틴은 한 달에 한 번만 반영할 수 있어요";
+        }
+
+        return RoutineResponse.RoutineListDetailDTO.builder()
+                .totalBudget(routineBudget.getBudgetTotal())
+                .routineName(routine.getRoutineName())
+                .categoryBudgetList(categoryBudgetList)
+                .canApply(canApply)
+                .cannotApplyMessage(message)
+                .build();
+    }
+
+    @Override
+    public RoutineResponse.AllRoutineListDTO searchRoutineList(String keyword, Long cursorId) {
+        Pageable pageable = PageRequest.of(0, PAGE_SIZE);
+        Slice<RoutineResponse.RoutineListDTO> slice = routineRepository.searchRoutinesByKeyword(keyword, cursorId, pageable);
+        return RoutineConverter.toAllRoutineListDTO(slice.getContent(), slice);
     }
 }

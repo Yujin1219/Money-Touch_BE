@@ -13,4 +13,13 @@ public interface RoutineQueryService {
 
     // 내 소비 루틴 목록 조회 (커서 기반 무한스크롤)
     RoutineResponse.MyRoutineListDTO getMyRoutineList(@ExistUser Long userId, Long cursorId);
+
+    // 전체 소비 루틴 목록 조회 (커서 기반 무한스크롤)
+    RoutineResponse.AllRoutineListDTO getAllRoutineList(Long cursorId);
+
+    // 소비 루틴 상세 조회
+    RoutineResponse.RoutineListDetailDTO getOtherRoutineDetail(@ExistUser Long userId, @ExistRoutine Long routineId);
+
+    // 검색 키워드로 소비 루틴 목록 조회(커서 기반 무한스크롤)
+    RoutineResponse.AllRoutineListDTO searchRoutineList(String keyword, Long cursorId);
 }

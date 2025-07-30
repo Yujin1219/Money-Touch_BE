@@ -6,12 +6,15 @@ import com.server.money_touch.domain.consumptionRecord.dto.ConsumptionRecordResp
 import com.server.money_touch.domain.consumptionRecord.service.ConsumptionRecordService;
 import com.server.money_touch.global.apiPayload.ApiResponse;
 import com.server.money_touch.global.apiPayload.code.status.ErrorStatus;
+import com.server.money_touch.global.apiPayload.exception.handler.ErrorHandler;
+import com.server.money_touch.global.config.jwt.TokenProvider;
 import com.server.money_touch.global.s3.S3Manager;
 import com.server.money_touch.global.validation.annotation.ApiErrorCodeExample;
 import com.server.money_touch.global.validation.annotation.ApiErrorCodeExamples;
 import com.server.money_touch.global.validation.annotation.ApiSuccessCodeExample;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +35,7 @@ public class ConsumptionRecordController {
 
     private final ConsumptionRecordService consumptionRecordService;
     private final S3Manager s3Manager;
+    private final TokenProvider tokenProvider;
 
     // 소비 기록 등록
     @Operation(
@@ -49,7 +53,14 @@ public class ConsumptionRecordController {
     @PostMapping(value = "/record", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<ConsumptionRecordResponse.ConsumptionRecordCreateResultDTO> postConsumptionRecord(
             @RequestPart("data") @Valid ConsumptionRecordRequest.ConsumptionRecordCreateDTO request,
-            @RequestPart(value = "file", required = false) MultipartFile file){
+            @RequestPart(value = "file", required = false) MultipartFile file,
+            HttpServletRequest servletrequest){
+
+        String token = TokenProvider.resolveToken(servletrequest);  // Authorization 헤더에서 토큰 추출
+        if (token == null) {
+            throw new ErrorHandler(ErrorStatus._BAD_REQUEST);  // or 인증 실패 예외
+        }
+        Long userId = tokenProvider.extractUserId(token);
 
         try{
             // 이미지 업로드 처리 (dirName = "record")
@@ -60,7 +71,7 @@ public class ConsumptionRecordController {
 
             // 소비기록 저장 (이미지 URL 포함)
             ConsumptionRecordResponse.ConsumptionRecordCreateResultDTO response =
-                    consumptionRecordService.createConsumptionRecord(1L, request, imageUrl);
+                    consumptionRecordService.createConsumptionRecord(userId, request, imageUrl);
 
             return ApiResponse.onSuccess(response);
 
@@ -77,11 +88,16 @@ public class ConsumptionRecordController {
     @ApiSuccessCodeExample(resultClass = ConsumptionCategoryResponse.CategoryInfoDTO.class)
     @ApiErrorCodeExample(value = ErrorStatus.class, name = "USER_NOT_FOUND")
     @GetMapping("/categories")
-    public ApiResponse<List<ConsumptionCategoryResponse.CategoryInfoDTO>> getConsumptionCategories() {
+    public ApiResponse<List<ConsumptionCategoryResponse.CategoryInfoDTO>> getConsumptionCategories(HttpServletRequest servletrequest) {
 
-        // 유저 아이디 임시 지정
+        String token = TokenProvider.resolveToken(servletrequest);  // Authorization 헤더에서 토큰 추출
+        if (token == null) {
+            throw new ErrorHandler(ErrorStatus._BAD_REQUEST);  // or 인증 실패 예외
+        }
+        Long userId = tokenProvider.extractUserId(token);
+
         List<ConsumptionCategoryResponse.CategoryInfoDTO> categoryList =
-                consumptionRecordService.getSortedCategoriesForUser(1L);
+                consumptionRecordService.getSortedCategoriesForUser(userId);
         return ApiResponse.onSuccess(categoryList);
     }
 

@@ -18,9 +18,6 @@ public class Routine extends BaseEntity {
     @Column(nullable = false)
     private String routineImageUrl;
 
-    @Column(columnDefinition = "INT DEFAULT 0", nullable = false)
-    private Integer viewCount; // 조회수
-
     // 소비루틴-예산 다대일
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "budget_id")

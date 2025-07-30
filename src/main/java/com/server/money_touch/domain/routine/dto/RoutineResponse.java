@@ -76,6 +76,35 @@ public class RoutineResponse {
     }
 
     @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    @Schema(description = "타인의 소비 루틴 정보")
+    public static class AllRoutineListDTO {
+
+        @Schema(description = "소비 루틴 목록")
+        List<RoutineListDTO> routineList;
+
+        @Schema(description = "현재 페이지의 소비 루틴 개수", example = "1")
+        Integer routineListSize;
+
+        @Schema(description = "페이지 처음 여부", example = "true")
+        Boolean isFirst;
+
+        @Schema(description = "페이지 마지막 여부", example = "false")
+        Boolean isLast;
+
+        @Schema(description = "다음 페이지가 있는지 여부", example = "true")
+        Boolean hasNext;
+
+        @Schema(description = "다음 요청에 사용할 커서 ID", example = "20")
+        private Long nextCursorId;
+    }
+
+
+    @Getter
+    @Setter
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder
@@ -179,6 +208,12 @@ public class RoutineResponse {
         ]
         """)
         private List<RoutineResponse.CategoryBudgetDetailDTO> categoryBudgetList;
+
+        @Schema(description = "내 예산에 반영 가능 여부", example = "true")
+        private boolean canApply;
+
+        @Schema(description = "반영 불가 메시지", example = "소비루틴은 한 달에 한 번만 반영할 수 있어요")
+        private String cannotApplyMessage;
     }
 
     @Getter
