@@ -1,5 +1,6 @@
 package com.server.money_touch.domain.user.converter;
 
+import com.server.money_touch.domain.user.dto.UserResponse;
 import com.server.money_touch.domain.user.entity.LocalLogin;
 import com.server.money_touch.domain.user.entity.SocialLogin;
 import com.server.money_touch.domain.user.entity.User;
@@ -53,6 +54,14 @@ public class UserConverter {
         user.setSocialLogin(socialLogin);
 
         return user;
+    }
+
+    // ✅ 새로 추가: User를 UserCreateResultDTO로 변환
+    public static UserResponse.UserCreateResultDTO toUserCreateResultDTO(User user) {
+        return UserResponse.UserCreateResultDTO.builder()
+                .userId(user.getId())
+                .createdAt(user.getCreatedAt())
+                .build();
     }
 
     /**

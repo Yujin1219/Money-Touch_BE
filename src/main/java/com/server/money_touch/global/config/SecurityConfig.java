@@ -23,7 +23,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 STATELESS 상태로 설정
                 .authorizeHttpRequests((requests) -> requests
                         .requestMatchers(
-                                "/api/user/signup/local", "/api/user/kakao-signup", "/api/user/login/local", "/api/user/login/social-login", // 로그인, 회원가입
+                                "/api/user/signup/local", "/api/user/login/local","/auth/login/kakao/**", // 로그인, 회원가입
                                 "/", "/index.html", "/css/**", "/js/**", "/images/**", "/test", // Spring Boot의 정적 리소스 기본 경로
                                 "/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html") // Swagger 문서 허용
                         .permitAll()
