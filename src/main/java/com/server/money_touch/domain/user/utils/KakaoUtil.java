@@ -29,19 +29,20 @@ public class KakaoUtil {
     public KakaoDTO.OAuthToken requestToken(String accessCode) {
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
+        headers.add("Content-Type", "application/x-www-form-urlencoded;charset=utf-8");
 
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("grant_type", "authorization_code");
         params.add("client_id", client);
-        params.add("redirect_url", redirect);
+        params.add("redirect_uri", redirect);
         params.add("code", accessCode);
+        log.info("client_id: {}, redirect_uri: {}", client, redirect);
+        log.info("accessCode: {}", accessCode);
 
         HttpEntity<MultiValueMap<String, String>> kakaoTokenRequest = new HttpEntity<>(params, headers);
 
-        ResponseEntity<String> response = restTemplate.exchange(
+        ResponseEntity<String> response = restTemplate.postForEntity(
                 "https://kauth.kakao.com/oauth/token",
-                HttpMethod.POST,
                 kakaoTokenRequest,
                 String.class);
 
@@ -72,6 +73,7 @@ public class KakaoUtil {
                 HttpMethod.GET,
                 kakaoProfileRequest,
                 String.class);
+        log.info("kakao response body: {}", response2.getBody());
 
         ObjectMapper objectMapper = new ObjectMapper();
 
@@ -81,7 +83,7 @@ public class KakaoUtil {
             kakaoProfile = objectMapper.readValue(response2.getBody(), KakaoDTO.KakaoProfile.class);
         } catch (JsonProcessingException e) {
             log.info(Arrays.toString(e.getStackTrace()));
-            throw new RuntimeException("JWT 파싱 중 오류가 발생했습니다.");
+            throw new RuntimeException("카카오 사용자 정보 파싱 중 오류가 발생했습니다.", e);
         }
 
         return kakaoProfile;

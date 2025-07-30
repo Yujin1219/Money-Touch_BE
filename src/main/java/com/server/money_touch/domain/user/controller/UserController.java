@@ -70,6 +70,7 @@ public class UserController{
         UserResponse.UserCreateResultDTO response = userCommandService.signUpLocal(request);
         return ApiResponse.onSuccess(response);
     }
+
     @Operation(
             summary = "로컬 로그인 API",
             description = "이메일과 비밀번호를 사용한 로컬 로그인 방식의 API입니다."
@@ -86,24 +87,6 @@ public class UserController{
 
         UserResponse.LoginResultDTO response = userCommandService.loginLocal(request);
 
-        return ApiResponse.onSuccess(response);
-    }
-
-    @Operation(
-            summary = "소셜 로그인 API",
-            description = "소셜 플랫폼의 액세스 토큰을 이용한 로그인 API입니다."
-    )
-    @ApiSuccessCodeExample(resultClass = UserResponse.LoginResultDTO.class)
-    @ApiErrorCodeExamples({
-            @ApiErrorCodeExample(value = ErrorStatus.class, name = "USER_NOT_FOUND"),
-            @ApiErrorCodeExample(value = ErrorStatus.class, name = "_BAD_REQUEST"),
-            @ApiErrorCodeExample(value = ErrorStatus.class, name = "_INTERNAL_SERVER_ERROR"),
-    })
-    @PostMapping("/social-login")
-    public ApiResponse<UserResponse.LoginResultDTO> socialLogin(
-            @Valid @RequestBody UserRequest.SocialLoginRequest request
-    ) {
-        UserResponse.LoginResultDTO response = UserResponse.LoginResultDTO.builder().build();
         return ApiResponse.onSuccess(response);
     }
 

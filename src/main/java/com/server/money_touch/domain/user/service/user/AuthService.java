@@ -5,6 +5,8 @@ import com.server.money_touch.domain.user.dto.KakaoDTO;
 import com.server.money_touch.domain.user.dto.TokenResponse;
 import com.server.money_touch.domain.user.entity.CustomUserDetails;
 import com.server.money_touch.domain.user.entity.User;
+import com.server.money_touch.domain.user.enums.AuthType;
+import com.server.money_touch.domain.user.enums.Role;
 import com.server.money_touch.domain.user.repository.user.UserRepository;
 import com.server.money_touch.global.config.jwt.TokenProvider;
 import com.server.money_touch.domain.user.utils.KakaoUtil;
@@ -27,7 +29,7 @@ public class AuthService {
     public User oAuthLogin(String accessCode, HttpServletResponse httpServletResponse) {
         KakaoDTO.OAuthToken oAuthToken = kakaoUtil.requestToken(accessCode);
         KakaoDTO.KakaoProfile kakaoProfile = kakaoUtil.requestProfile(oAuthToken);
-        String email = kakaoProfile.getKakao_account().getEmail();
+        String email = kakaoProfile.getKakaoAccount().getEmail();
 
         User user = userRepository.findByEmail(email)
                 .orElseGet(() -> createNewUser(kakaoProfile)); // 등록되지않은 회원이면 회원가입
@@ -44,10 +46,12 @@ public class AuthService {
 
     private User createNewUser(KakaoDTO.KakaoProfile kakaoProfile) {
         User newUser = AuthConverter.toUser(
-                kakaoProfile.getKakao_account().getEmail(),
-                kakaoProfile.getKakao_account().getProfile().getNickname(),
+                kakaoProfile.getKakaoAccount().getEmail(),
+                kakaoProfile.getKakaoAccount().getProfile().getNickname(),
                 null,
-                passwordEncoder
+                passwordEncoder,
+                Role.USER,
+                AuthType.KAKAO
         );
         return userRepository.save(newUser);
     }
