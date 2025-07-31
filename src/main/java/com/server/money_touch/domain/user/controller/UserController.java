@@ -1,17 +1,19 @@
 package com.server.money_touch.domain.user.controller;
 
+import com.server.money_touch.domain.badge.service.BadgeCommandService;
 import com.server.money_touch.domain.user.dto.UserRequest;
 import com.server.money_touch.domain.user.dto.UserResponse;
-import com.server.money_touch.domain.badge.service.BadgeCommandService;
-import com.server.money_touch.domain.user.service.user.UserQueryService;
 import com.server.money_touch.domain.user.service.user.UserCommandService;
+import com.server.money_touch.domain.user.service.user.UserQueryService;
 import com.server.money_touch.global.apiPayload.ApiResponse;
 import com.server.money_touch.global.apiPayload.code.status.ErrorStatus;
+import com.server.money_touch.global.utils.AuthUtil;
 import com.server.money_touch.global.validation.annotation.ApiErrorCodeExample;
 import com.server.money_touch.global.validation.annotation.ApiErrorCodeExamples;
 import com.server.money_touch.global.validation.annotation.ApiSuccessCodeExample;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +33,7 @@ public class UserController{
     private final BadgeCommandService badgeCommandService;
     private final UserQueryService userQueryService;
     private final UserCommandService userCommandService;
+    private final AuthUtil authUtil;
 
     @Operation(
             summary = "유저 상세정보 저장 API",
@@ -72,28 +75,6 @@ public class UserController{
     }
 
     @Operation(
-            summary = "카카오 회원가입 API",
-            description = "소셜 플랫폼의 액세스 토큰을 이용한 회원가입 API입니다." + "이용약관 동의 리스트 한꺼번에 보내주셔야합니다!"
-    )
-    @ApiSuccessCodeExample(resultClass = UserResponse.UserCreateResultDTO.class)
-    @ApiErrorCodeExamples({
-            @ApiErrorCodeExample(value = ErrorStatus.class, name = "USER_NOT_FOUND"),
-            @ApiErrorCodeExample(value = ErrorStatus.class, name = "_BAD_REQUEST"),
-            @ApiErrorCodeExample(value = ErrorStatus.class, name = "_INTERNAL_SERVER_ERROR"),
-    })
-
-    @PostMapping("/kakao-signup")
-    public ApiResponse<UserResponse.UserCreateResultDTO> signUpKakaoUser(
-            @Valid @RequestBody UserRequest.KakaoSignUpDto request){
-
-        UserResponse.UserCreateResultDTO response = UserResponse.UserCreateResultDTO.builder()
-                .userId(1L)
-                .createdAt(LocalDateTime.now())
-                .build();
-
-        return ApiResponse.onSuccess(response);
-    }
-    @Operation(
             summary = "로컬 로그인 API",
             description = "이메일과 비밀번호를 사용한 로컬 로그인 방식의 API입니다."
     )
@@ -112,24 +93,6 @@ public class UserController{
         return ApiResponse.onSuccess(response);
     }
 
-    @Operation(
-            summary = "소셜 로그인 API",
-            description = "소셜 플랫폼의 액세스 토큰을 이용한 로그인 API입니다."
-    )
-    @ApiSuccessCodeExample(resultClass = UserResponse.LoginResultDTO.class)
-    @ApiErrorCodeExamples({
-            @ApiErrorCodeExample(value = ErrorStatus.class, name = "USER_NOT_FOUND"),
-            @ApiErrorCodeExample(value = ErrorStatus.class, name = "_BAD_REQUEST"),
-            @ApiErrorCodeExample(value = ErrorStatus.class, name = "_INTERNAL_SERVER_ERROR"),
-    })
-    @PostMapping("/social-login")
-    public ApiResponse<UserResponse.LoginResultDTO> socialLogin(
-            @Valid @RequestBody UserRequest.SocialLoginRequest request
-    ) {
-        UserResponse.LoginResultDTO response = UserResponse.LoginResultDTO.builder().build();
-        return ApiResponse.onSuccess(response);
-    }
-
     // 마이페이지
     @Operation(
             summary = "마이페이지 유저 정보 조회 API",
@@ -137,13 +100,16 @@ public class UserController{
     )
     @ApiErrorCodeExamples({
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "USER_NOT_FOUND"),
+            @ApiErrorCodeExample(value = ErrorStatus.class, name = "BADGE_NOT_EARNED"),
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "_UNAUTHORIZED"),
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "_BAD_REQUEST"),
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "_INTERNAL_SERVER_ERROR")
     })
     @GetMapping("/mypage")
-    public ApiResponse<UserResponse.MyPageResponseDTO> getMyPage() {
-        UserResponse.MyPageResponseDTO response = UserResponse.MyPageResponseDTO.builder().build();
+    public ApiResponse<UserResponse.MyPageResponseDTO> getMyPage(HttpServletRequest servletrequest) {
+
+        Long userId = authUtil.getUserIdFromRequest(servletrequest);
+        UserResponse.MyPageResponseDTO response = userQueryService.getMyPageInfo(userId);
         return ApiResponse.onSuccess(response);
     }
 

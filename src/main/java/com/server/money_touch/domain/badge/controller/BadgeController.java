@@ -5,12 +5,14 @@ import com.server.money_touch.domain.badge.service.BadgeCommandService;
 import com.server.money_touch.domain.badge.service.BadgeQueryService;
 import com.server.money_touch.global.apiPayload.ApiResponse;
 import com.server.money_touch.global.apiPayload.code.status.ErrorStatus;
+import com.server.money_touch.global.utils.AuthUtil;
 import com.server.money_touch.global.validation.annotation.ApiErrorCodeExample;
 import com.server.money_touch.global.validation.annotation.ApiErrorCodeExamples;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
@@ -26,6 +28,7 @@ public class BadgeController {
 
     private final BadgeQueryService badgeQueryService;
     private final BadgeCommandService badgeCommandService;
+    private final AuthUtil authUtil;
 
     @Operation(
             summary = "내가 획득한 배지 목록 조회 API",
@@ -38,10 +41,10 @@ public class BadgeController {
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "_INTERNAL_SERVER_ERROR")
     })
     @GetMapping("/my")
-    public ApiResponse<BadgeResponse.MyBadgeListResultDTO> getMyBadges() {
+    public ApiResponse<BadgeResponse.MyBadgeListResultDTO> getMyBadges(HttpServletRequest servletrequest) {
 
-        // userId 임시로 1로 지정 (추후 JWT 토큰에서 추출)
-        BadgeResponse.MyBadgeListResultDTO response = badgeQueryService.getMyBadges(1L);
+        Long userId = authUtil.getUserIdFromRequest(servletrequest);
+        BadgeResponse.MyBadgeListResultDTO response = badgeQueryService.getMyBadges(userId);
         return ApiResponse.onSuccess(response);
     }
 
@@ -63,11 +66,11 @@ public class BadgeController {
     })
     @PatchMapping("/representative-badge/{badgeId}")
     public ApiResponse<BadgeResponse.RepresentativeBadgeResultDTO> setRepresentativeBadge(
-//            @AuthenticationPrincipal UserPrincipal userPrincipal,
+            HttpServletRequest servletrequest,
             @PathVariable Long badgeId
     ) {
-        // userId 임시로 1로 지정 (추후 JWT 토큰에서 추출)
-        BadgeResponse.RepresentativeBadgeResultDTO response = badgeCommandService.setRepresentativeBadge(1L, badgeId);
+        Long userId = authUtil.getUserIdFromRequest(servletrequest);
+        BadgeResponse.RepresentativeBadgeResultDTO response = badgeCommandService.setRepresentativeBadge(userId, badgeId);
         return ApiResponse.onSuccess(response);
     }
 
@@ -83,11 +86,10 @@ public class BadgeController {
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "_INTERNAL_SERVER_ERROR")
     })
     @GetMapping("/representative-badge")
-    public ApiResponse<BadgeResponse.RepresentativeBadgeResultDTO> getRepresentativeBadge(
-//            @AuthenticationPrincipal UserPrincipal userPrincipal
-    ) {
-        // userId 임시로 1로 지정 (추후 JWT 토큰에서 추출)
-        BadgeResponse.RepresentativeBadgeResultDTO response = badgeQueryService.getRepresentativeBadge(1L);
+    public ApiResponse<BadgeResponse.RepresentativeBadgeResultDTO> getRepresentativeBadge(HttpServletRequest servletrequest) {
+
+        Long userId = authUtil.getUserIdFromRequest(servletrequest);
+        BadgeResponse.RepresentativeBadgeResultDTO response = badgeQueryService.getRepresentativeBadge(userId);
         return ApiResponse.onSuccess(response);
     }
 

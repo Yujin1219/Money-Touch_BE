@@ -1,5 +1,7 @@
 package com.server.money_touch.domain.user.converter;
 
+import com.server.money_touch.domain.badge.entity.Badge;
+import com.server.money_touch.domain.user.dto.UserResponse;
 import com.server.money_touch.domain.user.entity.LocalLogin;
 import com.server.money_touch.domain.user.entity.SocialLogin;
 import com.server.money_touch.domain.user.entity.User;
@@ -55,6 +57,14 @@ public class UserConverter {
         return user;
     }
 
+    // ✅ 새로 추가: User를 UserCreateResultDTO로 변환
+    public static UserResponse.UserCreateResultDTO toUserCreateResultDTO(User user) {
+        return UserResponse.UserCreateResultDTO.builder()
+                .userId(user.getId())
+                .createdAt(user.getCreatedAt())
+                .build();
+    }
+
     /**
      * UserDetail 생성
      */
@@ -90,5 +100,14 @@ public class UserConverter {
         return socialLogin;
     }
 
+    // 마이페이지용
+    public static UserResponse.MyPageResponseDTO toMyPageResponseDTO(User user, Badge badge){
+
+        return UserResponse.MyPageResponseDTO.builder()
+                .nickname(user.getNickname())
+                .profileImgUrl(user.getProfileImgUrl())
+                .representativeBadgeImageUrl(badge != null ? badge.getImageUrl() : null)
+                .build();
+    }
 
 }

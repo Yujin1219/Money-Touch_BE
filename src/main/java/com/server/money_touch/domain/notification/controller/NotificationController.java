@@ -4,12 +4,14 @@ import com.server.money_touch.domain.notification.dto.NotificationResponse;
 import com.server.money_touch.domain.notification.service.NotificationService;
 import com.server.money_touch.global.apiPayload.ApiResponse;
 import com.server.money_touch.global.apiPayload.code.status.ErrorStatus;
+import com.server.money_touch.global.utils.AuthUtil;
 import com.server.money_touch.global.validation.annotation.ApiErrorCodeExample;
 import com.server.money_touch.global.validation.annotation.ApiErrorCodeExamples;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
@@ -24,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
     public class NotificationController {
 
         private final NotificationService notificationService;
+        private final AuthUtil authUtil;
 
         // 전체 알림 조회
         @Operation(
@@ -37,18 +40,16 @@ import org.springframework.web.bind.annotation.*;
                 @ApiErrorCodeExample(value = ErrorStatus.class, name = "_INTERNAL_SERVER_ERROR"),
         })
         @Parameters({
-                @Parameter(name = "cursor", description = "커서 ID (첫 조회시 null)", example = "123")
+                @Parameter(name = "cursor", description = "커서 ID (첫 조회시 null)", example = "1")
         })
         @GetMapping("/list")
         public ApiResponse<NotificationResponse.NotificationListDTO> getNotificationList(
                 @Parameter(description = "커서 ID (첫 조회시 null)", example = "10")
-                @RequestParam(required = false) Long cursor) {
+                @RequestParam(required = false) Long cursor, HttpServletRequest servletrequest) {
 
-            log.info("알림 목록 조회 요청 - cursor: {}", cursor);
-
-            // userId 임시로 1로 지정 (추후 JWT 토큰에서 추출)
+            Long userId = authUtil.getUserIdFromRequest(servletrequest);
             NotificationResponse.NotificationListDTO response =
-                    notificationService.getNotificationsByCursor(1L, cursor);
+                    notificationService.getNotificationsByCursor(userId, cursor);
 
             return ApiResponse.onSuccess(response);
         }
@@ -71,12 +72,10 @@ import org.springframework.web.bind.annotation.*;
         })
         @PatchMapping("/{notificationId}/read")
         public ApiResponse<NotificationResponse.NotificationReadResultDTO> readNotification(
-                @PathVariable Long notificationId
+                @PathVariable Long notificationId, HttpServletRequest servletrequest
         ) {
-            log.info("알림 읽음 처리 요청 - notificationId: {}", notificationId);
-
-            // userId 임시로 1로 지정 (추후 JWT 토큰에서 추출)
-            NotificationResponse.NotificationReadResultDTO response =notificationService.markAsRead(1L, notificationId);
+            Long userId = authUtil.getUserIdFromRequest(servletrequest);
+            NotificationResponse.NotificationReadResultDTO response =notificationService.markAsRead(userId, notificationId);
             return ApiResponse.onSuccess(response);
         }
     }
