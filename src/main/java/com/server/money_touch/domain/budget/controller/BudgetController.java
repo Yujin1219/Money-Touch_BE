@@ -53,9 +53,10 @@ public class BudgetController {
     })
     @PostMapping()
     public ApiResponse<BudgetResponse.BudgetCreateResultDTO> postBudget(@Valid @RequestBody BudgetRequest.BudgetCreateDTO request,
-                                                                        HttpServletRequest servletrequest) {
+                                                                        HttpServletRequest servletRequest) {
 
-        Long userId = authUtil.getUserIdFromRequest(servletrequest);
+        Long userId = authUtil.getUserIdFromRequest(servletRequest);
+        log.info("userId, {}", userId);
 
         BudgetResponse.BudgetCreateResultDTO response = budgetCommandService.saveOrUpdateBudgetWithCategories(userId, request);
         return ApiResponse.onSuccess(response);
@@ -76,9 +77,9 @@ public class BudgetController {
             @Parameter(name = "budgetId", description = "조회하려는 예산 아이디", example = "1", required = true),
     })
     @GetMapping("/{budgetId}")
-    public ApiResponse<BudgetResponse.BudgetDetailDTO> getBudget(@PathVariable Long budgetId) {
-        // 로그인 전까지 userId 1로 임시 세팅
-        BudgetResponse.BudgetDetailDTO response = budgetQueryService.findBudgetById(1L, budgetId);
+    public ApiResponse<BudgetResponse.BudgetDetailDTO> getBudget(@PathVariable Long budgetId, HttpServletRequest servletRequest) {
+        Long userId = authUtil.getUserIdFromRequest(servletRequest);
+        BudgetResponse.BudgetDetailDTO response = budgetQueryService.findBudgetById(userId, budgetId);
         return ApiResponse.onSuccess(response);
     }
 
@@ -100,9 +101,9 @@ public class BudgetController {
             @Parameter(name = "month", description = "조회하려는 월", example = "7", required = true),
     })
     @GetMapping("/total-consumption")
-    public ApiResponse<BudgetResponse.TotalConsumptionResultDTO> getTotalConsumption(@RequestParam Integer year, @RequestParam Integer month) {
-        // 로그인 전까지 userId 1로 임시 세팅
-        BudgetResponse.TotalConsumptionResultDTO response = budgetQueryService.findBudgetByIdAndTotalConsumption(1L, year, month);
+    public ApiResponse<BudgetResponse.TotalConsumptionResultDTO> getTotalConsumption(@RequestParam Integer year, @RequestParam Integer month, HttpServletRequest servletRequest) {
+        Long userId = authUtil.getUserIdFromRequest(servletRequest);
+        BudgetResponse.TotalConsumptionResultDTO response = budgetQueryService.findBudgetByIdAndTotalConsumption(userId, year, month);
         return ApiResponse.onSuccess(response);
     }
 }

@@ -1,5 +1,6 @@
 package com.server.money_touch.domain.user.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,6 +20,7 @@ public class KakaoDTO {
         private int refresh_token_expires_in;
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     @Getter @Setter @NoArgsConstructor
     public static class KakaoProfile {
         private Long id;
@@ -63,6 +65,7 @@ public class KakaoDTO {
 
             private String email;
 
+            @JsonIgnoreProperties(ignoreUnknown = true)
             @Getter @Setter @NoArgsConstructor
             public static class Profile {
                 private String nickname;
@@ -75,6 +78,9 @@ public class KakaoDTO {
 
                 @JsonProperty("is_default_nickname")
                 private Boolean isDefaultNickname;
+
+                @JsonProperty("is_default_image")
+                private Boolean isDefaultImage;
             }
         }
     }

@@ -12,14 +12,14 @@ import java.util.List;
 public class CustomUserDetails implements UserDetails, Serializable {
 
     private final Long id;
-    private final String nickname;
+    private final String email;
     private final String password;
     private final String role;
     private final AuthType authType;
 
     public CustomUserDetails(User user, String password) {
         this.id = user.getId();
-        this.nickname = user.getNickname();
+        this.email = user.getEmail();
         this.role = user.getRole().name();
         this.authType = user.getAuthType();
         this.password = password; // local login 비밀번호
@@ -35,7 +35,7 @@ public class CustomUserDetails implements UserDetails, Serializable {
     // 사용자의 닉네임을 반환
     @Override
     public String getUsername() {
-        return nickname;
+        return email;
     }
 
     // 사용자의 password 반환

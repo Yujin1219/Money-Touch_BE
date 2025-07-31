@@ -6,6 +6,7 @@ import com.server.money_touch.domain.fixedConsumption.service.FixedConsumptionCo
 import com.server.money_touch.domain.fixedConsumption.service.FixedConsumptionQueryService;
 import com.server.money_touch.global.apiPayload.ApiResponse;
 import com.server.money_touch.global.apiPayload.code.status.ErrorStatus;
+import com.server.money_touch.global.utils.AuthUtil;
 import com.server.money_touch.global.validation.annotation.ApiErrorCodeExample;
 import com.server.money_touch.global.validation.annotation.ApiErrorCodeExamples;
 import com.server.money_touch.global.validation.annotation.ApiSuccessCodeExample;
@@ -13,6 +14,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +31,7 @@ public class FixedConsumptionController {
 
     private final FixedConsumptionCommandService fixedConsumptionCommandService;
     private final FixedConsumptionQueryService fixedConsumptionQueryService;
+    private final AuthUtil authUtil;
 
     @Operation(
             summary = "고정비 등록 API",
@@ -42,9 +45,10 @@ public class FixedConsumptionController {
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "_INTERNAL_SERVER_ERROR"),
     })
     @PostMapping()
-    public ApiResponse<FixedConsumptionResponse.FixedConsumptionCreateResultDTO> postFixedConsumption(@Valid @RequestBody FixedConsumptionRequest.FixedConsumptionCreateDTO request) {
-        // 로그인 전까지 userId 1로 임시 세팅
-        FixedConsumptionResponse.FixedConsumptionCreateResultDTO response = fixedConsumptionCommandService.saveFixedConsumption(1L, request);
+    public ApiResponse<FixedConsumptionResponse.FixedConsumptionCreateResultDTO> postFixedConsumption(@Valid @RequestBody FixedConsumptionRequest.FixedConsumptionCreateDTO request,
+                                                                                                      HttpServletRequest servletRequest) {
+        Long userId = authUtil.getUserIdFromRequest(servletRequest);
+        FixedConsumptionResponse.FixedConsumptionCreateResultDTO response = fixedConsumptionCommandService.saveFixedConsumption(userId, request);
         return ApiResponse.onSuccess(response);
     }
 
@@ -65,9 +69,9 @@ public class FixedConsumptionController {
     })
     @PatchMapping("/{fixedConsumptionId}")
     public ApiResponse<String> patchFixedConsumption(@Valid @RequestBody FixedConsumptionRequest.FixedConsumptionCreateDTO request,
-                                               @PathVariable Long fixedConsumptionId) {
-        // 로그인 전까지 userId 1로 임시 세팅
-        fixedConsumptionCommandService.updateFixedConsumption(1L, fixedConsumptionId, request);
+                                               @PathVariable Long fixedConsumptionId, HttpServletRequest servletRequest) {
+        Long userId = authUtil.getUserIdFromRequest(servletRequest);
+        fixedConsumptionCommandService.updateFixedConsumption(userId, fixedConsumptionId, request);
         return ApiResponse.onSuccess("고정비 수정 성공");
     }
 
@@ -86,9 +90,9 @@ public class FixedConsumptionController {
             @Parameter(name = "fixedConsumptionId", description = "삭제하려는 고정비 아이디", example = "1", required = true),
     })
     @DeleteMapping("/{fixedConsumptionId}")
-    public ApiResponse<String> deleteFixedConsumption(@PathVariable Long fixedConsumptionId) {
-        // 로그인 전까지 userId 1로 임시 세팅
-        fixedConsumptionCommandService.deleteFixedConsumption(1L, fixedConsumptionId);
+    public ApiResponse<String> deleteFixedConsumption(@PathVariable Long fixedConsumptionId, HttpServletRequest servletRequest) {
+        Long userId = authUtil.getUserIdFromRequest(servletRequest);
+        fixedConsumptionCommandService.deleteFixedConsumption(userId, fixedConsumptionId);
         return ApiResponse.onSuccess("고정비 삭제 성공");
     }
 
@@ -105,9 +109,9 @@ public class FixedConsumptionController {
             @Parameter(name = "cursorId", description = "커서 (이전 요청의 마지막 consumptionRecordId). 첫 요청 시 생략", example = "3", required = false)
     })
     @GetMapping("list")
-    public ApiResponse<FixedConsumptionResponse.FixedConsumptionCursorResultDTO> getFixedConsumptions(@RequestParam(required = false) Long cursorId) {
-        // 로그인 전까지 userId 1로 임시 세팅
-        FixedConsumptionResponse.FixedConsumptionCursorResultDTO response = fixedConsumptionQueryService.getFixedConsumptions(1L, cursorId);
+    public ApiResponse<FixedConsumptionResponse.FixedConsumptionCursorResultDTO> getFixedConsumptions(@RequestParam(required = false) Long cursorId, HttpServletRequest servletRequest) {
+        Long userId = authUtil.getUserIdFromRequest(servletRequest);
+        FixedConsumptionResponse.FixedConsumptionCursorResultDTO response = fixedConsumptionQueryService.getFixedConsumptions(userId, cursorId);
         return ApiResponse.onSuccess(response);
     }
 
