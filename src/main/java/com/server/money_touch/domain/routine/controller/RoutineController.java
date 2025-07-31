@@ -80,9 +80,9 @@ public class RoutineController {
     })
     @Parameter(name = "cursorId", description = "커서(이전 요청에서 마지막 소비 루틴 아이디), 첫번째 요청일 시에는 파라미터에 포함하지 않아도 됩니다.", example = "10", required = false)
     @GetMapping("/users")
-    public ApiResponse<RoutineResponse.MyRoutineListDTO> getMyRoutines(@RequestParam(required = false) Long cursorId) {
-        // 로그인 전까지 userId 1로 임시 세팅
-        RoutineResponse.MyRoutineListDTO response = routineQueryService.getMyRoutineList(1L, cursorId);
+    public ApiResponse<RoutineResponse.MyRoutineListDTO> getMyRoutines(@RequestParam(required = false) Long cursorId, HttpServletRequest servletRequest) {
+        Long userId = authUtil.getUserIdFromRequest(servletRequest);
+        RoutineResponse.MyRoutineListDTO response = routineQueryService.getMyRoutineList(userId, cursorId);
         return ApiResponse.onSuccess(response);
     }
 
@@ -121,9 +121,9 @@ public class RoutineController {
             @Parameter(name = "routineId", description = "조회하려는 소비 루틴 아이디", example = "1", required = true),
     })
     @GetMapping("/users/{routineId}")
-    public ApiResponse<RoutineResponse.RoutineDetailDTO> getMyDetailRoutine(@PathVariable Long routineId) {
-        // 로그인 전까지 userId 1로 임시 세팅
-        RoutineResponse.RoutineDetailDTO response = routineQueryService.getUserRoutineDetail(1L, routineId);
+    public ApiResponse<RoutineResponse.RoutineDetailDTO> getMyDetailRoutine(@PathVariable Long routineId, HttpServletRequest servletRequest) {
+        Long userId = authUtil.getUserIdFromRequest(servletRequest);
+        RoutineResponse.RoutineDetailDTO response = routineQueryService.getUserRoutineDetail(userId, routineId);
         return ApiResponse.onSuccess(response);
     }
 

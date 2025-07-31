@@ -5,6 +5,7 @@ import com.server.money_touch.domain.consumptionRecord.service.ConsumptionRecord
 import com.server.money_touch.domain.consumptionRecord.service.ConsumptionRecordQueryService;
 import com.server.money_touch.global.apiPayload.ApiResponse;
 import com.server.money_touch.global.apiPayload.code.status.ErrorStatus;
+import com.server.money_touch.global.utils.AuthUtil;
 import com.server.money_touch.global.validation.annotation.ApiErrorCodeExample;
 import com.server.money_touch.global.validation.annotation.ApiErrorCodeExamples;
 import com.server.money_touch.global.validation.annotation.ApiSuccessCodeExample;
@@ -14,6 +15,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +32,7 @@ public class HouseholdConsumptionController {
 
     private final ConsumptionRecordCommandService consumptionRecordCommandService;
     private final ConsumptionRecordQueryService consumptionRecordQueryService;
+    private final AuthUtil authUtil;
 
     // 가계부 일일 소비 등록
     @Operation(
@@ -45,10 +48,10 @@ public class HouseholdConsumptionController {
     })
     @PostMapping("/daily")
     public ApiResponse<ConsumptionRecordResponse.ConsumptionRecordCreateResultDTO> postDailyConsumptionRecord(
-            @Valid @RequestBody HouseholdConsumptionRequest.DailyConsumptionCreateDTO request){
+            @Valid @RequestBody HouseholdConsumptionRequest.DailyConsumptionCreateDTO request, HttpServletRequest servletRequest){
 
-        // 로그인 전까지 userId 1로 임시 세팅
-        ConsumptionRecordResponse.ConsumptionRecordCreateResultDTO response = consumptionRecordCommandService.saveDailyConsumptionRecord(1L, request);
+        Long userId = authUtil.getUserIdFromRequest(servletRequest);
+        ConsumptionRecordResponse.ConsumptionRecordCreateResultDTO response = consumptionRecordCommandService.saveDailyConsumptionRecord(userId, request);
         return ApiResponse.onSuccess(response);
     }
 
@@ -69,9 +72,9 @@ public class HouseholdConsumptionController {
     })
     @PatchMapping("/daily/{consumptionRecordId}")
     public ApiResponse<String> patchDailyConsumptionRecord(@Valid @RequestBody HouseholdConsumptionRequest.DailyConsumptionCreateDTO request,
-                                                      @PathVariable Long consumptionRecordId){
-        // 로그인 전까지 userId 1로 임시 세팅
-        consumptionRecordCommandService.updateDailyConsumptionRecord(1L, consumptionRecordId, request);
+                                                      @PathVariable Long consumptionRecordId, HttpServletRequest servletRequest){
+        Long userId = authUtil.getUserIdFromRequest(servletRequest);
+        consumptionRecordCommandService.updateDailyConsumptionRecord(userId, consumptionRecordId, request);
 
         return ApiResponse.onSuccess("일일 소비 수정 성공");
     }
@@ -91,9 +94,9 @@ public class HouseholdConsumptionController {
             @Parameter(name = "consumptionRecordId", description = "삭제하려는 소비 기록 아이디", example = "1", required = true),
     })
     @DeleteMapping("/daily/{consumptionRecordId}")
-    public ApiResponse<String> deleteDailyConsumptionRecord(@PathVariable Long consumptionRecordId){
-        // 로그인 전까지 userId 1로 임시 세팅
-        consumptionRecordCommandService.deleteDailyConsumptionRecord(1L, consumptionRecordId);
+    public ApiResponse<String> deleteDailyConsumptionRecord(@PathVariable Long consumptionRecordId, HttpServletRequest servletRequest){
+        Long userId = authUtil.getUserIdFromRequest(servletRequest);
+        consumptionRecordCommandService.deleteDailyConsumptionRecord(userId, consumptionRecordId);
 
         return ApiResponse.onSuccess("일일 소비 삭제 성공");
     }
@@ -114,10 +117,10 @@ public class HouseholdConsumptionController {
             @Parameter(name = "consumptionRecordId", description = "조회하려는 소비 기록 아이디", example = "1", required = true),
     })
     @GetMapping("/daily/{consumptionRecordId}")
-    public ApiResponse<HouseholdConsumptionResponse.DailyConsumptionDetailDTO> getDailyConsumptionRecord(@PathVariable Long consumptionRecordId){
+    public ApiResponse<HouseholdConsumptionResponse.DailyConsumptionDetailDTO> getDailyConsumptionRecord(@PathVariable Long consumptionRecordId, HttpServletRequest servletRequest){
 
-        // 로그인 전까지 userId 1로 임시 세팅
-        HouseholdConsumptionResponse.DailyConsumptionDetailDTO response = consumptionRecordQueryService.getDailyConsumptionRecordDetail(1L, consumptionRecordId);
+        Long userId = authUtil.getUserIdFromRequest(servletRequest);
+        HouseholdConsumptionResponse.DailyConsumptionDetailDTO response = consumptionRecordQueryService.getDailyConsumptionRecordDetail(userId, consumptionRecordId);
         return ApiResponse.onSuccess(response);
     }
 
@@ -138,9 +141,9 @@ public class HouseholdConsumptionController {
     })
     @GetMapping("/monthly")
     public ApiResponse<HouseholdConsumptionResponse.MonthlyHistoryResponseDTO> getConsumptionRecordByMonth(@RequestParam Integer year, @RequestParam Integer month,
-                                                                                                           @RequestParam(required = false) Long cursorId) {
-        // 로그인 전까지 userId 1로 임시 세팅
-        HouseholdConsumptionResponse.MonthlyHistoryResponseDTO response = consumptionRecordQueryService.getMonthlyConsumptionRecords(1L, year, month, cursorId);
+                                                                                                           @RequestParam(required = false) Long cursorId, HttpServletRequest servletRequest) {
+        Long userId = authUtil.getUserIdFromRequest(servletRequest);
+        HouseholdConsumptionResponse.MonthlyHistoryResponseDTO response = consumptionRecordQueryService.getMonthlyConsumptionRecords(userId, year, month, cursorId);
         return ApiResponse.onSuccess(response);
     }
 
@@ -160,10 +163,10 @@ public class HouseholdConsumptionController {
     })
     @GetMapping("/calendar")
     public ApiResponse<HouseholdConsumptionResponse.CalendarDateAmountMapDTO> getConsumptionRecordByMonthInCalendar(@RequestParam Integer year,
-                                                                                                                 @RequestParam Integer month)
+                                                                                                                 @RequestParam Integer month, HttpServletRequest servletRequest)
     {
-        // 로그인 전까지 userId 1로 임시 세팅
-        HouseholdConsumptionResponse.CalendarDateAmountMapDTO response = consumptionRecordQueryService.getMonthlyConsumptionCalendar(1L, year, month);
+        Long userId = authUtil.getUserIdFromRequest(servletRequest);
+        HouseholdConsumptionResponse.CalendarDateAmountMapDTO response = consumptionRecordQueryService.getMonthlyConsumptionCalendar(userId, year, month);
         return ApiResponse.onSuccess(response);
     }
 
@@ -183,11 +186,12 @@ public class HouseholdConsumptionController {
             @Parameter(name = "day", description = "조회하려는 소비 일", example = "23", required = true),
     })
     @GetMapping("/calendar/daily")
-    public ApiResponse<HouseholdConsumptionResponse.CalendarDailyConsumeDetailDTO> getConsumptionRecordByMonthAndDayInCalendar(@RequestParam Integer year, @RequestParam Integer month, @RequestParam Integer day)
+    public ApiResponse<HouseholdConsumptionResponse.CalendarDailyConsumeDetailDTO> getConsumptionRecordByMonthAndDayInCalendar(@RequestParam Integer year, @RequestParam Integer month,
+                                                                                                                               @RequestParam Integer day, HttpServletRequest servletRequest)
     {
 
-        // 로그인 전까지 userId 1로 임시 세팅
-        HouseholdConsumptionResponse.CalendarDailyConsumeDetailDTO response = consumptionRecordQueryService.getCalendarDailyConsumptionRecordsDetail(1L, year, month, day);
+        Long userId = authUtil.getUserIdFromRequest(servletRequest);
+        HouseholdConsumptionResponse.CalendarDailyConsumeDetailDTO response = consumptionRecordQueryService.getCalendarDailyConsumptionRecordsDetail(userId, year, month, day);
         return ApiResponse.onSuccess(response);
     }
 }
