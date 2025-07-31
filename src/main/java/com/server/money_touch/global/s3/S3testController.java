@@ -21,14 +21,13 @@ public class S3testController {
     // 이미지를 업로드하는 각 서비스에 추가해주세요.
     private final S3Manager s3Manager;
 
-    @Operation(summary = "이미지 업로드 테스트 API", description = "Multipart 파일 업로드")
+    @Operation(summary = "프로필 이미지 업로드 테스트 API", description = "Multipart 파일 업로드")
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     /*consumes ~, @RequestParam ~ , String url = ~ 작성해야 업로드 가능. dir 은 저장 폴더명입니다.
     프로필 이미지라면 dirName: "profile", 소비 루틴 기록 이미지라면 "record" 라고 작성하는 것을 추천드립니다.*/
 
     public ApiResponse<String> uploadTest(@RequestParam("file") MultipartFile file) {
         try {
-            log.info("test");
             String url = s3Manager.upload(file, "profile");
             return ApiResponse.onSuccess(url);
         } catch (Exception e) {
