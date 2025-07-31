@@ -6,7 +6,10 @@ import com.server.money_touch.domain.consumptionRecord.entity.ConsumptionRecord;
 import com.server.money_touch.domain.consumptionRecord.entity.ConsumptionRecordImage;
 import com.server.money_touch.domain.consumptionRecord.enums.ReactionType;
 import com.server.money_touch.domain.user.entity.User;
+import org.springframework.data.domain.Slice;
 
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class FeedConverter {
@@ -34,6 +37,66 @@ public class FeedConverter {
                 .commentCount(record.getCommentCount())
                 .viewCount(record.getViewCount())
                 .myReaction(myReaction)
+                .build();
+    }
+
+    /**
+     * 피드리스트 전용 게시글 하나
+     */
+    public static FeedResponse.FeedListItemDTO toFeedListItemDTO(ConsumptionRecord record, ReactionType myReaction) {
+
+        return FeedResponse.FeedListItemDTO.builder()
+                .consumptionRecordId(record.getId())
+                .user(toUserInfo(record.getUser()))
+                .imageUrls(record.getImages().stream()
+                        .map(ConsumptionRecordImage::getFilePath)
+                        .collect(Collectors.toList()))
+                .createdAt(record.getCreatedAt())
+                .wiseCount(record.getWiseCount())
+                .wasteCount(record.getWasteCount())
+                .viewCount(record.getViewCount())
+                .myReaction(myReaction)
+                .build();
+    }
+
+    /**
+     * 커서 기반 무한스크롤 Slice<ConsumptionRecord> → FeedListResultDTO 변환
+     */
+    public static FeedResponse.FeedListResultDTO toFeedListDTO(
+            Slice<ConsumptionRecord> slice,
+            Map<Long, ReactionType> myReactions // 각 게시물에 대한 내 리액션 정보
+    ) {
+        if (slice == null || slice.isEmpty()) {
+            return FeedResponse.FeedListResultDTO.builder()
+                    .feedList(List.of())
+                    .FeedListSize(0)
+                    .isFirst(true)
+                    .hasNext(false)
+                    .nextCursorId(null)
+                    .nextCursorViewCount(null)
+                    .build();
+        }
+
+        List<FeedResponse.FeedListItemDTO> feedList = slice.getContent().stream()
+                .map(record -> toFeedListItemDTO(record, myReactions.get(record.getId())))
+                .toList();
+
+        Long nextCursorId = null;
+        Integer nextCursorViewCount = null;
+
+        if (slice.hasNext() && !feedList.isEmpty()) {
+            ConsumptionRecord lastRecord = slice.getContent().get(slice.getContent().size() - 1);
+            nextCursorId = lastRecord.getId();
+            nextCursorViewCount = lastRecord.getViewCount();
+        }
+
+        return FeedResponse.FeedListResultDTO.builder()
+                .feedList(feedList)
+                .FeedListSize(feedList.size())
+                .isFirst(slice.isFirst())
+                .hasNext(slice.hasNext())
+                .nextCursorId(nextCursorId)
+                .nextCursorViewCount(nextCursorViewCount)
                 .build();
     }
 

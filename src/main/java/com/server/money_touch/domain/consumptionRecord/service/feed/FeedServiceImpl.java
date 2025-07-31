@@ -4,6 +4,7 @@ import com.server.money_touch.domain.consumptionRecord.converter.feed.FeedConver
 import com.server.money_touch.domain.consumptionRecord.dto.FeedResponse;
 import com.server.money_touch.domain.consumptionRecord.entity.ConsumptionRecord;
 import com.server.money_touch.domain.consumptionRecord.entity.Reaction;
+import com.server.money_touch.domain.consumptionRecord.enums.FeedSortType;
 import com.server.money_touch.domain.consumptionRecord.enums.ReactionType;
 import com.server.money_touch.domain.consumptionRecord.repository.consumptionRecord.ConsumptionRecordRepository;
 import com.server.money_touch.domain.consumptionRecord.repository.feed.FeedRepository;
@@ -14,8 +15,15 @@ import com.server.money_touch.global.apiPayload.code.status.ErrorStatus;
 import com.server.money_touch.global.apiPayload.exception.handler.ErrorHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -27,6 +35,7 @@ public class FeedServiceImpl implements FeedService {
     private final ReactionRepository reactionRepository;
     private final UserRepository userRepository;
     private final ConsumptionRecordRepository consumptionRecordRepository;
+    private static final int PAGE_SIZE = 2;
 
     /**
      * 피드 상세 조회
@@ -34,6 +43,7 @@ public class FeedServiceImpl implements FeedService {
      * @param consumptionRecordId 조회할 소비기록 ID
      * @return FeedDetailResultDTO
      */
+    @Override
     public FeedResponse.FeedDetailResultDTO getFeedDetail(Long userId, Long consumptionRecordId) {
 
         // 1. 사용자 확인
@@ -81,4 +91,45 @@ public class FeedServiceImpl implements FeedService {
         // 5. DTO 반환
         return FeedConverter.toViewCountDTO(updatedRecord);
     }
-}
+
+    /**
+     * 커서 기반 무한스크롤 피드 목록 조회
+     * @param userId 로그인 사용자 ID
+     * @param sortType 정렬 기준 ("view" or "latest")
+     * @param cursorId 커서 ID (조회 기준 ID)
+     * @param cursorViewCount 커서 조회수 (조회수순일 때만 사용)
+     * @return FeedListResultDTO
+     */
+    @Override
+    public FeedResponse.FeedListResultDTO getFeedsByCursor(Long userId, FeedSortType sortType, Long cursorId, Integer cursorViewCount) {
+
+        // 1. 사용자 확인
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ErrorHandler(ErrorStatus.USER_NOT_FOUND));
+
+        Pageable pageable = PageRequest.of(0, PAGE_SIZE);
+        Slice<ConsumptionRecord> recordSlice;
+
+        // 2. 정렬 방식에 따라
+        if (sortType == FeedSortType.POPULAR) {
+            recordSlice = feedRepository.findByCursorOrderByViewCountDesc(cursorViewCount, cursorId, pageable);
+        } else {
+            recordSlice = feedRepository.findByCursorOrderByIdDesc(cursorId, pageable);
+        }
+
+        // 소비기록 ID 리스트 추출
+        List<Long> recordIds = recordSlice.getContent().stream()
+                .map(ConsumptionRecord::getId)
+                .toList();
+
+        // 리액션 조회 (N+1 방지)
+        Map<Long, ReactionType> myReactions = reactionRepository
+                .findByUserAndPublicConsumptionRecordIds(user, recordIds)
+                .stream()
+                .collect(Collectors.toMap(
+                        r -> r.getConsumptionRecord().getId(),
+                        Reaction::getType
+                ));
+
+        return FeedConverter.toFeedListDTO(recordSlice, myReactions);
+    }}

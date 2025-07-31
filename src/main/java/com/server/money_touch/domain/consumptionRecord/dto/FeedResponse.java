@@ -20,7 +20,7 @@ public class FeedResponse {
     public static class FeedListResultDTO {
 
         @Schema(description = "게시글 목록")
-        List<FeedDetailResultDTO> feedList;
+        List<FeedListItemDTO> feedList;
 
         @Schema(description = "현재 페이지의 알림 개수", example = "10")
         Integer FeedListSize;
@@ -28,13 +28,49 @@ public class FeedResponse {
         @Schema(description = "페이지 처음 여부", example = "true")
         Boolean isFirst;
 
-        @Schema(description = "페이지 마지막 여부", example = "false")
-        Boolean isLast;
-
         @Schema(description = "다음 페이지가 있는지 여부", example = "true")
         Boolean hasNext;
 
+        @Schema(description = "다음 커서 ID (무한스크롤용)", example = "1")
+        private Long nextCursorId;
+
+        @Schema(description = "다음 커서 조회수", example = "20")
+        private Integer nextCursorViewCount;
+
     }
+
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Schema(description = "피드 리스트 아이템 (리스트 전용)")
+    public static class FeedListItemDTO {
+
+        @Schema(description = "소비기록 ID", example = "1")
+        private Long consumptionRecordId;
+
+        @Schema(description = "사용자 정보")
+        private UserInfo user;
+
+        @Schema(description = "이미지 URL 리스트", example = "[\"https://example.com/image1.jpg\", \"https://example.com/image2.jpg\"]")
+        private List<String> imageUrls;
+
+        @Schema(description = "생성일시", example = "2024-03-15T14:30:00")
+        private LocalDateTime createdAt;
+
+        @Schema(description = "현명해요 수", example = "5")
+        private Integer wiseCount;
+
+        @Schema(description = "낭비에요 수", example = "1")
+        private Integer wasteCount;
+
+        @Schema(description = "조회 수", example = "21")
+        private Integer viewCount;
+
+        @Schema(description = "현재 내가 누른 리액션 타입 (없으면 null)", example = "WISE")
+        private ReactionType myReaction;
+    }
+
 
     @Builder
     @Getter

@@ -2,18 +2,21 @@ package com.server.money_touch.domain.consumptionRecord.controller;
 
 import com.server.money_touch.domain.consumptionRecord.dto.FeedRequest;
 import com.server.money_touch.domain.consumptionRecord.dto.FeedResponse;
+import com.server.money_touch.domain.consumptionRecord.enums.FeedSortType;
 import com.server.money_touch.domain.consumptionRecord.service.comment.CommentLikeService;
 import com.server.money_touch.domain.consumptionRecord.service.comment.CommentService;
 import com.server.money_touch.domain.consumptionRecord.service.feed.FeedService;
 import com.server.money_touch.domain.consumptionRecord.service.reaction.ReactionService;
 import com.server.money_touch.global.apiPayload.ApiResponse;
 import com.server.money_touch.global.apiPayload.code.status.ErrorStatus;
+import com.server.money_touch.global.utils.AuthUtil;
 import com.server.money_touch.global.validation.annotation.ApiErrorCodeExample;
 import com.server.money_touch.global.validation.annotation.ApiErrorCodeExamples;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,21 +37,40 @@ public class FeedController {
     private final CommentService commentService;
     private final CommentLikeService commentLikeService;
     private final FeedService feedService;
+    private final AuthUtil authUtil;
 
     // 피드 홈 (피드 리스트) 조회
     @Operation(
             summary = "피드 홈(피드 리스트) API",
-            description = "공개된 소비 기록(가계부에만 등록하지 않은 소비기록) 피드를 조회하는 API입니다"
+            description = """
+            공개된 소비기록(가계부에만 등록하지 않은 소비기록) 피드를 커서 기반 무한스크롤 방식으로 조회합니다.
+
+            정렬 방식:
+            - RECENT (기본값): 가장 최근에 생성된 게시물부터 정렬됩니다. (ID 내림차순)
+            - POPULAR: 조회수가 높은 게시물부터 정렬됩니다. 조회수가 같을 경우 ID가 더 큰 게시물이 우선입니다.
+
+            커서 방식:
+            - 최신순(RECENT)일 경우 → cursorId 사용
+            - 조회수순(POPULAR)일 경우 → cursorViewCount + cursorId 함께 사용
+            """
     )
-//        @ApiSuccessCodeExample(resultClass = NotificationResponse.NotificationListDTO.class)
     @ApiErrorCodeExamples({
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "USER_NOT_FOUND"),
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "_BAD_REQUEST"),
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "_INTERNAL_SERVER_ERROR"),
     })
     @GetMapping("/home")
-    public ApiResponse<FeedResponse.FeedListResultDTO> getFeedList() {
-        FeedResponse.FeedListResultDTO response = FeedResponse.FeedListResultDTO.builder().build();
+    public ApiResponse<FeedResponse.FeedListResultDTO> getFeedList(
+            HttpServletRequest request,
+            @RequestParam(name = "sortType", defaultValue = "RECENT") FeedSortType sortType,
+            @RequestParam(name = "cursorId", required = false) Long cursorId,
+            @RequestParam(name = "cursorViewCount", required = false) Integer cursorViewCount
+    ) {
+        Long userId = authUtil.getUserIdFromRequest(request);
+
+        FeedResponse.FeedListResultDTO response =
+                feedService.getFeedsByCursor(userId, sortType, cursorId, cursorViewCount);
+
         return ApiResponse.onSuccess(response);
     }
 

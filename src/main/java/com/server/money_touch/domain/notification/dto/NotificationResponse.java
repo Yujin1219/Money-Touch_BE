@@ -26,13 +26,10 @@ public class NotificationResponse {
         @Schema(description = "첫 페이지 여부", example = "true")
         private boolean isFirst;
 
-        @Schema(description = "마지막 페이지 여부", example = "false")
-        private boolean isLast;
-
         @Schema(description = "다음 페이지 존재 여부", example = "true")
         private boolean hasNext;
 
-        @Schema(description = "다음 커서 ID (무한스크롤용)", example = "123")
+        @Schema(description = "다음 커서 ID (무한스크롤용)", example = "1")
         private Long nextCursorId;
     }
 

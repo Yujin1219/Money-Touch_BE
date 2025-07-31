@@ -44,7 +44,6 @@ public class NotificationConverter {
                     .notificationList(List.of())
                     .notificationListSize(0)
                     .isFirst(true)
-                    .isLast(true)
                     .hasNext(false)
                     .nextCursorId(null)
                     .build();
@@ -64,7 +63,6 @@ public class NotificationConverter {
                 .notificationList(detailDTOList)
                 .notificationListSize(detailDTOList.size())
                 .isFirst(notificationSlice.isFirst())
-                .isLast(notificationSlice.isLast())
                 .hasNext(notificationSlice.hasNext())
                 .nextCursorId(nextCursorId)
                 .build();
