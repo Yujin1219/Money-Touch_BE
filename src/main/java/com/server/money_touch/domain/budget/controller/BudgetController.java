@@ -6,8 +6,6 @@ import com.server.money_touch.domain.budget.service.budget.BudgetCommandService;
 import com.server.money_touch.domain.budget.service.budget.BudgetQueryService;
 import com.server.money_touch.global.apiPayload.ApiResponse;
 import com.server.money_touch.global.apiPayload.code.status.ErrorStatus;
-import com.server.money_touch.global.apiPayload.exception.handler.ErrorHandler;
-import com.server.money_touch.global.config.jwt.TokenProvider;
 import com.server.money_touch.global.utils.AuthUtil;
 import com.server.money_touch.global.validation.annotation.ApiErrorCodeExample;
 import com.server.money_touch.global.validation.annotation.ApiErrorCodeExamples;
@@ -68,7 +66,7 @@ public class BudgetController {
     // 한 달 예산 내역 조회
     @Operation(
             summary = "한 달 예산 내역 조회 API",
-            description = "아이디와 일치하는 한 달 예산 내역 조회 API 입니다. (소비 루틴 등록 시 나의 한 달 예산 정보를 불러오는 용도)"
+            description = "아이디와 일치하는 한 달 예산 내역 조회 API 입니다. (소비 루틴 등록 및 예산 수정 시 나의 한 달 예산 정보를 불러오는 용도)"
     )
     @ApiErrorCodeExamples({
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "USER_NOT_FOUND"),

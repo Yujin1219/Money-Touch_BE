@@ -161,7 +161,9 @@ public class ConsumptionRecordQueryServiceImpl implements ConsumptionRecordQuery
                 .toList();
 
         // 다음 커서 ID 설정 (마지막 요소의 ID 사용)
-        Long nextCursorId = content.isEmpty() ? null : content.get(content.size() - 1).getConsumptionRecordId();
+        Long nextCursorId = (slice.hasNext() && !content.isEmpty())
+                ? content.get(content.size() - 1).getConsumptionRecordId()
+                : null;
 
         log.info("달력 해당 월의 소비 내역 목록 조회(커서 기반 무한스크롤) 완료 - userId: {}, year: {}, month: {}, cursorId: {}, nextCursorId: {}", userId, year, month, cursorId, nextCursorId);
 
