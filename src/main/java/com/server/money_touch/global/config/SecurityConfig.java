@@ -33,7 +33,7 @@ public class SecurityConfig {
                                 "/api/user/signup/local", "/api/user/login/local","/auth/login/kakao/**", // 로그인, 회원가입
                                 "/", "/index.html", "/css/**", "/js/**", "/images/**", "/test", // Spring Boot의 정적 리소스 기본 경로
                                 "/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html", // Swaggger 문서
-                                "/api/test/s3") // 프로필 이미지 업로드
+                                "/api/test/s3/upload") // 프로필 이미지 업로드
                         .permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN") // 관리자 페이지 접근 제어
                         .anyRequest().authenticated() // 나머지는 인증 필요
