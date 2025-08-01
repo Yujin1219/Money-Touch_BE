@@ -119,6 +119,9 @@ public class FeedResponse {
 
         @Schema(description = "소비 내용", example = "신라방 마라탕")
         private String content;
+
+        @Schema(description = "생성일시", example = "2024-03-15T14:30:00")
+        private LocalDateTime createdAt;
     }
 
     @Builder

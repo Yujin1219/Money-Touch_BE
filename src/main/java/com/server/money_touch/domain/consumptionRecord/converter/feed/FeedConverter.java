@@ -121,6 +121,7 @@ public class FeedConverter {
                                 .collect(Collectors.toList()))
                         .content(record.getContent())
                         .amount(record.getAmount())
+                        .createdAt(record.getCreatedAt())
                         .build()
                 ).toList();
 
