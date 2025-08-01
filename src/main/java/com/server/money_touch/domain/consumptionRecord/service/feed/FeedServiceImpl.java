@@ -82,14 +82,19 @@ public class FeedServiceImpl implements FeedService {
         ConsumptionRecord consumptionRecord = consumptionRecordRepository.findById(consumptionRecordId)
                 .orElseThrow(() -> new ErrorHandler(ErrorStatus.CONSUMPTION_RECORD_NOT_FOUND));
 
-        // 3. 조회수 증가
+        // 3. 비공개 소비기록는 접근할 수 없음
+        if (!consumptionRecord.isPublic()) {
+            throw new ErrorHandler(ErrorStatus.FORBIDDEN_ACCESS_ON_PRIVATE_FEED);
+        }
+
+        // 4. 조회수 증가
         feedRepository.incrementViewCountIfPublic(consumptionRecordId);
 
-        // 4. 갱신된 값 조회
+        // 5. 갱신된 값 조회
         ConsumptionRecord updatedRecord = consumptionRecordRepository.findById(consumptionRecordId)
                 .orElseThrow(() -> new ErrorHandler(ErrorStatus.CONSUMPTION_RECORD_NOT_FOUND));
 
-        // 5. DTO 반환
+        // 6. DTO 반환
         return FeedConverter.toViewCountDTO(updatedRecord);
     }
 
