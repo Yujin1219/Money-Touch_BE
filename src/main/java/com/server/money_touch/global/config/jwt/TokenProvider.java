@@ -3,7 +3,9 @@ package com.server.money_touch.global.config.jwt;
 
 import com.server.money_touch.domain.user.dto.TokenResponse;
 import com.server.money_touch.domain.user.entity.CustomUserDetails;
+import com.server.money_touch.domain.user.entity.RefreshToken;
 import com.server.money_touch.domain.user.entity.User;
+import com.server.money_touch.domain.user.repository.user.RefreshTokenRepository;
 import com.server.money_touch.domain.user.repository.user.UserRepository;
 import com.server.money_touch.global.properties.Constants;
 import io.jsonwebtoken.*;
@@ -18,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.security.Key;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Date;
 
@@ -29,6 +32,7 @@ public class TokenProvider {
 
     private final JwtProperties jwtProperties;
     private final UserRepository userRepository;
+    private final RefreshTokenRepository refreshTokenRepository; // 추가
 
     private Key getSigningKey() {
         return Keys.hmacShaKeyFor(jwtProperties.getSecretKey().getBytes());
@@ -58,17 +62,26 @@ public class TokenProvider {
                 .compact();
 
         // Refresh Token 생성
+        long refreshExpireMillis = jwtProperties.getExpiration().getRefresh();
         String refreshToken = Jwts.builder()
                 .setSubject(email)
                 .setIssuedAt(now)
-                .setExpiration(new Date(now.getTime() + jwtProperties.getExpiration().getRefresh()))
+                .setExpiration(new Date(now.getTime() + refreshExpireMillis))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
+
+
+        // ✅ 갱신 또는 저장
+        LocalDateTime expiry = LocalDateTime.now().plusSeconds(refreshExpireMillis / 1000);
+        refreshTokenRepository.findByEmail(email).ifPresentOrElse(
+                existing -> existing.update(refreshToken, expiry),
+                () -> refreshTokenRepository.save(new RefreshToken(email, refreshToken, expiry))
+        );
 
         return TokenResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
-                .expiresIn(jwtProperties.getExpiration().getAccess() / 1000) // 초 단위
+                .expiresIn(jwtProperties.getExpiration().getAccess() / 1000)
                 .tokenType("Bearer")
                 .build();
     }
