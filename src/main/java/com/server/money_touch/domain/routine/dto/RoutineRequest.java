@@ -1,5 +1,6 @@
 package com.server.money_touch.domain.routine.dto;
 
+import com.server.money_touch.domain.budget.dto.BudgetRequest;
 import com.server.money_touch.domain.budget.enums.CategoryType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
@@ -94,16 +95,76 @@ public class RoutineRequest {
     @Setter
     @NoArgsConstructor
     @AllArgsConstructor
-    @Schema(description = "소비 루틴 예산 반영 요청 DTO")
+    @Schema(
+            description = "소비 루틴 예산 반영 요청 DTO",
+            example = "{\n" +
+                    "  \"totalBudget\": 1000000,\n" +
+                    "  \"defaultCategoryBudgets\": [\n" +
+                    "    {\n" +
+                    "      \"categoryName\": \"배달/외식\",\n" +
+                    "      \"amount\": 150000,\n" +
+                    "      \"categoryType\": \"DEFAULT\"\n" +
+                    "    },\n" +
+                    "    {\n" +
+                    "      \"categoryName\": \"교통\",\n" +
+                    "      \"amount\": 100000,\n" +
+                    "      \"categoryType\": \"DEFAULT\"\n" +
+                    "    },\n" +
+                    "    {\n" +
+                    "      \"categoryName\": \"패션/쇼핑\",\n" +
+                    "      \"amount\": 100000,\n" +
+                    "      \"categoryType\": \"DEFAULT\"\n" +
+                    "    },\n" +
+                    "    {\n" +
+                    "      \"categoryName\": \"카페\",\n" +
+                    "      \"amount\": 0,\n" +
+                    "      \"categoryType\": \"DEFAULT\"\n" +
+                    "    },\n" +
+                    "    {\n" +
+                    "      \"categoryName\": \"기타\",\n" +
+                    "      \"amount\": 0,\n" +
+                    "      \"categoryType\": \"DEFAULT\"\n" +
+                    "    }\n" +
+                    "  ],\n" +
+                    "  \"customCategoryBudgets\": [\n" +
+                    "    {\n" +
+                    "      \"categoryName\": \"데이트\",\n" +
+                    "      \"amount\": 300000,\n" +
+                    "      \"categoryType\": \"CUSTOM\"\n" +
+                    "    }\n" +
+                    "  ],\n" +
+                    "  \"routineCategoryBudgets\": [\n" +
+                    "    {\n" +
+                    "      \"categoryName\": \"교육비\",\n" +
+                    "      \"amount\": 250000,\n" +
+                    "      \"categoryType\": \"ROUTINE_CATEGORY\"\n" +
+                    "    },\n" +
+                    "    {\n" +
+                    "      \"categoryName\": \"술/유흥\",\n" +
+                    "      \"amount\": 100000,\n" +
+                    "      \"categoryType\": \"ROUTINE_CATEGORY\"\n" +
+                    "    }\n" +
+                    "  ]\n" +
+                    "}"
+    )
     public static class ApplyRoutineBudgetDTO {
 
-        @Schema(description = "수정된 전체 예산", example = "500000")
-        private Integer budgetTotal;
+        @Schema(description = "전체 예산", example = "600000")
+        @NotNull(message = "전체 예산은 필수 입력 항목입니다.")
+        private Integer totalBudget;
 
-        @Schema(description = "반영할 카테고리 예산 목록 (기존+소비루틴 모두 합침)")
-        @NotNull
+        @Schema(description = "기본 카테고리별 예산 목록")
+        @NotNull(message = "기본 카테고리 예산 목록은 비어 있을 수 없습니다.")
         @Valid
-        private List<RoutineRequest.ApplyCategoryBudgetDTO> categoryBudgets;
+        private List<ApplyCategoryBudgetDTO> defaultCategoryBudgets;
+
+        @Schema(description = "내 카테고리별 예산 목록")
+        @Valid
+        private List<ApplyCategoryBudgetDTO> customCategoryBudgets;
+
+        @Schema(description = "소비 루틴 카테고리 예산 목록")
+        @Valid
+        private List<ApplyCategoryBudgetDTO> routineCategoryBudgets;
     }
 
     @Getter
@@ -114,9 +175,11 @@ public class RoutineRequest {
     public static class ApplyCategoryBudgetDTO {
 
         @Schema(description = "카테고리명", example = "배달/외식")
+        @NotNull(message = "카테고리 이름은 필수입니다.")
         private String categoryName;
 
-        @Schema(description = "카테고리 금액", example = "100000")
+        @Schema(description = "카테고리별 예산 금액", example = "100000")
+        @NotNull(message = "카테고리 금액은 필수입니다.")
         private Integer amount;
 
         @Schema(description = "카테고리 타입", example = "DEFAULT / CUSTOM / ROUTINE_CATEGORY")

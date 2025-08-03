@@ -227,12 +227,14 @@ public class RoutineResponse {
         @Schema(description = "총 예산", example = "500000")
         private Integer totalBudget;
 
-        @Schema(description = "기존 카테고리별 예산 목록")
-        private List<ApplyCategoryBudgetDTO> categoryBudgets;
+        @Schema(description = "기본 타입의 카테고리별 예산 목록")
+        private List<ApplyCategoryBudgetDTO> defaultCategoryBudgets;
+
+        @Schema(description = "새로운 내 소비 카테고리별 예산 목록")
+        private List<ApplyCategoryBudgetDTO> customCategoryBudgets;
 
         @Schema(description = "새로운 소비 루틴 카테고리별 예산 목록")
         private List<ApplyCategoryBudgetDTO> routineCategoryBudgets;
-
     }
 
     @Getter

@@ -1,6 +1,8 @@
 package com.server.money_touch.domain.routine.converter;
 
 import com.server.money_touch.domain.budget.entity.Budget;
+import com.server.money_touch.domain.budget.entity.BudgetCategory;
+import com.server.money_touch.domain.budget.enums.CategoryType;
 import com.server.money_touch.domain.routine.dto.RoutineRequest;
 import com.server.money_touch.domain.routine.dto.RoutineResponse;
 import com.server.money_touch.domain.routine.entity.Routine;
@@ -63,6 +65,39 @@ public class RoutineConverter {
                 .isLast(slice.isLast())
                 .hasNext(slice.hasNext())
                 .nextCursorId(slice.hasNext() ? routineList.get(routineList.size() - 1).getRoutineId() : null)
+                .build();
+    }
+
+    // 통합 카테고리 DTO 생성 메서드
+    public static RoutineResponse.ApplyCategoryBudgetDTO toCategoryDTO(String name, int amount, CategoryType type) {
+        return RoutineResponse.ApplyCategoryBudgetDTO.builder()
+                .categoryName(name)
+                .amount(amount)
+                .categoryType(type)
+                .build();
+    }
+
+    // 루틴 전용 DTO 변환
+    public static RoutineResponse.ApplyCategoryBudgetDTO toRoutineCategoryDTO(BudgetCategory rc) {
+        return toCategoryDTO(
+                rc.getConsumptionCategory().getBudgetCategoryName(),
+                rc.getBudgetCategoryMoney(),
+                CategoryType.ROUTINE_CATEGORY
+        );
+    }
+
+    // ApplyRoutineInfoDTO 생성
+    public static RoutineResponse.ApplyRoutineInfoDTO toApplyRoutineInfoDTO(
+            int totalBudget,
+            List<RoutineResponse.ApplyCategoryBudgetDTO> defaultCategoryBudgets,
+            List<RoutineResponse.ApplyCategoryBudgetDTO> customCategoryBudgets,
+            List<RoutineResponse.ApplyCategoryBudgetDTO> routineCategoryBudgets
+    ) {
+        return RoutineResponse.ApplyRoutineInfoDTO.builder()
+                .totalBudget(totalBudget)
+                .defaultCategoryBudgets(defaultCategoryBudgets)
+                .customCategoryBudgets(customCategoryBudgets)
+                .routineCategoryBudgets(routineCategoryBudgets)
                 .build();
     }
 }

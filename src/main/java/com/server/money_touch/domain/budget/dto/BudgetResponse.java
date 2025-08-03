@@ -1,5 +1,6 @@
 package com.server.money_touch.domain.budget.dto;
 
+import com.server.money_touch.domain.budget.enums.CategoryType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
@@ -61,6 +62,9 @@ public class BudgetResponse {
 
         @Schema(description = "카테고리별 예산 금액", example = "200000")
         private Integer amount;
+
+        @Schema(description = "카테고리 타입", example = "DEFAULT / CUSTOM / ROUTINE_CATEGORY")
+        private CategoryType categoryType;
     }
 
     @Builder
@@ -74,6 +78,9 @@ public class BudgetResponse {
 
         @Schema(description = "카테고리별 예산 금액", example = "150000")
         private Integer amount;
+
+        @Schema(description = "카테고리 타입", example = "DEFAULT / CUSTOM / ROUTINE_CATEGORY")
+        private CategoryType categoryType;
     }
 
     @Builder
@@ -87,5 +94,8 @@ public class BudgetResponse {
 
         @Schema(description = "카테고리별 예산 금액", example = "150000")
         private Integer amount;
+
+        @Schema(description = "카테고리 타입", example = "DEFAULT / CUSTOM / ROUTINE_CATEGORY")
+        private CategoryType categoryType;
     }
 }

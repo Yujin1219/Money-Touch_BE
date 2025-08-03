@@ -43,17 +43,14 @@ public class BudgetCommandServiceImpl implements BudgetCommandService {
     // 예산 등록 또는 수정
     @Transactional
     @Override
-    public BudgetResponse.BudgetCreateResultDTO saveOrUpdateBudgetWithCategories(Long userId, BudgetRequest.BudgetCreateDTO request) {
+    public BudgetResponse.BudgetCreateResultDTO saveOrUpdateBudgetWithCategories(Long userId, Integer year, Integer month, BudgetRequest.BudgetCreateDTO request) {
         // 1. 사용자 조회
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ErrorHandler(ErrorStatus.USER_NOT_FOUND));
 
-        // 2. 이번 달 기준 예산 조회
-        YearMonth now = YearMonth.now();
-        LocalDateTime start = now.atDay(1).atStartOfDay(); // 월 시작 00:00:00
-        LocalDateTime end = now.atEndOfMonth().atTime(LocalTime.MAX);
-
-        Optional<Budget> optionalBudget = budgetRepository.findByUserAndCreatedAtBetween(user, start, end);
+        // 2. 파라미터 기준 예산 조회 (예: 2025-07)
+        String createdMonth = String.format("%d-%02d", year, month); // createdMonth 문자열로 변환 ("2025-07")
+        Optional<Budget> optionalBudget = budgetRepository.findByUserAndCreatedMonth(user, createdMonth);
 
         // 3. 카테고리 총합 계산
         int totalCategoryBudget = Stream.of(
@@ -105,14 +102,13 @@ public class BudgetCommandServiceImpl implements BudgetCommandService {
                 if (!hasRoutineData) {
                     throw new ErrorHandler(ErrorStatus.ROUTINE_CATEGORY_NOT_ALLOWED);
                 }
-
-                updateCategoryBudgetsByType(request.getRoutineCategoryBudgets(), user, budget, CategoryType.ROUTINE_CATEGORY, existingMapByType.getOrDefault(CategoryType.ROUTINE_CATEGORY, Map.of()));
             }
+            updateCategoryBudgetsByType(request.getRoutineCategoryBudgets(), user, budget, CategoryType.ROUTINE_CATEGORY, existingMapByType.getOrDefault(CategoryType.ROUTINE_CATEGORY, Map.of()));
 
             log.info("예산 수정 완료 - userId: {}, budgetId: {}", userId, budget.getId());
         } else {
             // 5-B. 예산 없음: 새로 등록
-            budget = BudgetConverter.toBudgetEntity(user, request.getTotalBudget());
+            budget = BudgetConverter.toBudgetEntity(user, request.getTotalBudget(), createdMonth);
             budgetRepository.save(budget);
 
             saveCategoryBudgetsByType(request.getDefaultCategoryBudgets(), user, budget, CategoryType.DEFAULT);
@@ -125,8 +121,7 @@ public class BudgetCommandServiceImpl implements BudgetCommandService {
                 if (!hasRoutineData) {
                     throw new ErrorHandler(ErrorStatus.ROUTINE_CATEGORY_NOT_ALLOWED);
                 }
-
-                saveCategoryBudgetsByType(request.getRoutineCategoryBudgets(), user, budget, CategoryType.ROUTINE_CATEGORY);
+//                saveCategoryBudgetsByType(request.getRoutineCategoryBudgets(), user, budget, CategoryType.ROUTINE_CATEGORY);
             }
 
             log.info("예산 등록 완료 - userId: {}, budgetId: {}", user.getId(), budget.getId());
@@ -344,7 +339,8 @@ public class BudgetCommandServiceImpl implements BudgetCommandService {
         }
 
         // 없다면 새로 생성
-        Budget newBudget = BudgetConverter.toBudgetEntity(user, 0);
+        String createdMonth = String.format("%d-%02d", now.getYear(), now.getMonthValue()); // ← 수정된 부분
+        Budget newBudget = BudgetConverter.toBudgetEntity(user, 0, createdMonth);
 
         return budgetRepository.save(newBudget);
     }

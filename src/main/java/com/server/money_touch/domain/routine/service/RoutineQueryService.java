@@ -25,4 +25,7 @@ public interface RoutineQueryService {
 
     // 검색 키워드로 소비 루틴 목록 조회(커서 기반 무한스크롤)
     RoutineResponse.AllRoutineListDTO searchRoutineList(String keyword, Long cursorId);
+
+    // 타인의 소비 루틴을 내 예산에 반영 시 미리보기
+    RoutineResponse.ApplyRoutineInfoDTO getRoutineApplyInfo(@ExistUser Long userId, @ExistRoutine Long routineId);
 }

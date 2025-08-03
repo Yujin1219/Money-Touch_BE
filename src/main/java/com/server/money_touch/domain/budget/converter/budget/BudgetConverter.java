@@ -12,12 +12,12 @@ import java.util.List;
 public class BudgetConverter {
 
     // BudgetCreateDTO → Budget Entity 변환
-    public static Budget toBudgetEntity(User user, Integer budgetTotal) {
+    public static Budget toBudgetEntity(User user, Integer budgetTotal, String createdMonth) {
         String currentMonth = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"));
         return Budget.builder()
                 .user(user)
                 .budgetTotal(budgetTotal)
-                .createdMonth(currentMonth)
+                .createdMonth(createdMonth)
                 .build();
     }
 

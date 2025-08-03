@@ -34,5 +34,10 @@ public interface BudgetCategoryRepository extends JpaRepository<BudgetCategory, 
     // budgetId 기준으로 BudgetCategory를 조회하면서 연관된 ConsumptionCategory도 JOIN FETCH로 한 번에 가져오도록
     @Query("SELECT bc FROM BudgetCategory bc JOIN FETCH bc.consumptionCategory WHERE bc.budget.id = :budgetId")
     List<BudgetCategory> findAllByBudgetIdWithCategory(@Param("budgetId") Long budgetId);
+
+    List<BudgetCategory> findByBudget(Budget budget);
+
+    @Query("SELECT bc FROM BudgetCategory bc JOIN FETCH bc.consumptionCategory WHERE bc.budget = :budget")
+    List<BudgetCategory> findByBudgetWithConsumptionCategory(@Param("budget") Budget budget);
 }
 

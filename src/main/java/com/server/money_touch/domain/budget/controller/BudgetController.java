@@ -53,12 +53,17 @@ public class BudgetController {
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "_BAD_REQUEST"),
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "_INTERNAL_SERVER_ERROR"),
     })
+    @Parameters({
+            @Parameter(name = "year", description = "등록하려는 연도", example = "2025", required = true),
+            @Parameter(name = "month", description = "등록하려는 월", example = "7", required = true),
+    })
     @PostMapping()
-    public ApiResponse<BudgetResponse.BudgetCreateResultDTO> postBudget(@Valid @RequestBody BudgetRequest.BudgetCreateDTO request,
+    public ApiResponse<BudgetResponse.BudgetCreateResultDTO> postBudget(@RequestParam Integer year, @RequestParam Integer month,
+                                                                        @Valid @RequestBody BudgetRequest.BudgetCreateDTO request,
                                                                         HttpServletRequest servletRequest) {
 
         Long userId = authUtil.getUserIdFromRequest(servletRequest);
-        BudgetResponse.BudgetCreateResultDTO response = budgetCommandService.saveOrUpdateBudgetWithCategories(userId, request);
+        BudgetResponse.BudgetCreateResultDTO response = budgetCommandService.saveOrUpdateBudgetWithCategories(userId, year, month, request);
         return ApiResponse.onSuccess(response);
     }
 

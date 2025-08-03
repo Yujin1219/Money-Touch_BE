@@ -11,13 +11,20 @@ import java.util.Optional;
 
 public interface BudgetRepository extends JpaRepository<Budget, Long> {
     Optional<Budget> findByUserAndCreatedAtBetween(User user, LocalDateTime start, LocalDateTime end);
+
     Optional<Budget> findByUserIdAndCreatedMonth(Long userId, String createdMonth);
 
-    @Query("SELECT b FROM Budget b WHERE b.user = :user " +
-            "AND b.createdAt BETWEEN :start AND :end " +
-            "AND b.createdAt = b.updatedAt")
-    Optional<Budget> findByUserAndCreatedAtBetweenAndCreatedEqualsUpdated(@Param("user") User user,
-                                                                          @Param("start") LocalDateTime start,
-                                                                          @Param("end") LocalDateTime end);
+    Optional<Budget> findByUserAndCreatedMonth(User user, String createdMonth);
 
+    @Query(value = """
+    SELECT * FROM budget b
+    WHERE b.user_id = :userId
+    AND b.created_at BETWEEN :start AND :end
+    AND TIMESTAMPDIFF(SECOND, b.created_at, b.updated_at) != 0
+    AND b.budget_total > 0
+    LIMIT 1
+    """, nativeQuery = true)
+    Optional<Budget> findRegisteredBudgetInMonthNative(@Param("userId") Long userId,
+                                                       @Param("start") LocalDateTime start,
+                                                       @Param("end") LocalDateTime end);
 }

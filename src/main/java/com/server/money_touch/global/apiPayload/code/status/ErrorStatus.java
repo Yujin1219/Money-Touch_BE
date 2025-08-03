@@ -29,6 +29,7 @@ public enum ErrorStatus implements BaseErrorCode {
     BUDGET_ALREADY_EXIST(HttpStatus.BAD_REQUEST, "BUDGET4004", "한 달 예산 등록 횟수를 초과하였습니다."),
     BUDGET_NOT_EXIST(HttpStatus.NOT_FOUND, "BUDGET_4041", "이번달에 등록된 예산이 없습니다."),
     ROUTINE_CATEGORY_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "BUDGET_403", "소비 루틴 카테고리는 소비 루틴을 등록한 경우나, 타인의 소비 루틴을 내 예산에 반영한 경우만 설정할 수 있습니다."),
+    BUDGE_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "BUDGET4011", "접근 권한이 없는 예산 아이디입니다. 예산 아이디 조회를 통해 올바른 예산 아이디로 구성해주세요."),
 
     // 소비 MBTI 관련 에러
     MBTI_NOT_FOUND(HttpStatus.BAD_REQUEST, "MBTI4001", "해당하는 소비 MBTI가 없습니다."),
@@ -61,7 +62,10 @@ public enum ErrorStatus implements BaseErrorCode {
     // 소비 루틴 관련 에러
     ROUTINE_NOT_FOUND(HttpStatus.BAD_REQUEST, "ROUTINE4001", "아이디와 일치하는 소비 루틴이 없습니다."),
     ROUTINE_ALREADY_EXIST(HttpStatus.BAD_REQUEST, "ROUTINE4002", "한 달 소비 루틴 등록 횟수를 초과하였습니다."),
+    ROUTINE_ALREADY_APPLIED(HttpStatus.BAD_REQUEST, "ROUTINE4003", "한 달 소비 루틴 가져오기 횟수를 초과하였습니다."),
+    ROUTINE_PREVIEW_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "ROUTINE4004", "자신의 소비 루틴은 미리보기로 가져올 수 없습니다."),
     ERROR_UPLOAD_ROUTINE_IMG(HttpStatus.INTERNAL_SERVER_ERROR, "ROUTINE5001", "소비 루틴 이미지 등록에 실패하였습니다."),
+
 
     // 알림 관련 에러
     NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "NOTIFICATION4001", "존재하지 않는 알림입니다."),

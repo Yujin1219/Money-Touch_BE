@@ -1,5 +1,6 @@
 package com.server.money_touch.domain.budget.dto;
 
+import com.server.money_touch.domain.budget.enums.CategoryType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -50,6 +51,9 @@ public class BudgetRequest {
         @Schema(description = "카테고리별 예산 금액", example = "100000")
         @NotNull(message = "카테고리 금액은 필수입니다.")
         private Integer amount;
+
+        @Schema(description = "카테고리 타입", example = "DEFAULT")
+        private CategoryType categoryType;
     }
 
     @Getter
@@ -66,6 +70,9 @@ public class BudgetRequest {
         @Schema(description = "카테고리별 예산 금액", example = "150000")
         @NotNull(message = "카테고리 금액은 필수입니다.")
         private Integer amount;
+
+        @Schema(description = "카테고리 타입", example = "CUSTOM")
+        private CategoryType categoryType;
     }
 
     @Getter
@@ -82,5 +89,8 @@ public class BudgetRequest {
         @Schema(description = "카테고리별 예산 금액", example = "100000")
         @NotNull(message = "카테고리 금액은 필수입니다.")
         private Integer amount;
+
+        @Schema(description = "카테고리 타입", example = "ROUTINE_CATEGORY")
+        private CategoryType categoryType;
     }
 }
