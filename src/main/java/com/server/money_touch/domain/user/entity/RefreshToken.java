@@ -24,4 +24,17 @@ public class RefreshToken {
 
     @Column(name = "expriry", nullable = false)
     private LocalDateTime expiry;
+
+    public RefreshToken(String email, String refreshToken, LocalDateTime expiry) {
+        this.email = email;
+        this.refreshToken = refreshToken;
+        this.expiry = expiry;
+    }
+
+    public void update(String newToken, LocalDateTime newExpiry) {
+        this.refreshToken = newToken;
+        this.expiry = newExpiry;
+    }
+
+
 }
