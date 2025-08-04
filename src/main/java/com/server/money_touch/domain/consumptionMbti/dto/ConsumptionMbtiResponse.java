@@ -18,6 +18,9 @@ public class ConsumptionMbtiResponse {
         @Schema(description = "소비 mbti 이름", example = "PTG")
         private String result;
 
+        @Schema(description = "소비 mbti 부제" , example = "계획 철벽러")
+        private String subtitle;
+
         @Schema(description = "소비 mbti 설명" ,example = "철저한 계획 아래~")
         private String description;
 
