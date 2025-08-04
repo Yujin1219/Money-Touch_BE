@@ -89,18 +89,21 @@ jobs:
             # Docker Login
             sudo docker login -u "${{ secrets.DOCKER_USERNAME }}" -p "${{ secrets.DOCKER_PASSWORD }}"
 
-            # Stop and Remove All Running Containers
-            if [ -n "$(sudo docker ps -aq)" ]; then
-              sudo docker rm -f $(sudo docker ps -aq)
+            # Stop and Remove Only spring-app container
+            spring_container=$(sudo docker ps -aqf "name=spring-app")
+            if [ -n "$spring_container" ]; then
+              sudo docker rm -f "$spring_container"
             fi
 
             # Pull Latest Docker Image
             sudo docker pull "${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO }}:latest"
 
-            # .env 환경변수 추가
-            echo "DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}" >> /home/ubuntu/.env
-            echo "DOCKER_REPO=${{ secrets.DOCKER_REPO }}" >> /home/ubuntu/.env
-            echo "REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}" >> /home/ubuntu/.env 
+            # .env 환경변수 추가 (기존에 덮어씌우는 방식)
+            cat <<EOF > /home/ubuntu/.env
+            DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}
+            DOCKER_REPO=${{ secrets.DOCKER_REPO }}
+            REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
+            EOF
 
             # Start Containers with Docker Compose
             if [ -f /home/ubuntu/docker-compose.yml ]; then
@@ -110,10 +113,12 @@ jobs:
               exit 1
             fi
 
-            # Connect All Running Containers to app-network
+            # Connect All Running Containers to app-network if not connected
             if [ "$(sudo docker ps -q)" ]; then
               for container_id in $(sudo docker ps -q); do
-                sudo docker network connect app-network $container_id || echo "Container $container_id is already connected to app-network"
+                if ! sudo docker inspect "$container_id" | grep -q '"app-network"'; then
+                  sudo docker network connect app-network "$container_id" || echo "Container $container_id already connected or failed"
+                fi
               done
             fi
 
