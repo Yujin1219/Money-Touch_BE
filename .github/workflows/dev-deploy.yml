@@ -98,8 +98,8 @@ jobs:
             sudo docker pull "${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO }}:latest"
 
             # .env 환경변수 추가
-            echo "DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}" > .env
-            echo "DOCKER_REPO=${{ secrets.DOCKER_REPO }}" >> .env
+            echo "DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}" >> /home/ubuntu/.env
+            echo "DOCKER_REPO=${{ secrets.DOCKER_REPO }}" >> /home/ubuntu/.env
             echo "REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}" > /home/ubuntu/.env
 
             # Start Containers with Docker Compose
