@@ -11,10 +11,11 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-@Tag(name = "test-controller", description = "Redis Test(관리자용)")
+@Tag(name = "redis-test-controller", description = "Redis Test(관리자용)")
 @Slf4j
 @RequiredArgsConstructor
-@RestController("/redis")
+@RestController
+@RequestMapping("/redis")
 public class RedisTestController {
 
     private final RedisTemplate<String, String> redisTemplate;
