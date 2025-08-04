@@ -83,39 +83,34 @@ jobs:
           username: ubuntu
           key: ${{ secrets.KEY }}
           script: |
-            # EC2 인스턴스 접속 후 작업 디렉토리 이동
             cd /home/ubuntu
 
             # Docker Login
             sudo docker login -u "${{ secrets.DOCKER_USERNAME }}" -p "${{ secrets.DOCKER_PASSWORD }}"
 
-            # Stop and Remove All Running Containers
-            if [ -n "$(sudo docker ps -aq)" ]; then
-              sudo docker rm -f $(sudo docker ps -aq)
+            # Stop and Remove Only spring-app and nginx containers
+            containers_to_restart=$(sudo docker ps -aqf "name=spring-app|nginx-container")
+            if [ -n "$containers_to_restart" ]; then
+              sudo docker rm -f $containers_to_restart
             fi
 
-            # Pull Latest Docker Image
+            # Pull Latest Image
             sudo docker pull "${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO }}:latest"
 
-            # .env 환경변수 추가
-            echo "DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}" >> /home/ubuntu/.env
+            # .env 환경변수 설정
+            echo "DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}" > /home/ubuntu/.env
             echo "DOCKER_REPO=${{ secrets.DOCKER_REPO }}" >> /home/ubuntu/.env
-            echo "REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}" >> /home/ubuntu/.env 
+            echo "REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}" >> /home/ubuntu/.env
 
-            # Start Containers with Docker Compose
-            if [ -f /home/ubuntu/docker-compose.yml ]; then
-              docker-compose up -d
-            else
-              echo "docker-compose.yml not found. Exiting."
-              exit 1
-            fi
+            # Start backend and nginx containers only
+            docker-compose up -d backend nginx
 
-            # Connect All Running Containers to app-network
-            if [ "$(sudo docker ps -q)" ]; then
-              for container_id in $(sudo docker ps -q); do
-                sudo docker network connect app-network $container_id || echo "Container $container_id is already connected to app-network"
-              done
-            fi
+            # Connect to app-network if not connected (optional safety)
+            for container_name in spring-app nginx-container; do
+              if sudo docker inspect --format='{{json .NetworkSettings.Networks.app-network}}' "$container_name" | grep -q 'null'; then
+                sudo docker network connect app-network "$container_name" || true
+              fi
+            done
 
-            # Clean Up Unused Docker Images
+            # Clean up dangling images
             sudo docker image prune -f
