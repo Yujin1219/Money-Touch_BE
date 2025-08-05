@@ -20,7 +20,9 @@ public enum ErrorStatus implements BaseErrorCode {
     USER_NOT_FOUND(HttpStatus.BAD_REQUEST, "USER4001", "아이디와 일치하는 사용자가 없습니다."),
 
     // 토큰 관련 에러
-    PARSING_ERROR(HttpStatus.BAD_REQUEST, "A001", "토큰 파싱 중 오류가 발생했습니다."),
+    PARSING_ERROR(HttpStatus.BAD_REQUEST, "TOKEN4001", "토큰 파싱 중 오류가 발생했습니다."),
+    TOKEN_INVALID_SIGNATURE(HttpStatus.UNAUTHORIZED, "TOKEN4002", "서명이 유효하지 않은 토큰입니다."),
+    TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "TOKEN4003", "토큰이 만료되었습니다. 다시 로그인 해주세요."),
 
     // 예산 관련 에러
     BUDGET_NOT_FOUND(HttpStatus.BAD_REQUEST, "BUDGET4001", "아이디와 일치하는 예산이 없습니다."),
