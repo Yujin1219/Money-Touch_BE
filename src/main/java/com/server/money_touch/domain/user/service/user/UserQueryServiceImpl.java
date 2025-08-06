@@ -29,6 +29,11 @@ public class UserQueryServiceImpl implements UserQueryService {
         return userRepository.findById(userId).isPresent();
     }
 
+    // 이메일 존재 여부 검증
+    @Override
+    public Boolean existsByEmail(String email){return userRepository.findByEmail(email).isPresent();}
+
+
     // 마이페이지
     @Override
     public UserResponse.MyPageResponseDTO getMyPageInfo(Long userId) {

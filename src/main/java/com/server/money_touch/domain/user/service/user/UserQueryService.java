@@ -6,6 +6,10 @@ public interface UserQueryService {
     // User 존재 여부 검증
     Boolean existsUserById(Long userId);
 
+    // email 존재 여부 검증
+    Boolean existsByEmail(String email);
+
+
     // 마이페이지 유저 정보 조회
     UserResponse.MyPageResponseDTO getMyPageInfo(Long userId);
 }

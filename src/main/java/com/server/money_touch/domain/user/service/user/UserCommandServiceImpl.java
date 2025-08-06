@@ -49,6 +49,7 @@ public class UserCommandServiceImpl implements UserCommandService {
     private final UserDetailRepository userDetailRepository;
     private final PasswordEncoder passwordEncoder;
     private final TokenProvider tokenProvider;
+    private final UserQueryService userQueryService;
     private final BudgetCommandService budgetCommandService;
     private final TotalConsumptionRepository totalConsumptionRepository;
 
@@ -212,7 +213,7 @@ public class UserCommandServiceImpl implements UserCommandService {
      * 이메일 중복 검증
      */
     private void validateDuplicateEmail(String email) {
-        if (userRepository.existsByEmail(email)) {
+        if (userQueryService.existsByEmail(email)) {
             throw new IllegalArgumentException("이미 사용중인 이메일입니다.");
         }
     }

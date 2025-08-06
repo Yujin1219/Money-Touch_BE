@@ -12,7 +12,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT u FROM User u LEFT JOIN FETCH u.userDetail")
     List<User> findAllWithUserDetail();
 
-    Optional<User> findByEmail(String email); // email로 사용자 정보를 가져옴
+    // email로 유저 조회
+    Optional<User> findByEmail(String email);
 
-    boolean existsByEmail(String email);
+    Optional<User> findById(Long id);
+    
 }

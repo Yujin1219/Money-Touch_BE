@@ -21,12 +21,15 @@ public class ConsumptionMbti {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(length = 10, nullable = false, unique = true)
+    private String result; // 소비MBTI 이름 ex) PTG
+
+    private String subtitle; // ex) 계획 철벽러
+
     private String mbtiImgUrl;
 
     private String description;
 
-    @Column(length = 10)
-    private String result; // 소비MBTI 이름 ex) PTG
 
     @CreatedDate
     private LocalDateTime createdAt;

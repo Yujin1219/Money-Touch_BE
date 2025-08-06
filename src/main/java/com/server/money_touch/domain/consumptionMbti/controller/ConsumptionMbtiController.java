@@ -2,6 +2,7 @@ package com.server.money_touch.domain.consumptionMbti.controller;
 
 
 import com.server.money_touch.domain.consumptionMbti.dto.ConsumptionMbtiResponse;
+import com.server.money_touch.domain.consumptionMbti.service.ConsumptionMbtiService;
 import com.server.money_touch.global.apiPayload.ApiResponse;
 import com.server.money_touch.global.apiPayload.code.status.ErrorStatus;
 import com.server.money_touch.global.validation.annotation.ApiErrorCodeExample;
@@ -11,6 +12,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +28,8 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/consumptionMbti")
 public class ConsumptionMbtiController {
 
+    private final ConsumptionMbtiService consumptionMbtiService;
+
     @Operation(
             summary = "소비 Mbti 조회 API",
             description = "결과 코드(예: PTG)에 해당하는 소비 MBTI 설명, 부제, 이미지 등을 조회합니다."
@@ -40,8 +44,8 @@ public class ConsumptionMbtiController {
             @Parameter(name = "result" , description = "조회하려는 소비 MBTI", example = "PTG" , required = true)
     })
     @GetMapping("/result")
-    public ApiResponse<ConsumptionMbtiResponse.ConsumptionMbtiResultDTO> getMbti(@RequestParam @NotBlank(message = "결과값은 필수입니다.") String result) {
-        ConsumptionMbtiResponse.ConsumptionMbtiResultDTO response = null; //  TODO: 서비스 연결 예정
+    public ApiResponse<ConsumptionMbtiResponse.ConsumptionMbtiResultDTO> getMbti(@RequestParam @NotBlank(message = "결과값은 필수입니다.") String result, HttpServletRequest request) {
+        var response = consumptionMbtiService.getConsumptionMbti(result, request);
         return ApiResponse.onSuccess(response);
     }
 
