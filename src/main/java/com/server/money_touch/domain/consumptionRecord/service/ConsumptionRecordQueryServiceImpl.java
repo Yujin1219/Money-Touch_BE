@@ -1,6 +1,7 @@
 package com.server.money_touch.domain.consumptionRecord.service;
 
 import com.server.money_touch.domain.consumptionRecord.converter.consumptionRecord.ConsumptionRecordConverter;
+import com.server.money_touch.domain.consumptionRecord.converter.household.HouseholdConsumptionConverter;
 import com.server.money_touch.domain.consumptionRecord.dto.HouseholdConsumptionResponse;
 import com.server.money_touch.domain.consumptionRecord.entity.ConsumptionCategory;
 import com.server.money_touch.domain.consumptionRecord.entity.ConsumptionRecord;
@@ -169,12 +170,7 @@ public class ConsumptionRecordQueryServiceImpl implements ConsumptionRecordQuery
                 .findDailyConsumptionItemsWithCursor(userId, startOfDay, endOfDay, cursorId, cursorConsumeDate, PAGE_SIZE);
 
         List<HouseholdConsumptionResponse.ConsumeItemDTO> items = slice.getContent().stream()
-                .map(p -> HouseholdConsumptionResponse.ConsumeItemDTO.builder()
-                        .consumptionRecordId(p.getConsumptionRecordId())
-                        .categoryName(p.getCategoryName())
-                        .content(p.getContent())
-                        .amount(p.getAmount())
-                        .build())
+                .map(HouseholdConsumptionConverter::toConsumeItem)
                 .toList();
 
         Long nextCursorId = (slice.hasNext() && !items.isEmpty())

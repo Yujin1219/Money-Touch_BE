@@ -67,10 +67,7 @@ public class RoutineQueryServiceImpl implements RoutineQueryService {
 
         // 4. 카테고리 정보 DTO로 변환
         List<RoutineResponse.CategoryBudgetDetailDTO> categoryBudgetList = routineAmounts.stream()
-                .map(ra -> RoutineResponse.CategoryBudgetDetailDTO.builder()
-                        .categoryName(ra.getCategoryName())
-                        .amount(ra.getAmount())
-                        .build())
+                .map(ra -> RoutineConverter.toCategoryBudgetDetailDTO(ra.getCategoryName(), ra.getAmount()))
                 .collect(Collectors.toList());
 
         log.info("내 소비 루틴 상세 조회 완료 - userId: {}, routeIneId: {}", userId, routineId);
@@ -110,7 +107,6 @@ public class RoutineQueryServiceImpl implements RoutineQueryService {
     }
 
     // 타인 소비 루틴 상세 조회
-    // 타인 소비 루틴 상세 조회
     @Override
     public RoutineResponse.RoutineListDetailDTO getOtherRoutineDetail(Long userId, Long routineId) {
         // 1. 루틴 조회
@@ -120,9 +116,8 @@ public class RoutineQueryServiceImpl implements RoutineQueryService {
         // 2. 루틴 금액 정보 조회
         List<RoutineAmount> routineAmounts = routineAmountRepository.findAllWithRoutineByRoutineId(routineId);
 
-        // 3. 금액이 0원 초과인 항목만 필터링 및 DTO 변환
+        // 3. 금액 필터링 없이 DTO 변환
         List<RoutineResponse.CategoryBudgetDetailDTO> categoryBudgetList = routineAmounts.stream()
-                .filter(ra -> ra.getAmount() != null && ra.getAmount() > 0)
                 .map(ra -> RoutineResponse.CategoryBudgetDetailDTO.builder()
                         .categoryName(ra.getCategoryName())
                         .amount(ra.getAmount())

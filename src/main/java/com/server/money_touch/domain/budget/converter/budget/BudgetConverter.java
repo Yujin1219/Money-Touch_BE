@@ -1,8 +1,9 @@
 package com.server.money_touch.domain.budget.converter.budget;
 
-import com.server.money_touch.domain.budget.dto.BudgetRequest;
 import com.server.money_touch.domain.budget.dto.BudgetResponse;
 import com.server.money_touch.domain.budget.entity.Budget;
+import com.server.money_touch.domain.budget.entity.BudgetCategory;
+import com.server.money_touch.domain.budget.enums.CategoryType;
 import com.server.money_touch.domain.user.entity.User;
 
 import java.time.LocalDate;
@@ -30,14 +31,23 @@ public class BudgetConverter {
 
     // 내 예산 조회 응답 DTO 반환
     public static BudgetResponse.BudgetDetailDTO toBudgetDetailDTO(Budget budget,
-                                                                   List<BudgetResponse.DefaultCategoryBudgetResponse> defaultCategories,
-                                                                   List<BudgetResponse.CustomCategoryBudgetResponse> customCategories,
-                                                                   List<BudgetResponse.RoutineCategoryBudgetResponse> routineCategories) {
+                                                                   List<BudgetResponse.BudgetDetailCategoryBudgetResponse> defaultCategories,
+                                                                   List<BudgetResponse.BudgetDetailCategoryBudgetResponse> customCategories,
+                                                                   List<BudgetResponse.BudgetDetailCategoryBudgetResponse> routineCategories) {
         return BudgetResponse.BudgetDetailDTO.builder()
                 .totalBudget(budget.getBudgetTotal())
                 .defaultCategoryBudgets(defaultCategories)
                 .customCategoryBudgets(customCategories)
                 .routineCategoryBudgets(routineCategories)
+                .build();
+    }
+
+    // 내 예산 조회 시 카테고리별 예산 응답 DTO 변환
+    public static BudgetResponse.BudgetDetailCategoryBudgetResponse toBudgetDetailCategoryBudgetResponse(BudgetCategory bc) {
+        return BudgetResponse.BudgetDetailCategoryBudgetResponse.builder()
+                .categoryName(bc.getConsumptionCategory().getBudgetCategoryName())
+                .amount(bc.getBudgetCategoryMoney())
+                .categoryType(bc.getConsumptionCategory().getBudgetCategoryType())
                 .build();
     }
 

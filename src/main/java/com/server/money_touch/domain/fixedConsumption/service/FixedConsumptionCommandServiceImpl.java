@@ -93,5 +93,4 @@ public class FixedConsumptionCommandServiceImpl implements FixedConsumptionComma
         fixedConsumptionRepository.delete(fixedConsumption);
         log.info("고정비 삭제 완료 - userId: {}, fixedConsumptionId: {}", userId, fixedConsumptionId);
     }
-
 }

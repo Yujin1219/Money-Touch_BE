@@ -100,4 +100,12 @@ public class RoutineConverter {
                 .routineCategoryBudgets(routineCategoryBudgets)
                 .build();
     }
+
+    // 내 소비 루틴 상세 조회 DTO 변환
+    public static RoutineResponse.CategoryBudgetDetailDTO toCategoryBudgetDetailDTO(String categoryName, Integer amount) {
+        return RoutineResponse.CategoryBudgetDetailDTO.builder()
+                .categoryName(categoryName)
+                .amount(amount)
+                .build();
+    }
 }

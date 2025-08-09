@@ -7,7 +7,6 @@ import com.server.money_touch.domain.budget.entity.BudgetCategory;
 import com.server.money_touch.domain.budget.enums.CategoryType;
 import com.server.money_touch.domain.budget.repository.budget.BudgetRepository;
 import com.server.money_touch.domain.budget.repository.budgetCategory.BudgetCategoryRepository;
-import com.server.money_touch.domain.consumptionRecord.converter.totalConsumption.TotalConsumptionConverter;
 import com.server.money_touch.domain.consumptionRecord.entity.TotalConsumption;
 import com.server.money_touch.domain.consumptionRecord.repository.totalConsumption.TotalConsumptionRepository;
 import com.server.money_touch.domain.user.entity.User;
@@ -60,29 +59,20 @@ public class BudgetQueryServiceImpl implements BudgetQueryService {
                 .collect(Collectors.groupingBy(bc -> bc.getConsumptionCategory().getBudgetCategoryType()));
 
         // 3-1. 공통 처리 함수 사용하여 DTO 변환
-        List<BudgetResponse.DefaultCategoryBudgetResponse> defaultCategories =
+        List<BudgetResponse.BudgetDetailCategoryBudgetResponse> defaultCategories =
                 convertBudgetCategories(groupedByType.get(CategoryType.DEFAULT),
-                        bc -> BudgetResponse.DefaultCategoryBudgetResponse.builder()
-                                .categoryName(bc.getConsumptionCategory().getBudgetCategoryName())
-                                .amount(bc.getBudgetCategoryMoney())
-                                .categoryType(bc.getConsumptionCategory().getBudgetCategoryType())
-                                .build());
+                        BudgetConverter::toBudgetDetailCategoryBudgetResponse
+                );
 
-        List<BudgetResponse.CustomCategoryBudgetResponse> customCategories =
+        List<BudgetResponse.BudgetDetailCategoryBudgetResponse> customCategories =
                 convertBudgetCategories(groupedByType.get(CategoryType.CUSTOM),
-                        bc -> BudgetResponse.CustomCategoryBudgetResponse.builder()
-                                .categoryName(bc.getConsumptionCategory().getBudgetCategoryName())
-                                .amount(bc.getBudgetCategoryMoney())
-                                .categoryType(bc.getConsumptionCategory().getBudgetCategoryType())
-                                .build());
+                        BudgetConverter::toBudgetDetailCategoryBudgetResponse
+                );
 
-        List<BudgetResponse.RoutineCategoryBudgetResponse> routineCategories =
+        List<BudgetResponse.BudgetDetailCategoryBudgetResponse> routineCategories =
                 convertBudgetCategories(groupedByType.get(CategoryType.ROUTINE_CATEGORY),
-                        bc -> BudgetResponse.RoutineCategoryBudgetResponse.builder()
-                                .categoryName(bc.getConsumptionCategory().getBudgetCategoryName())
-                                .amount(bc.getBudgetCategoryMoney())
-                                .categoryType(bc.getConsumptionCategory().getBudgetCategoryType())
-                                .build());
+                        BudgetConverter::toBudgetDetailCategoryBudgetResponse
+                );
 
         // 4. 응답 DTO 구성
         log.info("예산 조회 완료 - userId: {}, budgetId: {}", userId, budgetId);

@@ -42,13 +42,13 @@ public class BudgetResponse {
         private Integer totalBudget;
 
         @Schema(description = "기본 카테고리별 예산 목록")
-        private List<BudgetResponse.DefaultCategoryBudgetResponse> defaultCategoryBudgets;
+        private List<BudgetDetailCategoryBudgetResponse> defaultCategoryBudgets;
 
         @Schema(description = "내 카테고리별 예산 목록")
-        private List<BudgetResponse.CustomCategoryBudgetResponse> customCategoryBudgets;
+        private List<BudgetResponse.BudgetDetailCategoryBudgetResponse> customCategoryBudgets;
 
         @Schema(description = "소비 루틴 카테고리 예산 목록")
-        private List<BudgetResponse.RoutineCategoryBudgetResponse> routineCategoryBudgets;
+        private List<BudgetResponse.BudgetDetailCategoryBudgetResponse> routineCategoryBudgets;
     }
 
     @Builder
@@ -56,43 +56,11 @@ public class BudgetResponse {
     @NoArgsConstructor
     @AllArgsConstructor
     @Schema(description = "기본 카테고리별 예산")
-    public static class DefaultCategoryBudgetResponse {
-        @Schema(description = "기본 예산 카테고리명", example = "배달/외식")
+    public static class BudgetDetailCategoryBudgetResponse {
+        @Schema(description = "예산 카테고리명", example = "배달/외식")
         private String categoryName;
 
         @Schema(description = "카테고리별 예산 금액", example = "200000")
-        private Integer amount;
-
-        @Schema(description = "카테고리 타입", example = "DEFAULT / CUSTOM / ROUTINE_CATEGORY")
-        private CategoryType categoryType;
-    }
-
-    @Builder
-    @Getter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Schema(description = "사용자 정의 카테고리별 예산")
-    public static class CustomCategoryBudgetResponse {
-        @Schema(description = "사용자 정의 카테고리명", example = "교육비")
-        private String categoryName;
-
-        @Schema(description = "카테고리별 예산 금액", example = "150000")
-        private Integer amount;
-
-        @Schema(description = "카테고리 타입", example = "DEFAULT / CUSTOM / ROUTINE_CATEGORY")
-        private CategoryType categoryType;
-    }
-
-    @Builder
-    @Getter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Schema(description = "소비 루틴 카테고리 예산")
-    public static class RoutineCategoryBudgetResponse {
-        @Schema(description = "소비 루틴 카테고리명", example = "술/유흥")
-        private String categoryName;
-
-        @Schema(description = "카테고리별 예산 금액", example = "150000")
         private Integer amount;
 
         @Schema(description = "카테고리 타입", example = "DEFAULT / CUSTOM / ROUTINE_CATEGORY")
