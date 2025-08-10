@@ -38,8 +38,11 @@ public class AuthService {
     private final BudgetCommandService budgetCommandService;
     private final TotalConsumptionRepository totalConsumptionRepository;
 
-    public User oAuthLogin(String accessCode, HttpServletResponse httpServletResponse) {
-        KakaoDTO.OAuthToken oAuthToken = kakaoUtil.requestToken(accessCode);
+    public User oAuthLogin(String accessCode,String redirectUri, HttpServletResponse httpServletResponse) {
+        // 1. access token 요청 시 동적 redirectUri 전달
+        KakaoDTO.OAuthToken oAuthToken = kakaoUtil.requestToken(accessCode, redirectUri);
+
+        // 2. 카카오 프로필 조회
         KakaoDTO.KakaoProfile kakaoProfile = kakaoUtil.requestProfile(oAuthToken);
         String email = kakaoProfile.getKakaoAccount().getEmail();
 

@@ -22,21 +22,28 @@ import java.util.Arrays;
 public class KakaoUtil {
 
     @Value("${oauth.kakao.client-id}")
-    private String client;
-    @Value("${oauth.kakao.redirect-uri}")
-    private String redirect;
+    private String clientId;
 
-    public KakaoDTO.OAuthToken requestToken(String accessCode) {
+    public String buildAuthUrl(String dynamicRedirectUri) {
+        return "https://kauth.kakao.com/oauth/authorize"
+                + "?response_type=code"
+                + "&client_id=" + clientId
+                + "&redirect_uri=" + dynamicRedirectUri;
+    }
+//    @Value("${oauth.kakao.redirect-uri}")
+//    private String redirect;
+
+    public KakaoDTO.OAuthToken requestToken(String accessCode, String redirectUri) {
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Type", "application/x-www-form-urlencoded;charset=utf-8");
 
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("grant_type", "authorization_code");
-        params.add("client_id", client);
-        params.add("redirect_uri", redirect);
+        params.add("client_id", clientId);
+        params.add("redirect_uri", redirectUri); // 동적 값
         params.add("code", accessCode);
-        log.info("client_id: {}, redirect_uri: {}", client, redirect);
+        log.info("client_id: {}, redirect_uri: {}", clientId, redirectUri);
         log.info("accessCode: {}", accessCode);
 
         HttpEntity<MultiValueMap<String, String>> kakaoTokenRequest = new HttpEntity<>(params, headers);
