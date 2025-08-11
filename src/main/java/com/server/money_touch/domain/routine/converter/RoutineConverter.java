@@ -13,12 +13,13 @@ import java.util.List;
 
 public class RoutineConverter {
     // 루틴 엔티티 생성
-    public static Routine toRoutine(User user, Budget budget, RoutineRequest.RoutineCreateDTO routineCreateDTO) {
+    public static Routine toRoutine(User user, Budget budget, RoutineRequest.RoutineCreateDTO routineCreateDTO, String createdMonth) {
         return Routine.builder()
                 .user(user)
                 .budget(budget)
                 .routineName(routineCreateDTO.getRoutineName())
                 .routineImageUrl(routineCreateDTO.getRoutineImgUrl())
+                .createdMonth(createdMonth)
                 .build();
     }
 

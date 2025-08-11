@@ -64,7 +64,7 @@ public class FixedConsumptionCommandServiceImpl implements FixedConsumptionComma
                 .orElseThrow(() -> new ErrorHandler(ErrorStatus.USER_NOT_FOUND));
 
         // 기존 고정비 조회 및 사용자 일치 확인
-        FixedConsumption fixedConsumption = fixedConsumptionRepository.findById(fixedConsumptionId)
+        FixedConsumption fixedConsumption = fixedConsumptionRepository.findByIdAndUserId(fixedConsumptionId, userId)
                 .orElseThrow(() -> new ErrorHandler(ErrorStatus.FIXED_CONSUMPTION_NOT_FOUND));
 
         // 고정비 정보 수정
@@ -87,7 +87,7 @@ public class FixedConsumptionCommandServiceImpl implements FixedConsumptionComma
                 .orElseThrow(() -> new ErrorHandler(ErrorStatus.USER_NOT_FOUND));
 
         // 고정비 존재 여부 및 사용자 일치 확인
-        FixedConsumption fixedConsumption = fixedConsumptionRepository.findById(fixedConsumptionId)
+        FixedConsumption fixedConsumption = fixedConsumptionRepository.findByIdAndUserId(fixedConsumptionId, userId)
                 .orElseThrow(() -> new ErrorHandler(ErrorStatus.FIXED_CONSUMPTION_NOT_FOUND));
 
         fixedConsumptionRepository.delete(fixedConsumption);

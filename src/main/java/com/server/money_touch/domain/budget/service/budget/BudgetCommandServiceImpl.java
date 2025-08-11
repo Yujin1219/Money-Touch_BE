@@ -127,7 +127,7 @@ public class BudgetCommandServiceImpl implements BudgetCommandService {
             log.info("예산 등록 완료 - userId: {}, budgetId: {}", user.getId(), budget.getId());
         }
 
-        return BudgetConverter.toBudgetCreateResultDto(budget.getId());
+        return BudgetConverter.toBudgetCreateResultDto(budget.getId(), budget.getBudgetTotal());
     }
 
     // 기본, 커스텀, 소비루틴 카테고리 수정

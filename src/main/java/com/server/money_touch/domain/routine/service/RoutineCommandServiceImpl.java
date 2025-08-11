@@ -5,8 +5,10 @@ import com.server.money_touch.domain.budget.entity.Budget;
 import com.server.money_touch.domain.budget.entity.BudgetCategory;
 import com.server.money_touch.domain.budget.repository.budget.BudgetRepository;
 import com.server.money_touch.domain.budget.repository.budgetCategory.BudgetCategoryRepository;
+import com.server.money_touch.domain.consumptionRecord.converter.consumptionCategory.ConsumptionCategoryConverter;
 import com.server.money_touch.domain.consumptionRecord.entity.ConsumptionCategory;
 import com.server.money_touch.domain.consumptionRecord.repository.consumptionCategory.ConsumptionCategoryRepository;
+import com.server.money_touch.domain.routine.converter.RoutineAmountConverter;
 import com.server.money_touch.domain.routine.converter.RoutineConverter;
 import com.server.money_touch.domain.routine.converter.RoutineHashtagConverter;
 import com.server.money_touch.domain.routine.dto.RoutineRequest;
@@ -24,6 +26,7 @@ import com.server.money_touch.global.apiPayload.exception.handler.ErrorHandler;
 import com.server.money_touch.domain.budget.enums.CategoryType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
@@ -51,60 +54,61 @@ public class RoutineCommandServiceImpl implements RoutineCommandService {
     private final RoutineAmountRepository routineAmountRepository;
 
     // 소비 루틴 등록
-    // RoutineServiceImpl.java
-
     @Transactional
     @Override
-    public RoutineResponse.RoutineCreateResultDTO saveRoutineWithRoutineHashtags(Long userId, Long budgetId, RoutineRequest.RoutineCreateDTO request) {
+    public RoutineResponse.RoutineCreateResultDTO saveRoutineWithRoutineHashtags(
+            Long userId,
+            Long budgetId,
+            RoutineRequest.RoutineCreateDTO request) {
         // 1. 사용자 조회
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ErrorHandler(ErrorStatus.USER_NOT_FOUND));
 
-        // 1-1. 이미 이번 달에 등록된 루틴이 있는지 확인
-        if (routineRepository.existsByUserIdInCurrentMonth(userId)) {
+        // 2. 예산 조회
+        Budget budget = budgetRepository.findByIdAndUserId(budgetId, userId)
+                .orElseThrow(() -> new ErrorHandler(ErrorStatus.BUDGET_NOT_FOUND));
+
+        // 3. 예산의 createdMonth로 이번 달 판단
+        String createdMonth = budget.getCreatedMonth();
+
+        // 4. 이번 달 동일 예산에 대한 루틴 존재 여부 확인 (PESSIMISTIC_WRITE)
+        if (routineRepository.findForUpdateByUserAndBudgetAndMonth(userId, budgetId, createdMonth).isPresent()) {
             throw new ErrorHandler(ROUTINE_ALREADY_EXIST);
         }
 
-        // 2. 카테고리 총합 계산
+        // 5. 카테고리 총합 계산
         int totalCategoryBudget = Optional.ofNullable(request.getBudgetList())
                 .orElse(List.of())
                 .stream()
                 .mapToInt(RoutineRequest.CategoryBudgetDTO::getAmount)
                 .sum();
 
-        // 3. 예산 총액과 일치 여부 확인
+        // 6. 예산 총액과 일치 여부 확인
         if (totalCategoryBudget > request.getTotalBudget()) {
-            throw new ErrorHandler(ErrorStatus.TOTAL_BUDGET_EXCEEDED); // 총액 초과
+            throw new ErrorHandler(ErrorStatus.TOTAL_BUDGET_EXCEEDED);
         }
         if (totalCategoryBudget < request.getTotalBudget()) {
-            throw new ErrorHandler(ErrorStatus.TOTAL_BUDGET_TOO_LOW); // 총액 미달
+            throw new ErrorHandler(ErrorStatus.TOTAL_BUDGET_TOO_LOW);
         }
 
-        // 4. 예산 존재 여부 확인 (예산과 관련된 데이터는 수정하지 않도록 구현 -> PM님 답변 오는거 보고 수정)
-        Budget budget = budgetRepository.findById(budgetId)
-                .orElseThrow(() -> new ErrorHandler(ErrorStatus.BUDGET_NOT_FOUND));
+        // 7. 루틴 저장
+        //   - 동시에 같은 (user, budget, createdMonth) 조합이 저장되는 경쟁 상황 방지
+        //   - 유니크 제약 위반 발생 시 DataIntegrityViolationException을 잡아 예외 변환
+        Routine routine = RoutineConverter.toRoutine(user, budget, request, createdMonth);
+        try {
+            routineRepository.save(routine);
+        } catch (DataIntegrityViolationException e) {
+            // 혹시 경쟁 상황으로 유니크 제약 위반 시
+            throw new ErrorHandler(ROUTINE_ALREADY_EXIST);
+        }
 
-        // 5. 소비 루틴 저장
-        Routine routine = Routine.builder()
-                .routineName(request.getRoutineName())
-                .routineImageUrl(request.getRoutineImgUrl())
-                .routineTotalAmount(request.getTotalBudget())
-                .budget(budget)
-                .user(user)
-                .build();
-        routineRepository.save(routine);
-
-        // 6. RoutineAmount 저장
+        // 8. RoutineAmount 저장
         List<RoutineAmount> routineAmounts = request.getBudgetList().stream()
-                .map(dto -> RoutineAmount.builder()
-                        .categoryName(dto.getCategoryName())
-                        .amount(dto.getAmount())
-                        .routine(routine)
-                        .build()
-                ).collect(Collectors.toList());
+                .map(dto -> RoutineAmountConverter.toRoutineAmount(dto, routine))
+                .collect(Collectors.toList());
         routineAmountRepository.saveAll(routineAmounts);
 
-        // 7. 해시태그 저장
+        // 9. 해시태그 저장
         if (request.getHashtags() != null) {
             List<RoutineHashtag> hashtags = request.getHashtags().stream()
                     .map(tag -> RoutineHashtagConverter.toRoutineHashtag(routine, tag))
@@ -112,89 +116,9 @@ public class RoutineCommandServiceImpl implements RoutineCommandService {
             routineHashtagRepository.saveAll(hashtags);
         }
 
-        // 8. 결과 DTO 반환
-        Long routineId = routine.getId();
-        log.info("소비 루틴 등록 완료 - userId: {}, routineId: {}", userId, routineId);
-        return RoutineConverter.toRoutineCreateResultDTO(routineId);
+        // 10. 결과 반환
+        return RoutineConverter.toRoutineCreateResultDTO(routine.getId());
     }
-
-
-//    @Transactional
-//    @Override
-//    public RoutineResponse.RoutineCreateResultDTO saveRoutineWithRoutineHashtags(Long userId, Long budgetId, RoutineRequest.RoutineCreateDTO request) {
-//        // 1. 사용자 조회
-//        User user = userRepository.findById(userId)
-//                .orElseThrow(() -> new ErrorHandler(ErrorStatus.USER_NOT_FOUND));
-//
-//        // 1-1. 이미 이번 달에 등록된 루틴이 있는지 확인
-//        if (routineRepository.existsByUserIdInCurrentMonth(userId)) {
-//            throw new ErrorHandler(ROUTINE_ALREADY_EXIST);
-//        }
-//
-//        // 2. 카테고리 총합 계산
-//        int totalCategoryBudget = Optional.ofNullable(request.getBudgetList())
-//                .orElse(List.of())
-//                .stream()
-//                .mapToInt(RoutineRequest.CategoryBudgetDTO::getAmount)
-//                .sum();
-//
-//        // 3. 예산 총액과 일치 여부 확인
-//        if (totalCategoryBudget > request.getTotalBudget()) {
-//            throw new ErrorHandler(ErrorStatus.TOTAL_BUDGET_EXCEEDED); // 총액 초과
-//        }
-//        if (totalCategoryBudget < request.getTotalBudget()) {
-//            throw new ErrorHandler(ErrorStatus.TOTAL_BUDGET_TOO_LOW); // 총액 미달
-//        }
-//
-//        // 4. 예산 조회 및 예산 총액/루틴 여부 수정
-//        Budget budget = budgetRepository.findById(budgetId)
-//                .orElseThrow(() -> new ErrorHandler(ErrorStatus.BUDGET_NOT_FOUND));
-//        budget.updateTotalBudget(request.getTotalBudget());
-//
-//        // 5. 요청된 카테고리 이름 → 금액 맵핑
-//        Map<String, Integer> requestMap = request.getBudgetList().stream()
-//                .collect(Collectors.toMap(RoutineRequest.CategoryBudgetDTO::getCategoryName, RoutineRequest.CategoryBudgetDTO::getAmount));
-//
-//        // 6. 해당 예산에 연결된 예산 카테고리 + 소비 카테고리 조회
-//        List<BudgetCategory> budgetCategories = budgetCategoryRepository.findAllByBudgetIdWithCategory(budgetId);
-//
-//        // 7. categoryName → BudgetCategory 맵핑
-//        Map<String, BudgetCategory> budgetCategoryMap = budgetCategories.stream()
-//                .collect(Collectors.toMap(
-//                        bc -> bc.getConsumptionCategory().getBudgetCategoryName(),
-//                        Function.identity()
-//                ));
-//
-//        // 8. 요청 기준으로 비교 후 금액 수정 or 새로 생성
-//        for (Map.Entry<String, Integer> entry : requestMap.entrySet()) {
-//            String categoryName = entry.getKey();
-//            Integer amount = entry.getValue();
-//
-//            BudgetCategory category = budgetCategoryMap.get(categoryName);
-//
-//            if (category != null) {
-//                if (!category.getBudgetCategoryMoney().equals(amount)) {
-//                    category.updateAmount(amount);
-//                }
-//            } else {
-//                // 존재하지 않는 경우 CUSTOM 타입 소비 카테고리 및 예산 카테고리 생성
-//                ConsumptionCategory newCategory = ConsumptionCategory.builder()
-//                        .budgetCategoryName(categoryName)
-//                        .budgetCategoryType(CategoryType.CUSTOM)
-//                        .user(user)
-//                        .build();
-//
-//                ConsumptionCategory savedCategory = consumptionCategoryRepository.save(newCategory);
-//
-//                BudgetCategory newBudgetCategory = BudgetCategory.builder()
-//                        .budget(budget)
-//                        .consumptionCategory(savedCategory)
-//                        .budgetCategoryMoney(amount)
-//                        .build();
-//
-//                budgetCategoryRepository.save(newBudgetCategory);
-//            }
-//        }
 
     // 타인의 소비 루틴을 내 예산에 반영
     @Transactional
@@ -278,11 +202,7 @@ public class RoutineCommandServiceImpl implements RoutineCommandService {
 
                     } else {
                         // ✅ 기존 항목이 없는 경우 → 새로 생성
-                        ConsumptionCategory newCategory = ConsumptionCategory.builder()
-                                .user(user)
-                                .budgetCategoryName(name)
-                                .budgetCategoryType(requestType)
-                                .build();
+                        ConsumptionCategory newCategory = ConsumptionCategoryConverter.toConsumptionCategory(user, name, requestType);
                         consumptionCategoryRepository.save(newCategory);
 
                         BudgetCategory newBudgetCategory = BudgetCategoryConverter.toBudgetCategory(budget, newCategory, amount);

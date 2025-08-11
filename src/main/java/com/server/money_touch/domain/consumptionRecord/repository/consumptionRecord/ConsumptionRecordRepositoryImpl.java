@@ -20,6 +20,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -53,19 +54,19 @@ public class ConsumptionRecordRepositoryImpl implements ConsumptionRecordReposit
             Long userId, LocalDateTime start, LocalDateTime end,
             Long cursorId, LocalDateTime cursorConsumeDate, int pageSize) {
 
-        // 기본 조건: 사용자 ID 일치 + 조회일 범위 내 소비 내역
+        // 기본 조건
         BooleanExpression baseCondition = record.user.id.eq(userId)
                 .and(record.consumeDate.between(start, end));
 
-        // 커서 조건: (consumeDate, id) 기준으로 이전 데이터 조회
+        // 커서 조건
         BooleanExpression cursorPredicate = null;
         if (cursorId != null && cursorConsumeDate != null) {
             cursorPredicate = record.consumeDate.lt(cursorConsumeDate)
                     .or(record.consumeDate.eq(cursorConsumeDate).and(record.id.lt(cursorId)));
         }
 
-        // 쿼리 실행: 필요한 컬럼만 projection으로 조회
-        List<DailyConsumptionItemDetailProjection> results = queryFactory
+        // 1) 1차 조회: pageSize + 1
+        List<DailyConsumptionItemDetailProjection> first = queryFactory
                 .select(Projections.fields(
                         DailyConsumptionItemDetailProjection.class,
                         record.id.as("consumptionRecordId"),
@@ -73,22 +74,70 @@ public class ConsumptionRecordRepositoryImpl implements ConsumptionRecordReposit
                                 .when(record.isFixed.isTrue()).then("고정비")
                                 .otherwise(category.budgetCategoryName).as("categoryName"),
                         record.content,
-                        record.amount
+                        record.amount,
+                        record.consumeDate.as("consumeDate")    // ⚠ 경계 날짜 계산을 위해 포함
                 ))
                 .from(record)
                 .join(record.consumptionCategory, category)
-                .where(baseCondition.and(cursorPredicate)) // 기본 조건 + 커서 조건
-                .orderBy(record.consumeDate.desc(), record.id.desc()) // 최신순 정렬
-                .limit(pageSize + 1) // 다음 페이지 존재 여부 확인을 위한 +1
+                .where(baseCondition.and(cursorPredicate))
+                .orderBy(record.consumeDate.desc(), record.id.desc())
+                .limit(pageSize + 1)
                 .fetch();
 
-        // hasNext 판단 및 초과한 1개 제거
-        boolean hasNext = results.size() > pageSize;
-        if (hasNext) {
-            results.remove(results.size() - 1);
+        if (first.isEmpty()) {
+            return new SliceImpl<>(List.of(), PageRequest.of(0, pageSize), false);
         }
 
-        // SliceImpl로 반환 (Pageable은 의미상으로만 사용)
+        // 경계 날짜(boundaryDate)와 마지막 id
+        DailyConsumptionItemDetailProjection lastItem = first.get(Math.min(pageSize, first.size()) - 1);
+        LocalDateTime boundaryDate = lastItem.getConsumeDate();
+        Long boundaryLastId = lastItem.getConsumptionRecordId();
+
+        // 2) 경계 날짜의 '나머지' 모두 추가 조회 (해당 날짜이며 아직 포함되지 않은 더 작은 id들)
+        List<DailyConsumptionItemDetailProjection> extraSameDate = queryFactory
+                .select(Projections.fields(
+                        DailyConsumptionItemDetailProjection.class,
+                        record.id.as("consumptionRecordId"),
+                        Expressions.cases()
+                                .when(record.isFixed.isTrue()).then("고정비")
+                                .otherwise(category.budgetCategoryName).as("categoryName"),
+                        record.content,
+                        record.amount,
+                        record.consumeDate.as("consumeDate")
+                ))
+                .from(record)
+                .join(record.consumptionCategory, category)
+                .where(baseCondition
+                        .and(record.consumeDate.eq(boundaryDate))
+                        .and(record.id.lt(boundaryLastId)) // 아직 담지 않은 나머지
+                )
+                .orderBy(record.consumeDate.desc(), record.id.desc())
+                .fetch(); // 제한 없이 경계 날짜는 전부 가져온다
+
+        // 3) 결과 합치기: first의 앞부분(경계 이전까지) + extraSameDate
+        //   first는 pageSize + 1까지 가져왔으므로, 경계 이후의 초과 1개는 자동으로 정리됨
+        List<DailyConsumptionItemDetailProjection> results = new ArrayList<>();
+        // 경계 포함 이전까지 담기
+        results.addAll(first.subList(0, Math.min(pageSize, first.size())));
+        // 경계 날짜 나머지 모두 추가
+        results.addAll(extraSameDate);
+
+        // 4) hasNext 계산: 경계 날짜보다 더 오래된 데이터가 있는지 한 건 조회
+        DailyConsumptionItemDetailProjection nextProbe = queryFactory
+                .select(Projections.fields(
+                        DailyConsumptionItemDetailProjection.class,
+                        record.id.as("consumptionRecordId"),
+                        record.consumeDate.as("consumeDate")
+                ))
+                .from(record)
+                .where(baseCondition.and(record.consumeDate.lt(boundaryDate)))
+                .orderBy(record.consumeDate.desc(), record.id.desc())
+                .limit(1)
+                .fetchOne();
+
+        boolean hasNext = (nextProbe != null);
+
+        // Slice 반환 (Pageable은 의미상으로만 사용)
         return new SliceImpl<>(results, PageRequest.of(0, pageSize), hasNext);
     }
 

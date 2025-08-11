@@ -8,7 +8,7 @@ import com.server.money_touch.global.validation.annotation.ExistUser;
 
 public interface RoutineCommandService {
     // 소비 루틴 등록
-    RoutineResponse.RoutineCreateResultDTO saveRoutineWithRoutineHashtags(@ExistUser Long userId, @ExistBudget Long budgetId, RoutineRequest.RoutineCreateDTO request);
+    RoutineResponse.RoutineCreateResultDTO saveRoutineWithRoutineHashtags(@ExistUser Long userId, Long budgetId, RoutineRequest.RoutineCreateDTO request);
 
     // 타인의 소비 루틴을 내 예산에 반영
     void applyRoutineToBudget(@ExistUser Long userId, @ExistBudget Long budgetId, @ExistRoutine Long routineId, RoutineRequest.ApplyRoutineBudgetDTO request);
