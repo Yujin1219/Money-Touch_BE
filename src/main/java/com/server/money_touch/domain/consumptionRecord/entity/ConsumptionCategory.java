@@ -1,10 +1,14 @@
 package com.server.money_touch.domain.consumptionRecord.entity;
 
+import com.server.money_touch.domain.budget.entity.BudgetCategory;
 import com.server.money_touch.domain.budget.enums.CategoryType;
 import com.server.money_touch.domain.user.entity.User;
 import com.server.money_touch.global.apiPayload.code.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Table(name = "consumption_category", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"user_id", "budgetCategoryName"})
@@ -28,6 +32,9 @@ public class ConsumptionCategory extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    @OneToMany(mappedBy = "consumptionCategory", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BudgetCategory> budgetCategories = new ArrayList<>();
 
     public void updateCategoryType(CategoryType newType) {
         this.budgetCategoryType = newType;

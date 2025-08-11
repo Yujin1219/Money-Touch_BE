@@ -13,6 +13,9 @@ public interface UserCommandService {
     UserResponse.LoginResultDTO refreshToken(String refreshToken);
     // 유저 상세정보 등록
     UserResponse.UserDetailCreateResultDTO saveUserDetails(Long userId, UserRequest.UserDetailCreateDTO request);
+    // 회원 삭제
+    UserResponse.UserDeleteResultDTO deleteUser(Long userId);
+
 
 
 }

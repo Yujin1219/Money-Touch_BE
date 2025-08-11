@@ -49,7 +49,6 @@ public class UserCommandServiceImpl implements UserCommandService {
     private final UserDetailRepository userDetailRepository;
     private final PasswordEncoder passwordEncoder;
     private final TokenProvider tokenProvider;
-    private final UserQueryService userQueryService;
     private final BudgetCommandService budgetCommandService;
     private final TotalConsumptionRepository totalConsumptionRepository;
 
@@ -78,16 +77,11 @@ public class UserCommandServiceImpl implements UserCommandService {
         return UserConverter.toUserDetailCreateResultDTO(userDetail.getId());
     }
 
-    /**
-     * 로컬 회원가입
-     */
+    // 로컬 회원가입
     @Override
     @Transactional
     public UserResponse.UserCreateResultDTO signUpLocal(UserRequest.LocalSignUpDTO request) {
         log.info("로컬 회원가입 시작 - email: {}", request.getEmail());
-
-        // 이메일 중복 검증
-        // validateDuplicateEmail(request.getEmail()); TODO: 이메일 인증요청시 중복검사 하기
 
         // 비밀번호 암호화
         String encodedPassword = passwordEncoder.encode(request.getPassword());
@@ -132,9 +126,7 @@ public class UserCommandServiceImpl implements UserCommandService {
                 .build();
     }
 
-    /**
-     * 로컬 로그인
-     */
+    // 로컬 로그인
     @Override
     @Transactional
     public UserResponse.LoginResultDTO loginLocal(UserRequest.LocalLoginDTO request) {
@@ -168,9 +160,7 @@ public class UserCommandServiceImpl implements UserCommandService {
                 .build();
     }
 
-    /**
-     * 토큰 갱신
-     */
+    // 로컬 갱신
     @Override
     @Transactional
     public UserResponse.LoginResultDTO refreshToken(String refreshToken) {
@@ -191,9 +181,21 @@ public class UserCommandServiceImpl implements UserCommandService {
                 .build();
     }
 
-    /**
-     * Authentication 객체 생성
-     */
+    // 회원 삭제
+    @Transactional
+    @Override
+    public UserResponse.UserDeleteResultDTO deleteUser(Long userId) {
+        // 1. 회원 조회
+        User user = userRepository.findById(userId).orElseThrow(() ->  new ErrorHandler(ErrorStatus.USER_NOT_FOUND));
+
+        // 2. 삭제
+        userRepository.delete(user);
+
+        // 3. 응답 DTO 생성
+        return new UserResponse.UserDeleteResultDTO(userId, "회원 삭제 성공");
+    }
+
+    // Authentication 객체 생성
     private Authentication createAuthentication(User user) {
         SimpleGrantedAuthority authority = new SimpleGrantedAuthority(user.getRole().name());
         LocalLogin localLogin = user.getLocalLogin();
@@ -209,9 +211,7 @@ public class UserCommandServiceImpl implements UserCommandService {
         );
     }
 
-    /**
-     * 약관 동의 처리
-     */
+    // 약관 동의 처리
     private void processAgreements(User user, List<UserRequest.AgreementDTO> agreements) {
         if (agreements != null && !agreements.isEmpty()) {
             log.info("약관 동의 처리 - userId: {}, 동의 항목 수: {}", user.getId(), agreements.size());
@@ -229,9 +229,7 @@ public class UserCommandServiceImpl implements UserCommandService {
         }
     }
 
-    /**
-     * 필수 약관 여부 확인
-     */
+    // 필수 여부 확인
     private boolean isRequiredTerm(Long termsId) {
         // 실제로는 Terms 엔티티에서 필수 여부를 확인해야 함
         // 예시로 ID 1, 2를 필수 약관으로 가정

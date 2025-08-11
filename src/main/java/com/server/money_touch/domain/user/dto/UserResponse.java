@@ -43,6 +43,18 @@ public class UserResponse {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
+    @Schema(description = "유저 상세 정보 등록 응답 정보")
+    public static class UserDeleteResultDTO{
+
+        @Schema(description = "유저 상세 정보 ID", example = "1")
+        private Long userId;
+        private String message;
+    }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
     @Schema(description = "로그인 응답 정보")
     public static class LoginResultDTO {
         private String accessToken;

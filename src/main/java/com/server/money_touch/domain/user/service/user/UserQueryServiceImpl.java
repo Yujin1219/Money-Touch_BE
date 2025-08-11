@@ -43,6 +43,7 @@ public class UserQueryServiceImpl implements UserQueryService {
         return userRepository.existsByNickname(nickname);
     }
 
+    // 이메일 인증번호 발송
     public void requestEmailVerification(String toEmail) throws IOException {
         // 이메일 중복 체크
         if (existsByEmail(toEmail)) {

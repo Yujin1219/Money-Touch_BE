@@ -3,6 +3,7 @@ package com.server.money_touch.domain.user.controller;
 import com.server.money_touch.domain.badge.service.BadgeCommandService;
 import com.server.money_touch.domain.user.dto.UserRequest;
 import com.server.money_touch.domain.user.dto.UserResponse;
+import com.server.money_touch.domain.user.entity.User;
 import com.server.money_touch.domain.user.service.user.UserCommandService;
 import com.server.money_touch.domain.user.service.user.UserQueryService;
 import com.server.money_touch.global.apiPayload.ApiResponse;
@@ -109,6 +110,17 @@ public class UserController{
         } catch (Exception e) {
             return ApiResponse.onFailure("SERVER500", "서버 오류가 발생했습니다.", null);
         }
+    }
+
+    @Operation(summary = "유저 삭제 API", description = "회원 ID를 통해 회원을 삭제하는 api입니다.")
+    @ApiErrorCodeExamples({
+            @ApiErrorCodeExample(value = ErrorStatus.class, name = "USER_NOT_FOUND"),
+            @ApiErrorCodeExample(value = ErrorStatus.class, name = "_BAD_REQUEST"),
+            @ApiErrorCodeExample(value = ErrorStatus.class, name = "_INTERNAL_SERVER_ERROR")
+    })
+    @PostMapping("/delete")
+    public ApiResponse<UserResponse.UserDeleteResultDTO> DeleteUser(@RequestParam Long userId) {
+        return ApiResponse.onSuccess(userCommandService.deleteUser(userId));
     }
 
     @Operation(
