@@ -14,6 +14,8 @@ import com.server.money_touch.domain.user.entity.User;
 import com.server.money_touch.domain.user.enums.AuthType;
 import com.server.money_touch.domain.user.enums.Role;
 import com.server.money_touch.domain.user.repository.user.UserRepository;
+import com.server.money_touch.global.apiPayload.code.status.ErrorStatus;
+import com.server.money_touch.global.apiPayload.exception.handler.ErrorHandler;
 import com.server.money_touch.global.config.jwt.TokenProvider;
 import com.server.money_touch.domain.user.utils.KakaoUtil;
 import jakarta.servlet.http.HttpServletResponse;
@@ -94,6 +96,11 @@ public class AuthService {
         String email = kakaoProfile.getKakaoAccount().getEmail();
         String kakaoKey = String.valueOf(kakaoProfile.getId());
         String nickname = kakaoProfile.getKakaoAccount().getProfile().getNickname();
+
+        // 닉네임 중복 체크
+        if (userRepository.existsByNickname(nickname)) {
+            throw new ErrorHandler(ErrorStatus.NICKNAME_ALREADY_EXISTS);
+        }
 
         // 1. User 생성
         User newUser = User.builder()

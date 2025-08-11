@@ -45,6 +45,7 @@ public class UserQueryServiceImpl implements UserQueryService {
 
     // 이메일 인증번호 발송
     public void requestEmailVerification(String toEmail, boolean isResend) throws IOException {
+
         // 이메일 중복 체크
         if (existsByEmail(toEmail)) {
             throw new IllegalArgumentException("이미 가입된 이메일입니다.");
