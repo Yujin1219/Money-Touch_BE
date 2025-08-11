@@ -19,5 +19,4 @@ public interface ConsumptionRecordRepository extends JpaRepository<ConsumptionRe
     WHERE cr.user = :user AND cr.consumeDate BETWEEN :start AND :end
     GROUP BY cr.consumptionCategory.budgetCategoryName """)
     List<Object[]> findCategorySpendingBetween(User user, LocalDateTime start, LocalDateTime end);
-
 }

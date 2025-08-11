@@ -14,13 +14,7 @@ import java.util.stream.Collectors;
 
 public class FeedConverter {
 
-    /**
-     * 소비기록 → 피드 상세 DTO 변환
-     * @param record 소비기록 엔티티
-     * @param myReaction 현재 로그인한 사용자의 반응 타입 (WISE/WASTE/null)
-     * @return FeedDetailResultDTO
-     */
-    public static FeedResponse.FeedDetailResultDTO toFeedDetailDTO(ConsumptionRecord record, ReactionType myReaction) {
+    public static FeedResponse.FeedDetailResultDTO toFeedDetailDTO(ConsumptionRecord record, ReactionType myReaction, Integer viewCountForResponse) {
         return FeedResponse.FeedDetailResultDTO.builder()
                 .consumptionRecordId(record.getId())
                 .user(toUserInfo(record.getUser()))
@@ -35,7 +29,7 @@ public class FeedConverter {
                 .wiseCount(record.getWiseCount())
                 .wasteCount(record.getWasteCount())
                 .commentCount(record.getCommentCount())
-                .viewCount(record.getViewCount())
+                .viewCount(viewCountForResponse)
                 .myReaction(myReaction)
                 .build();
     }

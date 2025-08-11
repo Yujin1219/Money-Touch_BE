@@ -11,8 +11,8 @@ public interface FixedConsumptionCommandService {
 
     // 고정비 수정
     void updateFixedConsumption(
-            @ExistUser Long userId, @ExistFixedConsumption Long fixedConsumptionId, FixedConsumptionRequest.FixedConsumptionCreateDTO request);
+            @ExistUser Long userId, Long fixedConsumptionId, FixedConsumptionRequest.FixedConsumptionCreateDTO request);
 
     // 고정비 삭제
-    void deleteFixedConsumption(@ExistUser Long userId, @ExistFixedConsumption Long fixedConsumptionId);
+    void deleteFixedConsumption(@ExistUser Long userId, Long fixedConsumptionId);
 }

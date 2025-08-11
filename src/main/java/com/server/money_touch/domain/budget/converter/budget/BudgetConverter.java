@@ -23,9 +23,10 @@ public class BudgetConverter {
     }
 
     // Budget Entity → BudgetCreateResultDTO 변환
-    public static BudgetResponse.BudgetCreateResultDTO toBudgetCreateResultDto(Long budgetId) {
+    public static BudgetResponse.BudgetCreateResultDTO toBudgetCreateResultDto(Long budgetId, Integer totalBudget) {
         return BudgetResponse.BudgetCreateResultDTO.builder()
                 .budgetId(budgetId)
+                .totalBudget(totalBudget)
                 .build();
     }
 

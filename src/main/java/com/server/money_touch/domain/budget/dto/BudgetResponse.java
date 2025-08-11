@@ -16,6 +16,9 @@ public class BudgetResponse {
     public static class BudgetCreateResultDTO {
         @Schema(description = "예산 아이디", example = "1")
         private Long budgetId;
+
+        @Schema(description = "한 달 예산 금액", example = "5000000")
+        private Integer totalBudget;
     }
 
     @Builder

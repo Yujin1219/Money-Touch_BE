@@ -27,4 +27,7 @@ public interface BudgetRepository extends JpaRepository<Budget, Long> {
     Optional<Budget> findRegisteredBudgetInMonthNative(@Param("userId") Long userId,
                                                        @Param("start") LocalDateTime start,
                                                        @Param("end") LocalDateTime end);
+
+    // userId와 budgetId 모두 일치하는 예산 조회
+    Optional<Budget> findByIdAndUserId(Long budgetId, Long userId);
 }

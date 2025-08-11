@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 // 달력 - 특정 날짜의 소비 내역 조회용 QueryDSL 프로젝션
 @Getter
 @Setter
@@ -15,5 +17,5 @@ public class DailyConsumptionItemDetailProjection {
     private String categoryName;
     private String content;
     private Integer amount;
-
+    private LocalDateTime consumeDate;
 }

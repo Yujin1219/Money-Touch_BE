@@ -69,7 +69,7 @@ public class HouseholdConsumptionResponse {
       "itemsSize": 1
     }
   ],
-  "dailyHistorySize": 3,
+  "monthlyHistorySize": 3,
   "isFirst": true,
   "isLast": false,
   "hasNext": false

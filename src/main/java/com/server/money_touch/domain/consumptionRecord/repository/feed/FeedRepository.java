@@ -18,7 +18,7 @@ public interface FeedRepository extends JpaRepository<ConsumptionRecord, Long> {
     Optional<ConsumptionRecord> findWithAllById(Long id);
 
     // 조회수 증가
-    @Modifying(clearAutomatically = true)
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE ConsumptionRecord c SET c.viewCount = c.viewCount + 1 WHERE c.id = :id AND c.isPublic = true")
     void incrementViewCountIfPublic(@Param("id") Long id);
 

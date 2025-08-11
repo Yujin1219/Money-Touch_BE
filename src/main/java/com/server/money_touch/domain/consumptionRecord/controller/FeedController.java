@@ -18,6 +18,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -78,7 +79,10 @@ public class FeedController {
     // 피드 상세 조회
     @Operation(
             summary = "피드 상세 조회 API",
-            description = "해당 피드를 눌렀을 때 피드의 상세 정보를 조회하는 API입니다"
+            description = "해당 피드를 눌렀을 때 피드의 상세 정보를 조회하며 조회수를 증가시키는 API입니다.\n" +
+                    " - 피드 상세 조회 시 자동으로 조회수가 1 증가합니다.\n" +
+                    " - 쿠키를 사용하여 24시간 동안 중복 조회수 증가를 방지합니다.\n" +
+                    " - 동일한 사용자가 같은 게시글을 24시간 내 재조회해도 조회수가 중복으로 증가하지 않습니다."
     )
 //        @ApiSuccessCodeExample(resultClass = NotificationResponse.NotificationListDTO.class)
     @ApiErrorCodeExamples({
@@ -92,10 +96,10 @@ public class FeedController {
     })
     @GetMapping("/{consumptionRecordId}")
     public ApiResponse<FeedResponse.FeedDetailResultDTO> getFeedDetail(
-            @PathVariable Long consumptionRecordId, HttpServletRequest servletrequest) {
+            @PathVariable Long consumptionRecordId, HttpServletRequest servletrequest, HttpServletResponse servletresponse) {
 
         Long userId = authUtil.getUserIdFromRequest(servletrequest);
-        FeedResponse.FeedDetailResultDTO response = feedService.getFeedDetail(userId, consumptionRecordId);
+        FeedResponse.FeedDetailResultDTO response = feedService.getFeedDetail(userId, consumptionRecordId, servletrequest, servletresponse);
         return ApiResponse.onSuccess(response);
     }
 
@@ -251,30 +255,6 @@ public class FeedController {
     ) {
         Long userId = authUtil.getUserIdFromRequest(servletrequest);
         FeedResponse.ReactionResultDTO response = reactionService.addOrUpdateReaction(userId, consumptionRecordId, request);
-        return ApiResponse.onSuccess(response);
-    }
-
-    // 피드 조회수 증가
-    @Operation(
-            summary = "피드 조회수 증가 API",
-            description = "피드를 조회할 때 조회수를 증가시키는 API입니다. 중복 조회도 가능합니다(중복 제한으로 수정이 필요할 것 같으면 말해주세요). 공개된 소비 기록(가계부에만 등록하지 않은 소비기록)에 한해서만 가능합니다."
-    )
-//    @ApiSuccessCodeExample(resultClass = FeedResponse.ViewCountResultDTO.class)
-    @ApiErrorCodeExamples({
-            @ApiErrorCodeExample(value = ErrorStatus.class, name = "USER_NOT_FOUND"),
-            @ApiErrorCodeExample(value = ErrorStatus.class, name = "CONSUMPTION_RECORD_NOT_FOUND"),
-            @ApiErrorCodeExample(value = ErrorStatus.class, name = "_BAD_REQUEST"),
-            @ApiErrorCodeExample(value = ErrorStatus.class, name = "_INTERNAL_SERVER_ERROR")
-    })
-    @Parameters({
-            @Parameter(name = "consumptionRecordId", description = "소비 기록 ID", example = "1", required = true)
-    })
-    @PatchMapping("/{consumptionRecordId}/view")
-    public ApiResponse<FeedResponse.ViewCountResultDTO> increaseFeedViewCount(
-            @PathVariable Long consumptionRecordId, HttpServletRequest servletrequest
-    ) {
-        Long userId = authUtil.getUserIdFromRequest(servletrequest);
-        FeedResponse.ViewCountResultDTO response =feedService.increaseFeedViewCount(userId, consumptionRecordId);
         return ApiResponse.onSuccess(response);
     }
 }

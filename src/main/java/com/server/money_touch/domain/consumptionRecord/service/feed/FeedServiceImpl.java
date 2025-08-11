@@ -14,11 +14,15 @@ import com.server.money_touch.domain.user.entity.User;
 import com.server.money_touch.domain.user.repository.user.UserRepository;
 import com.server.money_touch.global.apiPayload.code.status.ErrorStatus;
 import com.server.money_touch.global.apiPayload.exception.handler.ErrorHandler;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,15 +41,41 @@ public class FeedServiceImpl implements FeedService {
     private final UserRepository userRepository;
     private final ConsumptionRecordRepository consumptionRecordRepository;
     private static final int PAGE_SIZE = 5;
+    private static final String VIEW_COOKIE_PREFIX = "vfid_"; // 쿠키 설정
+    private static final int VIEW_COOKIE_TTL = 60 * 60 * 24; // 하루마다
+
+    /** 쿠키 체크 후 최초 조회라면 쿠키 발급 */
+    private boolean shouldIncreaseViewByCookie(Long recordId,
+                                               HttpServletRequest request,
+                                               HttpServletResponse response) {
+        String name = VIEW_COOKIE_PREFIX + recordId;
+
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie c : cookies) {
+                if (name.equals(c.getName())) {
+                    return false; // 이미 본 기록
+                }
+            }
+        }
+
+        ResponseCookie rc = ResponseCookie.from(name, "viewed")
+                .maxAge(VIEW_COOKIE_TTL)
+                .path("/")
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("Lax")
+                .build();
+        response.addHeader("Set-Cookie", rc.toString());
+        return true;
+    }
 
     /**
-     * 피드 상세 조회
-     * @param userId 로그인한 사용자 ID
-     * @param consumptionRecordId 조회할 소비기록 ID
-     * @return FeedDetailResultDTO
+     * 피드 상세 조회 + 조회수 증가
      */
+    @Transactional
     @Override
-    public FeedResponse.FeedDetailResultDTO getFeedDetail(Long userId, Long consumptionRecordId) {
+    public FeedResponse.FeedDetailResultDTO getFeedDetail(Long userId, Long consumptionRecordId, HttpServletRequest request, HttpServletResponse response) {
 
         // 1. 사용자 확인
         User user = userRepository.findById(userId)
@@ -60,42 +90,21 @@ public class FeedServiceImpl implements FeedService {
             throw new ErrorHandler(ErrorStatus.FORBIDDEN_ACCESS_ON_PRIVATE_FEED);
         }
 
+        // 4. 쿠키로 중복 조회 방지 → 처음 보면 DB에서 +1
+        boolean shouldIncrease = shouldIncreaseViewByCookie(consumptionRecordId, request, response);
+        Integer viewCountForResponse = record.getViewCount();
+        if (shouldIncrease) {
+            feedRepository.incrementViewCountIfPublic(consumptionRecordId);
+            viewCountForResponse = record.getViewCount() + 1;
+        }
+
         // 4. 내가 남긴 리액션 조회 (null 가능)
         ReactionType myReactionType = reactionRepository.findByUserAndConsumptionRecord(user, record)
                 .map(Reaction::getType)
                 .orElse(null);
 
-
         // 5. 응답 변환
-        return FeedConverter.toFeedDetailDTO(record, myReactionType);
-    }
-
-    @Transactional
-    @Override
-    public FeedResponse.ViewCountResultDTO increaseFeedViewCount(Long userId, Long consumptionRecordId) {
-
-        // 1. 사용자 확인
-        User user = userRepository.findById(userId)
-                .orElseThrow(() ->  new ErrorHandler(ErrorStatus.USER_NOT_FOUND));
-
-        // 2. 소비기록 조회
-        ConsumptionRecord consumptionRecord = consumptionRecordRepository.findById(consumptionRecordId)
-                .orElseThrow(() -> new ErrorHandler(ErrorStatus.CONSUMPTION_RECORD_NOT_FOUND));
-
-        // 3. 비공개 소비기록는 접근할 수 없음
-        if (!consumptionRecord.isPublic()) {
-            throw new ErrorHandler(ErrorStatus.FORBIDDEN_ACCESS_ON_PRIVATE_FEED);
-        }
-
-        // 4. 조회수 증가
-        feedRepository.incrementViewCountIfPublic(consumptionRecordId);
-
-        // 5. 갱신된 값 조회
-        ConsumptionRecord updatedRecord = consumptionRecordRepository.findById(consumptionRecordId)
-                .orElseThrow(() -> new ErrorHandler(ErrorStatus.CONSUMPTION_RECORD_NOT_FOUND));
-
-        // 6. DTO 반환
-        return FeedConverter.toViewCountDTO(updatedRecord);
+        return FeedConverter.toFeedDetailDTO(record, myReactionType, viewCountForResponse);
     }
 
     /**

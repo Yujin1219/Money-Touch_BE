@@ -36,7 +36,7 @@ public enum ErrorStatus implements BaseErrorCode {
     TOTAL_BUDGET_TOO_LOW(HttpStatus.BAD_REQUEST, "BUDGET4003", "카테고리 예산 총합이 전체 예산보다 작습니다."),
     BUDGET_ALREADY_EXIST(HttpStatus.BAD_REQUEST, "BUDGET4004", "한 달 예산 등록 횟수를 초과하였습니다."),
     BUDGET_NOT_EXIST(HttpStatus.NOT_FOUND, "BUDGET_4041", "이번달에 등록된 예산이 없습니다."),
-    ROUTINE_CATEGORY_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "BUDGET_403", "소비 루틴 카테고리는 소비 루틴을 등록한 경우나, 타인의 소비 루틴을 내 예산에 반영한 경우만 설정할 수 있습니다."),
+    ROUTINE_CATEGORY_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "BUDGET4005", "소비 루틴 카테고리는 소비 루틴을 등록한 경우나, 타인의 소비 루틴을 내 예산에 반영한 경우만 설정할 수 있습니다."),
     BUDGE_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "BUDGET4011", "접근 권한이 없는 예산 아이디입니다. 예산 아이디 조회를 통해 올바른 예산 아이디로 구성해주세요."),
 
     // 소비 MBTI 관련 에러
