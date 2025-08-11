@@ -9,10 +9,13 @@ import com.server.money_touch.domain.user.entity.User;
 import com.server.money_touch.domain.user.repository.user.UserRepository;
 import com.server.money_touch.global.apiPayload.code.status.ErrorStatus;
 import com.server.money_touch.global.apiPayload.exception.handler.ErrorHandler;
+import com.server.money_touch.global.utils.SendGridUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.io.IOException;
 
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -20,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class UserQueryServiceImpl implements UserQueryService {
 
+    private final SendGridUtil sendGridUtil;
     private final UserRepository userRepository;
     private final UserBadgeRepository userBadgeRepository;
 
@@ -37,6 +41,16 @@ public class UserQueryServiceImpl implements UserQueryService {
     @Override
     public Boolean existsByNickname(String nickname) {
         return userRepository.existsByNickname(nickname);
+    }
+
+    public void requestEmailVerification(String toEmail) throws IOException {
+        // 이메일 중복 체크
+        if (existsByEmail(toEmail)) {
+            throw new IllegalArgumentException("이미 가입된 이메일입니다.");
+        }
+
+        // 이메일 발송
+        sendGridUtil.sendEmail(toEmail);
     }
 
     // 마이페이지

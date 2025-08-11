@@ -210,15 +210,6 @@ public class UserCommandServiceImpl implements UserCommandService {
     }
 
     /**
-     * 이메일 중복 검증
-     */
-    private void validateDuplicateEmail(String email) {
-        if (userQueryService.existsByEmail(email)) {
-            throw new IllegalArgumentException("이미 사용중인 이메일입니다.");
-        }
-    }
-
-    /**
      * 약관 동의 처리
      */
     private void processAgreements(User user, List<UserRequest.AgreementDTO> agreements) {

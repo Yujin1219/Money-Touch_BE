@@ -67,7 +67,7 @@ public class UserController{
     @GetMapping("/email")
     public ApiResponse<String> requestEmail(@RequestParam("to") String toEmail) {
         try {
-            sendGridUtil.sendEmail(toEmail);
+            userQueryService.requestEmailVerification(toEmail);
             return ApiResponse.onSuccess("인증 이메일이 발송되었습니다.");
         } catch (IOException e) {
             // 로그 기록 추가 가능
