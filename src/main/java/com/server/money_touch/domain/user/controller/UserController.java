@@ -76,6 +76,27 @@ public class UserController{
     }
 
     @Operation(
+            summary = "닉네임 중복 인증 API",
+            description = "닉네임 중복 인증을 하는 API입니다."
+    )
+    @ApiErrorCodeExamples({
+            @ApiErrorCodeExample(value = ErrorStatus.class, name = "_BAD_REQUEST"),
+            @ApiErrorCodeExample(value = ErrorStatus.class, name = "_INTERNAL_SERVER_ERROR")
+    })
+    @GetMapping("/nickname")
+    public ApiResponse<String> validateNickname(@RequestParam("nickname") String nickname) {
+        try {
+            boolean exists = userQueryService.existsByNickname(nickname);
+            if (exists) {
+                return ApiResponse.onFailure("USER4002", "이미 사용 중인 닉네임입니다.", null);
+            }
+            return ApiResponse.onSuccess("사용 가능한 닉네임입니다.");
+        } catch (Exception e) {
+            return ApiResponse.onFailure("SERVER500", "서버 오류가 발생했습니다.", null);
+        }
+    }
+
+    @Operation(
             summary = "로컬 회원가입 API",
             description = "이메일과 비밀번호를 사용한 로컬 회원가입 방식의 API입니다." + "이용약관 동의 리스트를 한꺼번에 보내주셔야합니다!"
     )

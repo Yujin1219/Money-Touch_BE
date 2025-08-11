@@ -12,6 +12,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT u FROM User u LEFT JOIN FETCH u.userDetail")
     List<User> findAllWithUserDetail();
 
+    Boolean existsByNickname(String nickname);
+
     // email로 유저 조회
     Optional<User> findByEmail(String email);
 

@@ -33,6 +33,11 @@ public class UserQueryServiceImpl implements UserQueryService {
     @Override
     public Boolean existsByEmail(String email){return userRepository.findByEmail(email).isPresent();}
 
+    // 닉네임 중복 존재 여부 검증
+    @Override
+    public Boolean existsByNickname(String nickname) {
+        return userRepository.existsByNickname(nickname);
+    }
 
     // 마이페이지
     @Override
