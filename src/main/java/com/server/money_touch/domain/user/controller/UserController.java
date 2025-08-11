@@ -8,6 +8,7 @@ import com.server.money_touch.domain.user.service.user.UserQueryService;
 import com.server.money_touch.global.apiPayload.ApiResponse;
 import com.server.money_touch.global.apiPayload.code.status.ErrorStatus;
 import com.server.money_touch.global.utils.AuthUtil;
+import com.server.money_touch.global.utils.SendGridUtil;
 import com.server.money_touch.global.validation.annotation.ApiErrorCodeExample;
 import com.server.money_touch.global.validation.annotation.ApiErrorCodeExamples;
 import com.server.money_touch.global.validation.annotation.ApiSuccessCodeExample;
@@ -20,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 
 @Tag(name = "회원 가입 & 로그인 페이지", description = "유저에 관한 API")
@@ -31,6 +33,7 @@ import java.time.LocalDateTime;
 public class UserController{
 
     private final BadgeCommandService badgeCommandService;
+    private final SendGridUtil sendGridUtil;
     private final UserQueryService userQueryService;
     private final UserCommandService userCommandService;
     private final AuthUtil authUtil;
@@ -51,6 +54,25 @@ public class UserController{
         Long userId = authUtil.getUserIdFromRequest(servletRequest);
         UserResponse.UserDetailCreateResultDTO response = userCommandService.saveUserDetails(userId, request);
         return ApiResponse.onSuccess(response);
+    }
+
+    @Operation(
+            summary = "이메일 인증 요청 API",
+            description = "sendgrid를 이용하여 이메일로 인증번호를 발송합니다."
+    )
+    @ApiErrorCodeExamples({
+            @ApiErrorCodeExample(value = ErrorStatus.class, name = "_BAD_REQUEST"),
+            @ApiErrorCodeExample(value = ErrorStatus.class, name = "_INTERNAL_SERVER_ERROR")
+    })
+    @GetMapping("/email")
+    public ApiResponse<String> requestEmail(@RequestParam("to") String toEmail) {
+        try {
+            sendGridUtil.sendEmail(toEmail);
+            return ApiResponse.onSuccess("인증 이메일이 발송되었습니다.");
+        } catch (IOException e) {
+            // 로그 기록 추가 가능
+            return ApiResponse.onFailure("SENDGRID4002","이메일 발송중 오류가 발생했습니다.", null);
+        }
     }
 
     @Operation(

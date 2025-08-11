@@ -59,6 +59,7 @@ public class UserResponse {
         private Long userId;
         private String accessToken;
         private String refreshToken;
+        private boolean isNewUser;
     }
 
     @Builder

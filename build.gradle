@@ -53,6 +53,9 @@ dependencies {
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok' // Lombok 어노테이션 컴파일 시 처리
 
+	// SendGrid
+	implementation 'com.sendgrid:sendgrid-java:4.10.2'
+
 	// MySQL
 	runtimeOnly 'com.mysql:mysql-connector-j'
 
