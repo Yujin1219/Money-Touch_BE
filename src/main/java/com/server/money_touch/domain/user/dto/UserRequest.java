@@ -34,6 +34,9 @@ public class    UserRequest{
         @NotBlank(message = "수입 여부는 필수값입니다.")
         private String isIncome;
 
+        @Schema(description = "사진 URL", example = "http://example.com/image.jpg")
+        private String profileImgUrl;
+
     }
 
     @Getter

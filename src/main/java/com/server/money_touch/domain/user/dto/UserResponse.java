@@ -55,7 +55,8 @@ public class UserResponse {
     @AllArgsConstructor
     @Schema(description = "카카오 로그인 응답 정보")
     public static class OAuthLoginResultDTO {
-        private User user;
+        @Schema(description = "유저 id", example = "1")
+        private Long userId;
         private String accessToken;
         private String refreshToken;
     }

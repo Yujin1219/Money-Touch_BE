@@ -32,7 +32,8 @@ public class CustomUserDetails implements UserDetails, Serializable {
     public AuthType getAuthType() {
         return authType;
     }
-    // 사용자의 닉네임을 반환
+
+    // 사용자의 이메일을 반환
     @Override
     public String getUsername() {
         return email;

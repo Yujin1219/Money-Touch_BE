@@ -7,10 +7,12 @@ import com.server.money_touch.domain.consumptionRecord.converter.totalConsumptio
 import com.server.money_touch.domain.consumptionRecord.entity.TotalConsumption;
 import com.server.money_touch.domain.consumptionRecord.repository.totalConsumption.TotalConsumptionRepository;
 import com.server.money_touch.domain.user.converter.AuthConverter;
+import com.server.money_touch.domain.user.converter.UserConverter;
 import com.server.money_touch.domain.user.dto.KakaoDTO;
 import com.server.money_touch.domain.user.dto.TokenResponse;
 import com.server.money_touch.domain.user.dto.UserResponse;
 import com.server.money_touch.domain.user.entity.CustomUserDetails;
+import com.server.money_touch.domain.user.entity.SocialLogin;
 import com.server.money_touch.domain.user.entity.User;
 import com.server.money_touch.domain.user.enums.AuthType;
 import com.server.money_touch.domain.user.enums.Role;
@@ -23,6 +25,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -82,22 +85,33 @@ public class AuthService {
         httpServletResponse.setHeader("Authorization", "Bearer " + tokenResponse.getAccessToken());
 
         return UserResponse.OAuthLoginResultDTO.builder()
-                .user(user)
+                .userId(user.getId())
                 .accessToken(tokenResponse.getAccessToken())
                 .refreshToken(tokenResponse.getRefreshToken())
                 .build();
     }
 
-    private User createNewUser(KakaoDTO.KakaoProfile kakaoProfile) {
-        User newUser = AuthConverter.toUser(
-                kakaoProfile.getKakaoAccount().getEmail(),
-                kakaoProfile.getKakaoAccount().getProfile().getNickname(),
-                null,
-                passwordEncoder,
-                Role.USER,
-                AuthType.KAKAO
-        );
+    @Transactional
+    public User createNewUser(KakaoDTO.KakaoProfile kakaoProfile) {
+        String email = kakaoProfile.getKakaoAccount().getEmail();
+        String kakaoKey = String.valueOf(kakaoProfile.getId());
 
+        // 1. User 생성
+        User newUser = User.builder()
+                .email(email)
+                .authType(AuthType.KAKAO)
+                .role(Role.USER)
+                .build();
+
+        // 2. SocialLogin 생성 & 양방향 연결
+        SocialLogin socialLogin = SocialLogin.builder()
+                .KakaoKey(kakaoKey)
+                .user(newUser)
+                .build();
+
+        newUser.setSocialLogin(socialLogin);
+
+        // 3. Cascade 설정이 있으면 이 한 줄로 둘 다 저장됨
         return userRepository.save(newUser);
     }
 }

@@ -37,7 +37,7 @@ public class UserConverter {
     }
 
     // 소셜 회원가입용 User 생성
-    public static User createSocialUser(String email, String kakaoKey, UserRequest.UserDetailCreateDTO requestDTO) {
+    public static User createSocialUser(String email, String kakaoKey) {
         // User 엔티티 생성
         User user = User.builder()
                 .email(email)
@@ -45,11 +45,8 @@ public class UserConverter {
                 .role(Role.USER)
                 .build();
 
-        // UserDetail 및 SocialLogin 생성
-        UserDetail userDetail = createUserDetail(user, requestDTO);
+        //SocialLogin 생성
         SocialLogin socialLogin = createSocialLogin(kakaoKey, user);
-
-        user.setUserDetail(userDetail);
         user.setSocialLogin(socialLogin);
 
         return user;
