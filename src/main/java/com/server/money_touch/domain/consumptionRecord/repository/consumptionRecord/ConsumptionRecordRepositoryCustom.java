@@ -23,8 +23,9 @@ public interface ConsumptionRecordRepositoryCustom {
             int limit);
 
     // 경계 날짜(boundary date)의 나머지 데이터를 추가 조회.
-    List<DailyConsumptionItemProjection> findRestOfBoundaryDate(
+    List<DailyConsumptionItemProjection> findRestOfBoundaryDateClampedToMonth(
             Long userId,
+            LocalDateTime monthStart, LocalDateTime monthEnd,
             LocalDateTime boundaryStart, LocalDateTime boundaryEnd,
             Long minIncludedId);
 

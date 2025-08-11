@@ -115,19 +115,20 @@ public class ConsumptionRecordRepositoryImpl implements ConsumptionRecordReposit
      *
      * @param userId             조회할 사용자 ID
      * @param monthStart         월 시작일(LocalDateTime, 00:00)
-     * @param monthEnd           월 종료일(LocalDateTime, 23:59:59)
+     * @param nextMonthStart     다음달 시작일(LocalDateTime, 00:00)  // ⚠️ 상한은 '미만'으로 사용할 것
      * @param cursorConsumeDate  커서로 사용할 기준 소비일시 (null이면 첫 페이지)
      * @param limit              조회할 데이터 개수(페이지 사이즈)
      * @return DailyConsumptionItemProjection 목록
      */
     @Override
     public List<DailyConsumptionItemProjection> findChunkByMonthUsingDateCursor(
-            Long userId, LocalDateTime monthStart, LocalDateTime monthEnd,
+            Long userId, LocalDateTime monthStart, LocalDateTime nextMonthStart,
             LocalDateTime cursorConsumeDate, int limit) {
 
-        // 기본 조건: 해당 사용자 + 지정한 월 범위 내 소비내역
+        // ✅ 월 범위를 [monthStart, nextMonthStart) 로 '반열린 구간'으로 고정
         BooleanExpression base = record.user.id.eq(userId)
-                .and(record.consumeDate.between(monthStart, monthEnd));
+                .and(record.consumeDate.goe(monthStart))
+                .and(record.consumeDate.lt(nextMonthStart));
 
         // 날짜 커서 조건: 다음 페이지는 cursorConsumeDate의 '자정'보다 이전 데이터만 조회
         BooleanExpression dateCursor = null;
@@ -162,15 +163,20 @@ public class ConsumptionRecordRepositoryImpl implements ConsumptionRecordReposit
      *   같은 날짜의 나머지 데이터를 모두 가져오기 위해 호출됨
      * - minIncludedId보다 오래된(더 작은) ID 데이터만 조회하여 중복 방지
      *
-     * @param userId        조회할 사용자 ID
-     * @param boundaryStart 경계 날짜의 시작 시간 (00:00)
-     * @param boundaryEnd   경계 날짜의 종료 시간 (23:59:59)
-     * @param minIncludedId 현재 페이지에서 이미 포함된 가장 오래된 데이터의 ID
+     * @param userId            조회할 사용자 ID
+     * @param monthStart        월 시작일(LocalDateTime, 00:00)
+     * @param nextMonthStart    다음달 시작일(LocalDateTime, 00:00) // ⚠️ 상한 미만
+     * @param boundaryStart     경계 날짜의 시작 시간 (00:00)
+     * @param boundaryEnd       경계 날짜의 종료 시간 (23:59:59.999999999)
+     * @param minIncludedId     현재 페이지에서 이미 포함된 가장 오래된 데이터의 ID
      * @return DailyConsumptionItemProjection 목록
      */
     @Override
-    public List<DailyConsumptionItemProjection> findRestOfBoundaryDate(
-            Long userId, LocalDateTime boundaryStart, LocalDateTime boundaryEnd, Long minIncludedId) {
+    public List<DailyConsumptionItemProjection> findRestOfBoundaryDateClampedToMonth(
+            Long userId,
+            LocalDateTime monthStart, LocalDateTime nextMonthStart,
+            LocalDateTime boundaryStart, LocalDateTime boundaryEnd,
+            Long minIncludedId) {
 
         return queryFactory
                 .select(Projections.fields(
@@ -178,8 +184,13 @@ public class ConsumptionRecordRepositoryImpl implements ConsumptionRecordReposit
                         record.id.as("consumptionRecordId"),
                         record.consumeDate.as("consumeDate"),
                         Expressions.cases()
-                                .when(record.isFixed.isTrue()).then("고정비")
-                                .otherwise(category.budgetCategoryName).as("categoryName"),
+                                // ✅ 고정비라도 consumeDate가 월 범위 안인 경우만 "고정비" (표시용)
+                                .when(record.isFixed.isTrue()
+                                        .and(record.consumeDate.goe(monthStart))
+                                        .and(record.consumeDate.lt(nextMonthStart)))
+                                .then("고정비")
+                                .otherwise(category.budgetCategoryName)
+                                .as("categoryName"),
                         record.content,
                         record.amount
                 ))
@@ -187,6 +198,10 @@ public class ConsumptionRecordRepositoryImpl implements ConsumptionRecordReposit
                 .leftJoin(record.consumptionCategory, category)
                 .where(
                         record.user.id.eq(userId)
+                                // ✅ 월 범위 [monthStart, nextMonthStart)
+                                .and(record.consumeDate.goe(monthStart))
+                                .and(record.consumeDate.lt(nextMonthStart))
+                                // ✅ 하루 범위
                                 .and(record.consumeDate.between(boundaryStart, boundaryEnd))
                                 .and(record.id.lt(minIncludedId))
                 )
@@ -199,23 +214,18 @@ public class ConsumptionRecordRepositoryImpl implements ConsumptionRecordReposit
      *
      * - 다음 페이지가 있는지 여부를 판단하는 데 사용
      * - boundaryStart 이전에 데이터가 존재하면 true 반환
-     *
-     * @param userId        조회할 사용자 ID
-     * @param monthStart    월 시작일(LocalDateTime, 00:00)
-     * @param monthEnd      월 종료일(LocalDateTime, 23:59:59)
-     * @param boundaryStart 비교 기준이 되는 날짜(LocalDateTime, 00:00)
-     * @return 존재 여부 (true: 데이터 있음, false: 데이터 없음)
      */
     @Override
     public boolean existsOlderThanDate(
-            Long userId, LocalDateTime monthStart, LocalDateTime monthEnd, LocalDateTime boundaryStart) {
+            Long userId, LocalDateTime monthStart, LocalDateTime nextMonthStart, LocalDateTime boundaryStart) {
 
         Long probe = queryFactory
                 .select(record.id)
                 .from(record)
                 .where(
                         record.user.id.eq(userId)
-                                .and(record.consumeDate.between(monthStart, monthEnd))
+                                .and(record.consumeDate.goe(monthStart))
+                                .and(record.consumeDate.lt(nextMonthStart)) // ✅ 반열린 구간
                                 .and(record.consumeDate.lt(boundaryStart))
                 )
                 .limit(1)
