@@ -85,6 +85,7 @@ public class AuthService {
 
         return UserResponse.OAuthLoginResultDTO.builder()
                 .userId(user.getId())
+                .nickname(user.getNickname())
                 .accessToken(tokenResponse.getAccessToken())
                 .refreshToken(tokenResponse.getRefreshToken())
                 .isNewUser(isNewUser)

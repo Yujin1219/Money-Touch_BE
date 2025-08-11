@@ -71,6 +71,7 @@ public class UserResponse {
         private Long userId;
         private String accessToken;
         private String refreshToken;
+        private String nickname;
         private boolean isNewUser;
     }
 
