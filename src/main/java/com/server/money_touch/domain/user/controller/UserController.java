@@ -64,7 +64,7 @@ public class UserController{
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "_BAD_REQUEST"),
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "_INTERNAL_SERVER_ERROR")
     })
-    @GetMapping("/email")
+    @GetMapping("/email/send")
     public ApiResponse<String> requestEmail(@RequestParam("to") String toEmail) {
         try {
             userQueryService.requestEmailVerification(toEmail);
@@ -72,6 +72,21 @@ public class UserController{
         } catch (IOException e) {
             // 로그 기록 추가 가능
             return ApiResponse.onFailure("SENDGRID4002","이메일 발송중 오류가 발생했습니다.", null);
+        }
+    }
+    @Operation(summary = "이메일 인증 확인 API"
+    ,description = "이메일 인증을 요청한 인증번호를 검증하는 API입니다.")
+    @ApiErrorCodeExamples({
+            @ApiErrorCodeExample(value = ErrorStatus.class, name = "_BAD_REQUEST"),
+            @ApiErrorCodeExample(value = ErrorStatus.class, name = "_INTERNAL_SERVER_ERROR")
+    })
+    @GetMapping("/email/verify")
+    public ApiResponse<String> verifyAuthCode(@RequestParam String email, @RequestParam String code) {
+        boolean isValid = sendGridUtil.verifyAuthCode(email, code);
+        if (isValid) {
+            return ApiResponse.onSuccess("인증이 완료되었습니다.");
+        } else {
+            return ApiResponse.onFailure("INVALID_CODE", "인증번호가 올바르지 않거나 만료되었습니다.", null);
         }
     }
 
