@@ -17,6 +17,7 @@ public class RoutineConverter {
         return Routine.builder()
                 .user(user)
                 .budget(budget)
+                .routineTotalAmount(routineCreateDTO.getTotalBudget())
                 .routineName(routineCreateDTO.getRoutineName())
                 .routineImageUrl(routineCreateDTO.getRoutineImgUrl())
                 .createdMonth(createdMonth)
