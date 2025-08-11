@@ -15,6 +15,25 @@ public interface ConsumptionRecordRepositoryCustom {
             Long userId, LocalDateTime start, LocalDateTime end,
             Long cursorId, LocalDateTime cursorConsumeDate, int pageSize);
 
+    // 해당 월의 소비내역을 커서 기반으로 페이지 단위 조회 (consumeDate 기준).
+    List<DailyConsumptionItemProjection> findChunkByMonthUsingDateCursor(
+            Long userId,
+            LocalDateTime monthStart, LocalDateTime monthEnd,
+            LocalDateTime cursorConsumeDate,
+            int limit);
+
+    // 경계 날짜(boundary date)의 나머지 데이터를 추가 조회.
+    List<DailyConsumptionItemProjection> findRestOfBoundaryDate(
+            Long userId,
+            LocalDateTime boundaryStart, LocalDateTime boundaryEnd,
+            Long minIncludedId);
+
+    // 지정한 월 범위에서 특정 날짜 이전 데이터가 존재하는지 여부 확인.
+    boolean existsOlderThanDate(
+            Long userId,
+            LocalDateTime monthStart, LocalDateTime monthEnd,
+            LocalDateTime boundaryStart);
+
     // 특정 유저의 날짜별 소비 금액을 문자열 날짜 기준으로 집계하여 반환
     List<DailyAmountProjection> findDailyTotalAmounts(Long userId, LocalDate startDate, LocalDate endDate);
 

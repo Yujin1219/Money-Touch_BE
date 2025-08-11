@@ -64,56 +64,108 @@ public class ConsumptionRecordQueryServiceImpl implements ConsumptionRecordQuery
     }
 
     // 해당 월의 소비 내역 목록 조회 (커서 기반 무한스크롤)
+    // - 요구사항: 페이지 사이즈와 관계없이 "특정 날짜의 데이터가 여러 페이지에 분리되지 않도록" 보장.
+    // - 전략:
+    //   1) (consumeDate DESC, id DESC) 기준으로 pageSize+1개를 가져와 "경계 날짜(boundaryDate)"를 결정
+    //   2) 경계 날짜가 잘릴 위험이 있으므로, 경계 날짜의 "나머지 전부"를 추가 쿼리로 모아 합치기
+    //   3) 다음 페이지 존재 여부는 "경계 날짜보다 과거 데이터가 있는가"로 판정
+    //   4) nextCursorId는 "이번에 내려준 마지막(가장 오래된) 아이템의 id"로 반환
+    //      (레포에서 커서를 '날짜 기준'으로만 쓰도록 수정하면, 같은 날짜 재등장 이슈가 사라집니다)
     @Override
-    public HouseholdConsumptionResponse.MonthlyHistoryResponseDTO getMonthlyConsumptionRecords(Long userId, int year, int month, Long cursorId) {
-        // 사용자 조회
-        User user = userRepository.findById(userId)
+    public HouseholdConsumptionResponse.MonthlyHistoryResponseDTO getMonthlyConsumptionRecords(
+            Long userId, int year, int month, Long cursorId) {
+
+        // 0) 사용자 검증
+        userRepository.findById(userId)
                 .orElseThrow(() -> new ErrorHandler(ErrorStatus.USER_NOT_FOUND));
 
-        // 해당 월의 시작일과 종료일 계산
+        // 1) 해당 월 범위
         LocalDate startDate = LocalDate.of(year, month, 1);
         LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
+        LocalDateTime monthStart = startDate.atStartOfDay();
+        LocalDateTime monthEnd = endDate.atTime(23, 59, 59, 999_999_999);
 
-        // 커서 ID가 존재할 경우, 해당 ID의 consumeDate 조회 (consumeDate + id 기준 커서 페이징)
+        // 2) 커서의 consumeDate 조회 (id → consumeDate)
+        //    다음 페이지는 "이 날짜보다 과거(< dayStart)"만 보도록 만들 것이므로
+        //    레포지토리에서 id 커서 비교(= 같은 날짜에서 id<...)는 사용하지 않게 해야 "날짜 쪼개짐"이 사라집니다.
         LocalDateTime cursorConsumeDate = null;
         if (cursorId != null) {
             cursorConsumeDate = consumptionRecordRepository.findConsumeDateById(cursorId);
+            // 잘못된 id면 첫 페이지처럼 동작해도 무방 (정책에 따라 400 던져도 됨)
         }
 
-        // 소비 기록 Slice 조회 (consumeDate + id 기준 최신순 페이징)
-        Slice<DailyConsumptionItemProjection> slice = consumptionRecordRepository
-                .findMonthlyConsumptionItems(userId, startDate, endDate, cursorId, cursorConsumeDate, PAGE_SIZE);
+        // 3) 1차 청크: pageSize+1
+        //    - 정렬: consumeDate DESC, id DESC
+        //    - 커서 조건: cursorConsumeDate != null 이면 (consumeDate < cursorDayStart)
+        //      즉, "날짜만" 기준으로 다음 페이지를 자르도록 해야 같은 날짜 재등장이 없음.
+        final int pageSize = PAGE_SIZE; // 기존 상수 재사용
+        List<DailyConsumptionItemProjection> chunk = consumptionRecordRepository
+                .findChunkByMonthUsingDateCursor(userId, monthStart, monthEnd, cursorConsumeDate, pageSize + 1);
 
-        // Slice에서 실제 데이터 리스트 추출
-        List<DailyConsumptionItemProjection> content = slice.getContent();
+        if (chunk.isEmpty()) {
+            return ConsumptionRecordConverter.toMonthlyHistoryResponseDTO(
+                    List.of(), true, false, null
+            );
+        }
 
-        // 날짜(LocalDate) 기준으로 그룹핑 (TreeMap: 날짜 오름차순 정렬)
-        Map<LocalDate, List<HouseholdConsumptionResponse.DailyRecordDTO>> grouped = content.stream()
+        // 4) 경계 날짜(boundaryDate) 계산
+        //    - "표시 대상"은 우선 chunk의 앞에서 pageSize개
+        //    - 그중 마지막 아이템의 consumeDate(최소 consumeDate)가 경계 날짜가 됨
+        int visibleCount = Math.min(pageSize, chunk.size());
+        List<DailyConsumptionItemProjection> visible = new ArrayList<>(chunk.subList(0, visibleCount));
+
+        LocalDate boundaryDate = visible.get(visible.size() - 1).getConsumeDate().toLocalDate();
+        LocalDateTime boundaryStart = boundaryDate.atStartOfDay();
+        LocalDateTime boundaryEnd = boundaryStart.plusDays(1).minusNanos(1);
+
+        // 5) 경계 날짜의 나머지 아이템 전부 추가 조회
+        //    - chunk는 pageSize 제한 때문에 "경계 날짜의 일부"만 담겼을 수 있음
+        //    - 경계 날짜의 "나머지 전부"를 추가 조회하여 합쳐 한 날짜가 절대 쪼개지지 않도록 보장
+        Long minIncludedIdOnBoundary = visible.stream()
+                .filter(p -> p.getConsumeDate().toLocalDate().equals(boundaryDate))
+                .map(DailyConsumptionItemProjection::getConsumptionRecordId)
+                .min(Long::compareTo) // 정렬이 DESC이므로 "가장 오래된 id"가 min
+                .orElse(Long.MAX_VALUE);
+
+        List<DailyConsumptionItemProjection> extraSameDate = consumptionRecordRepository
+                .findRestOfBoundaryDate(userId, boundaryStart, boundaryEnd, minIncludedIdOnBoundary);
+
+        // 6) 결과 합치기 (정렬 유지: consumeDate DESC, id DESC)
+        //    - visible(앞부분) + extraSameDate(경계 날짜 나머지) 순으로 합칩니다.
+        List<DailyConsumptionItemProjection> merged = new ArrayList<>(visible.size() + extraSameDate.size());
+        merged.addAll(visible);
+        merged.addAll(extraSameDate);
+
+        // 7) hasNext 계산: 경계 날짜보다 과거 데이터가 있는지
+        boolean hasNext = consumptionRecordRepository.existsOlderThanDate(userId, monthStart, monthEnd, boundaryStart);
+
+        // 8) nextCursorId: 이번에 내려준 리스트 중 "가장 오래된" 아이템의 id (마지막 요소)
+        Long nextCursorId = hasNext && !merged.isEmpty()
+                ? merged.get(merged.size() - 1).getConsumptionRecordId()
+                : null;
+
+        // 9) 날짜 단위 그룹핑 → 응답 DTO
+        Map<LocalDate, List<HouseholdConsumptionResponse.DailyRecordDTO>> grouped = merged.stream()
                 .collect(Collectors.groupingBy(
                         p -> p.getConsumeDate().toLocalDate(),
-                        TreeMap::new,
+                        TreeMap::new, // 날짜 오름차순
                         Collectors.mapping(ConsumptionRecordConverter::toDailyRecordDTO, Collectors.toList())
                 ));
 
-        // 그룹핑된 데이터를 DTO로 변환 + 날짜 최신순 정렬
+        // 날짜 최신순으로 정렬하여 DTO 구성
         List<HouseholdConsumptionResponse.DailyHistoryDTO> dailyHistory = grouped.entrySet().stream()
-                .map(entry -> ConsumptionRecordConverter.toDailyHistoryDTO(entry.getKey(), entry.getValue()))
+                .map(e -> ConsumptionRecordConverter.toDailyHistoryDTO(e.getKey(), e.getValue()))
                 .sorted(Comparator.comparing(HouseholdConsumptionResponse.DailyHistoryDTO::getDate).reversed())
                 .toList();
 
-        // 다음 커서 ID 설정 (마지막 요소의 ID 사용)
-        Long nextCursorId = (slice.hasNext() && !content.isEmpty())
-                ? content.get(content.size() - 1).getConsumptionRecordId()
-                : null;
+        log.info("월 소비 내역(커서) - userId={}, {}-{}, cursorId={}, nextCursorId={}, boundaryDate={}, hasNext={}, mergedSize={}",
+                userId, year, month, cursorId, nextCursorId, boundaryDate, hasNext, merged.size());
 
-        log.info("해당 월의 소비 내역 목록 조회(커서 기반 무한스크롤) 완료 - userId: {}, year: {}, month: {}, cursorId: {}, nextCursorId: {}", userId, year, month, cursorId, nextCursorId);
-
-        // 최종 응답 DTO 반환
         return ConsumptionRecordConverter.toMonthlyHistoryResponseDTO(
                 dailyHistory,
-                cursorId == null,            // isFirst: 커서가 없으면 첫 페이지
-                slice.hasNext(),             // hasNext: 다음 페이지 존재 여부
-                nextCursorId                 // nextCursorId: 다음 요청 시 사용할 커서 ID
+                cursorId == null,   // isFirst
+                hasNext,
+                nextCursorId
         );
     }
 
