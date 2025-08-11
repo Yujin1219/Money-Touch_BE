@@ -60,6 +60,12 @@ public class ConsumptionRecord extends BaseEntity {
     @Builder.Default
     private Boolean isFixed = false; // 고정비 여부
 
+    @OneToMany(mappedBy = "consumptionRecord", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<Reaction> reactions = new ArrayList<>();
+
+    @OneToMany(mappedBy = "consumptionRecord", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<Comment> comments = new ArrayList<>();
+
     // 일일 소비 기록 수정
     public void updateDailyConsumptionRecord(ConsumptionCategory category, int amount, String content, String memo, LocalDateTime consumeDate) {
         this.consumptionCategory = category;
