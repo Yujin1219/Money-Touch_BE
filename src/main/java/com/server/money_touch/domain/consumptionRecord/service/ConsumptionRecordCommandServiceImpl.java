@@ -48,7 +48,7 @@ public class ConsumptionRecordCommandServiceImpl implements ConsumptionRecordCom
                 .orElseThrow(() -> new ErrorHandler(ErrorStatus.CONSUMPTION_CATEGORY_NAME_NOT_FOUND));
 
         // 3. 소비 기록 엔티티 생성
-        ConsumptionRecord dailyConsumptionRecord = ConsumptionRecordConverter.toDailyConsumptionRecord(user, consumptionCategory, request);
+        ConsumptionRecord dailyConsumptionRecord = ConsumptionRecordConverter.toDailyConsumptionRecord(user, consumptionCategory, request, false);
         consumptionRecordRepository.save(dailyConsumptionRecord);
 
         // 4-1. 현재 연도와 월 기준으로 월 시작일과 종료일 계산

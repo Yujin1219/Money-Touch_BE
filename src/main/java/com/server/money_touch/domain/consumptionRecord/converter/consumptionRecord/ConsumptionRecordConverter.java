@@ -18,7 +18,7 @@ import java.util.List;
 public class ConsumptionRecordConverter {
 
     // 일일 소비 기록 시 소비 카테고리 엔티티 생성
-    public static ConsumptionRecord toDailyConsumptionRecord(User user, ConsumptionCategory consumptionCategory, HouseholdConsumptionRequest.DailyConsumptionCreateDTO requestDTO) {
+    public static ConsumptionRecord toDailyConsumptionRecord(User user, ConsumptionCategory consumptionCategory, HouseholdConsumptionRequest.DailyConsumptionCreateDTO requestDTO, Boolean isPublic) {
         return ConsumptionRecord.builder()
                 .user(user)
                 .consumptionCategory(consumptionCategory)
@@ -26,7 +26,7 @@ public class ConsumptionRecordConverter {
                 .content(requestDTO.getContent())
                 .memo(requestDTO.getMemo())
                 .consumeDate(requestDTO.getConsumeDate())
-                .isPublic(true) // 가계부에만 등록
+                .isPublic(isPublic) // 일일 소비 기록은 피드 없이 가계부에만 등록
                 .commentCount(0)
                 .wiseCount(0)
                 .wasteCount(0)
