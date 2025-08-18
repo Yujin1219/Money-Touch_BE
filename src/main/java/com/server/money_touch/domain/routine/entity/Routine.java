@@ -11,14 +11,14 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Entity
-//@Table(
-//        uniqueConstraints = {
-//                @UniqueConstraint(
-//                        name = "unique_user_budget_month",
-//                        columnNames = {"user_id", "budget_id", "created_month"}
-//                )
-//        }
-//)
+@Table(
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "unique_user_budget_month",
+                        columnNames = {"user_id", "budget_id", "created_month"}
+                )
+        }
+)
 public class Routine extends BaseEntity {
     @Column(length = 20, nullable = false)
     private String routineName;
