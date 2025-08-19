@@ -7,7 +7,7 @@ import com.server.money_touch.domain.budget.entity.BudgetCategory;
 import com.server.money_touch.domain.budget.enums.CategoryType;
 import com.server.money_touch.domain.budget.repository.budget.BudgetRepository;
 import com.server.money_touch.domain.budget.repository.budgetCategory.BudgetCategoryRepository;
-import com.server.money_touch.domain.consumptionRecord.entity.TotalConsumption;
+import com.server.money_touch.domain.consumptionRecord.repository.consumptionRecord.ConsumptionRecordRepository;
 import com.server.money_touch.domain.consumptionRecord.repository.totalConsumption.TotalConsumptionRepository;
 import com.server.money_touch.domain.user.entity.User;
 import com.server.money_touch.domain.user.repository.user.UserRepository;
@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
 public class BudgetQueryServiceImpl implements BudgetQueryService {
     private final BudgetRepository budgetRepository;
     private final BudgetCategoryRepository budgetCategoryRepository;
-    private final TotalConsumptionRepository totalConsumptionRepository;
+    private final ConsumptionRecordRepository consumptionRecordRepository;
     private final UserRepository userRepository;
 
     // 예산 존재 여부 검증
@@ -89,29 +89,25 @@ public class BudgetQueryServiceImpl implements BudgetQueryService {
     }
 
     // 예산 아이디 및 총 소비 금액 조회
-    @Transactional
+    @Transactional(readOnly = true)
     @Override
     public BudgetResponse.TotalConsumptionResultDTO findBudgetByIdAndTotalConsumption(Long userId, Integer year, Integer month) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ErrorHandler(ErrorStatus.USER_NOT_FOUND));
 
-        // 해당 월의 시작일과 종료일 계산
+        // 예산 조회 기간(예산 id 조회는 기존 로직 유지)
         LocalDateTime startOfMonth = LocalDate.of(year, month, 1).atStartOfDay();
         LocalDateTime endOfMonth = startOfMonth.plusMonths(1).minusNanos(1);
 
-        // 총 소비 금액 조회 (없으면 0으로 처리)
-        TotalConsumption totalConsumption = totalConsumptionRepository
-                .findByUserAndCreatedAtBetween(user, startOfMonth, endOfMonth)
-                .orElse(null);
+        // 총 소비 금액: consumption_record에서 직접 합계
+        Integer totalAmount = consumptionRecordRepository.sumMonthlyAmountByUser(userId, year, month);
+        if (totalAmount == null) totalAmount = 0;
 
-        int totalAmount = (totalConsumption != null) ? totalConsumption.getTotalConsumptionAmount() : 0;
-
-        // 예산 조회 (없으면 budgetId = null)
-        // 회원가입 및 1일에 데이터가 생성되기 때문에 createdAt과 updatedAt이 같으면 아직 사용자가 직접 등록하지 않은 예산으로 간주
+        // 해당 월에 사용자가 직접 등록한 예산 조회
         Budget budget = budgetRepository.findRegisteredBudgetInMonthNative(userId, startOfMonth, endOfMonth)
                 .orElse(null);
-
         Long budgetId = (budget != null) ? budget.getId() : null;
+
         log.info("예산 아이디 및 총 소비 금액 조회 - userId: {}, budgetId: {}", userId, budgetId);
         return BudgetConverter.toTotalConsumptionResultDto(budgetId, totalAmount);
     }

@@ -33,7 +33,6 @@ public class ConsumptionRecordCommandServiceImpl implements ConsumptionRecordCom
     private final ConsumptionRecordRepository consumptionRecordRepository;
     private final ConsumptionCategoryRepository consumptionCategoryRepository;
     private final UserRepository userRepository;
-    private final TotalConsumptionRepository totalConsumptionRepository;
 
     // 일일 소비 기록 등록
     @Transactional
@@ -50,18 +49,6 @@ public class ConsumptionRecordCommandServiceImpl implements ConsumptionRecordCom
         // 3. 소비 기록 엔티티 생성
         ConsumptionRecord dailyConsumptionRecord = ConsumptionRecordConverter.toDailyConsumptionRecord(user, consumptionCategory, request, false);
         consumptionRecordRepository.save(dailyConsumptionRecord);
-
-        // 4-1. 현재 연도와 월 기준으로 월 시작일과 종료일 계산
-        LocalDateTime startOfMonth = LocalDate.now().withDayOfMonth(1).atStartOfDay();
-        LocalDateTime endOfMonth = startOfMonth.plusMonths(1).minusNanos(1);
-
-        // 4-2. 해당 월의 총 소비 금액 조회, 데이터가 없다면 생성
-        TotalConsumption totalConsumption = totalConsumptionRepository
-                .findByUserAndCreatedAtBetween(user, startOfMonth, endOfMonth)
-                .orElseGet(() -> totalConsumptionRepository.save(TotalConsumptionConverter.toTotalConsumption(user)));
-
-        // 4-3. 소비 금액 추가
-        totalConsumption.updateAddTotalConsumptionAmount(request.getAmount());
 
         Long consumptionRecordId = dailyConsumptionRecord.getId();
         log.info("일일 소비 기록 등록 완료: userId: {}, consumptionRecordId: {}", userId, consumptionRecordId);
@@ -84,19 +71,7 @@ public class ConsumptionRecordCommandServiceImpl implements ConsumptionRecordCom
         ConsumptionCategory consumptionCategory = consumptionCategoryRepository.findByUserAndBudgetCategoryName(user, request.getCategoryName())
                 .orElseThrow(() -> new ErrorHandler(ErrorStatus.CONSUMPTION_CATEGORY_NAME_NOT_FOUND));
 
-        // 4-1. 현재 연도와 월 기준으로 월 시작일과 종료일 계산
-        LocalDateTime startOfMonth = LocalDate.now().withDayOfMonth(1).atStartOfDay();
-        LocalDateTime endOfMonth = startOfMonth.plusMonths(1).minusNanos(1);
-
-        // 4-2. 해당 월의 총 소비 금액 조회, 데이터가 없다면 에러
-        TotalConsumption totalConsumption = totalConsumptionRepository
-                .findByUserAndCreatedAtBetween(user, startOfMonth, endOfMonth)
-                .orElseThrow(() -> new IllegalArgumentException("총 소비 정보가 존재하지 않습니다. 관리자에게 문의해 주세요."));
-
-        // 4-3. 총 소비 금액 수정
-        totalConsumption.updateTotalConsumptionAmount(consumptionRecord.getAmount(), request.getAmount());
-
-        // 5. 일일 소비 기록 수정
+        // 4. 일일 소비 기록 수정
         consumptionRecord.updateDailyConsumptionRecord(consumptionCategory, request.getAmount(), request.getContent(),request.getMemo(), request.getConsumeDate());
 
         log.info("일일 소비 기록 수정 완료 - userId: {}, consumptionRecordId: {}", userId, consumptionRecordId);
@@ -114,19 +89,7 @@ public class ConsumptionRecordCommandServiceImpl implements ConsumptionRecordCom
         ConsumptionRecord consumptionRecord = consumptionRecordRepository.findById(consumptionRecordId)
                 .orElseThrow(() -> new ErrorHandler(ErrorStatus.CONSUMPTION_RECORD_NOT_FOUND));
 
-        // 3-1. 현재 연도와 월 기준으로 월 시작일과 종료일 계산
-        LocalDateTime startOfMonth = LocalDate.now().withDayOfMonth(1).atStartOfDay();
-        LocalDateTime endOfMonth = startOfMonth.plusMonths(1).minusNanos(1);
-
-        // 3-2. 해당 월의 총 소비 금액 조회, 데이터가 없다면 에러
-        TotalConsumption totalConsumption = totalConsumptionRepository
-                .findByUserAndCreatedAtBetween(user, startOfMonth, endOfMonth)
-                .orElseThrow(() -> new IllegalArgumentException("총 소비 정보가 존재하지 않습니다. 관리자에게 문의해 주세요."));
-
-        // 3-3. 총 소비 금액 차감
-        totalConsumption.updateSubstractTotalConsumptionAmount(consumptionRecord.getAmount());
-
-        // 6. 소비 기록 삭제
+        // 3. 소비 기록 삭제
         consumptionRecordRepository.delete(consumptionRecord);
 
         log.info("일일 소비 기록 삭제 완료 - userId: {}, consumptionRecordId: {}", userId, consumptionRecordId);

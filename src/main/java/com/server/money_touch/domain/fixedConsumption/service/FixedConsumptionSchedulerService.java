@@ -36,7 +36,6 @@ public class FixedConsumptionSchedulerService {
     private final FixedConsumptionRepository fixedConsumptionRepository;
     private final ConsumptionCategoryRepository consumptionCategoryRepository;
     private final ConsumptionRecordRepository consumptionRecordRepository;
-    private final TotalConsumptionRepository totalConsumptionRepository;
     private final BudgetCommandService budgetCommandService;
 
     /**
@@ -61,26 +60,18 @@ public class FixedConsumptionSchedulerService {
     public void processUserFixedConsumption(User user) {
         try {
             LocalDateTime startOfMonth = LocalDate.now().withDayOfMonth(1).atStartOfDay();
-            LocalDateTime endOfMonth = startOfMonth.plusMonths(1).minusNanos(1);
 
             // 1. Budget, 기본 ConsumptionCategory 테이블 조회 or 생성
             Budget budget = budgetCommandService.createOrFindBudgetForMonth(user);
             budgetCommandService.saveCategoryBudgetsByType(null, user, budget, CategoryType.DEFAULT);
 
-            // 2. TotalConsumption 조회 or 생성
-            TotalConsumption totalConsumption = totalConsumptionRepository
-                    .findByUserAndCreatedAtBetween(user, startOfMonth, endOfMonth)
-                    .orElseGet(() -> totalConsumptionRepository.save(
-                            TotalConsumptionConverter.toTotalConsumption(user))
-                    );
-
-            // 3. 기본 ConsumptionCategory 목록 불러오기 (카테고리 이름 기준 매핑)
+            // 2. 기본 ConsumptionCategory 목록 불러오기 (카테고리 이름 기준 매핑)
             Map<String, ConsumptionCategory> categoryMap = consumptionCategoryRepository
                     .findAllByUserAndBudgetCategoryType(user, CategoryType.DEFAULT)
                     .stream()
                     .collect(Collectors.toMap(ConsumptionCategory::getBudgetCategoryName, c -> c));
 
-            // 4~6. 고정비 목록을 기반으로 소비 기록 생성 및 저장 + TotalConsumption 반영
+            // 3. 고정비 목록을 기반으로 소비 기록 생성 및 저장 + TotalConsumption 반영
             fixedConsumptionRepository.findAllByUser(user).stream()
                     .map(fc -> {
                         String categoryName = fc.getCategoryName();
@@ -92,11 +83,6 @@ public class FixedConsumptionSchedulerService {
 
                         // 소비 기록 생성
                         ConsumptionRecord record = ConsumptionRecordConverter.toConsumptionRecordForFix(user, category, fc, startOfMonth);
-
-                        // TotalConsumption 금액 반영
-                        totalConsumption.updateAddTotalConsumptionAmount(fc.getFixedConsumptionAmount());
-                        totalConsumptionRepository.save(totalConsumption); // 명시적 저장
-
                         return record;
                     })
                     .filter(Objects::nonNull)
