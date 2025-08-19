@@ -87,18 +87,6 @@ public class ConsumptionRecordServiceImpl implements ConsumptionRecordService{
             consumptionRecordImageRepository.save(image);
         }
 
-        // 4-1. 현재 연도와 월 기준으로 월 시작일과 종료일 계산
-        LocalDateTime startOfMonth = LocalDate.now().withDayOfMonth(1).atStartOfDay();
-        LocalDateTime endOfMonth = startOfMonth.plusMonths(1).minusNanos(1);
-
-        // 4-2. 해당 월의 총 소비 금액 조회, 데이터가 없다면 생성
-        TotalConsumption totalConsumption = totalConsumptionRepository
-                .findByUserAndCreatedAtBetween(user, startOfMonth, endOfMonth)
-                .orElseGet(() -> totalConsumptionRepository.save(TotalConsumptionConverter.toTotalConsumption(user)));
-
-        // 4-3. 소비 금액 추가
-        totalConsumption.updateAddTotalConsumptionAmount(request.getAmount());
-
         return new ConsumptionRecordResponse.ConsumptionRecordCreateResultDTO(record.getId());
 
     }

@@ -104,19 +104,9 @@ public class UserCommandServiceImpl implements UserCommandService {
         // 약관 동의 처리
         processAgreements(savedUser, request.getAgreeTerms());
 
-        LocalDateTime startOfMonth = LocalDate.now().withDayOfMonth(1).atStartOfDay();
-        LocalDateTime endOfMonth = startOfMonth.plusMonths(1).minusNanos(1);
-
-        // 1. Budget, 기본 ConsumptionCategory 테이블 조회 or 생성
+        // Budget, 기본 ConsumptionCategory 테이블 조회 or 생성
         Budget budget = budgetCommandService.createOrFindBudgetForMonth(user);
         budgetCommandService.saveCategoryBudgetsByType(null, user, budget, CategoryType.DEFAULT);
-
-        // 2. TotalConsumption 조회 or 생성
-        TotalConsumption totalConsumption = totalConsumptionRepository
-                .findByUserAndCreatedAtBetween(user, startOfMonth, endOfMonth)
-                .orElseGet(() -> totalConsumptionRepository.save(
-                        TotalConsumptionConverter.toTotalConsumption(user))
-                );
 
         log.info("로컬 회원가입 완료 - userId: {}", savedUser.getId());
 

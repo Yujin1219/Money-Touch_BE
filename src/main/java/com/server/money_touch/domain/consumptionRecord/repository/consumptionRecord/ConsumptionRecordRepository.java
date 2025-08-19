@@ -4,6 +4,7 @@ import com.server.money_touch.domain.consumptionRecord.entity.ConsumptionRecord;
 import com.server.money_touch.domain.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,4 +20,19 @@ public interface ConsumptionRecordRepository extends JpaRepository<ConsumptionRe
     WHERE cr.user = :user AND cr.consumeDate BETWEEN :start AND :end
     GROUP BY cr.consumptionCategory.budgetCategoryName """)
     List<Object[]> findCategorySpendingBetween(User user, LocalDateTime start, LocalDateTime end);
+
+    // 이번 달 총 소비 금액 조회
+    @Query(
+            value = "SELECT COALESCE(SUM(amount), 0) " +
+                    "FROM consumption_record " +
+                    "WHERE user_id = :userId " +
+                    "AND MONTH(consume_date) = :month " +
+                    "AND YEAR(consume_date) = :year",
+            nativeQuery = true
+    )
+    Integer sumMonthlyAmountByUser(
+            @Param("userId") Long userId,
+            @Param("year") Integer year,
+            @Param("month") Integer month
+    );
 }

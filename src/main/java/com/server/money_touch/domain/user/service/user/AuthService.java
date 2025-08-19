@@ -39,7 +39,6 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final UserQueryService userQueryService;
     private final BudgetCommandService budgetCommandService;
-    private final TotalConsumptionRepository totalConsumptionRepository;
 
     public UserResponse.OAuthLoginResultDTO oAuthLogin(String accessCode, String redirectUrl,HttpServletResponse httpServletResponse) {
         // 1. access token 요청 시 동적 redirectUri 전달
@@ -62,16 +61,9 @@ public class AuthService {
 
         // ✅ 신규 가입자에 대해서만 예산 및 소비 생성
         if (isNewUser) {
-            LocalDateTime startOfMonth = LocalDate.now().withDayOfMonth(1).atStartOfDay();
-            LocalDateTime endOfMonth = startOfMonth.plusMonths(1).minusNanos(1);
-
+            // Budget, 기본 ConsumptionCategory 테이블 조회 or 생성
             Budget budget = budgetCommandService.createOrFindBudgetForMonth(user);
             budgetCommandService.saveCategoryBudgetsByType(null, user, budget, CategoryType.DEFAULT);
-
-            totalConsumptionRepository.findByUserAndCreatedAtBetween(user, startOfMonth, endOfMonth)
-                    .orElseGet(() -> totalConsumptionRepository.save(
-                            TotalConsumptionConverter.toTotalConsumption(user))
-                    );
         }
 
         // 1. User를 기반으로 CustomUserDetails 생성
