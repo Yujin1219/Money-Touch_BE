@@ -91,6 +91,7 @@ public class UserCommandServiceImpl implements UserCommandService {
                 .email(request.getEmail())
                 .authType(AuthType.LOCAL)
                 .role(Role.USER)
+                .profileImgUrl(request.getProfileImgUrl())
                 .nickname(request.getNickname())
                 .build();
 

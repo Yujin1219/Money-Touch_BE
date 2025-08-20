@@ -1,13 +1,12 @@
 package com.server.money_touch.domain.user.entity;
 
 
-import com.server.money_touch.domain.badge.entity.Badge;
 import com.server.money_touch.domain.badge.entity.UserBadge;
 import com.server.money_touch.domain.budget.entity.Budget;
-import com.server.money_touch.domain.budget.entity.BudgetCategory;
 import com.server.money_touch.domain.consumptionMbti.entity.ConsumptionMbti;
 import com.server.money_touch.domain.consumptionRecord.entity.*;
 import com.server.money_touch.domain.fixedConsumption.entity.FixedConsumption;
+import com.server.money_touch.domain.home.entity.WiseRankingHistory;
 import com.server.money_touch.domain.notification.entity.Notification;
 import com.server.money_touch.domain.routine.entity.Routine;
 import com.server.money_touch.domain.user.enums.AuthType;
@@ -64,36 +63,45 @@ public class User extends BaseEntity {
     // 회원 삭제를 위한 Cascade 설정
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ConsumptionCategory> categories = new ArrayList<>();
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<TotalConsumption> totalConsumption;
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Budget> budgets = new ArrayList<>();
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Reaction> reactions = new ArrayList<>();
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ConsumptionRecord> consumptionRecords = new ArrayList<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Notification> notifications = new ArrayList<>();
+    private List<CommentLike> commentLikes = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ConsumptionCategory> consumptionCategories = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ConsumptionMbti> consumptionMbtiList  = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ConsumptionRecord> consumptionRecords = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<FixedConsumption> fixedConsumptions = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Notification> notificationList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Reaction> reactions = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Routine> routines = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<TotalConsumption> totalConsumption;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ConsumptionCategory> categories = new ArrayList<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserBadge> badges = new ArrayList<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<FixedConsumption> fixedConsumptionList = new ArrayList<>();
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Routine> routines  = new ArrayList<>();
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ConsumptionMbti> consumptionMbtiList  = new ArrayList<>();
+    private List<WiseRankingHistory> wiseRankingHistoryList = new ArrayList<>();
 
 }

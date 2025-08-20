@@ -28,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -53,7 +54,7 @@ public class AuthService {
         boolean isNewUser = false;
 
         if (userQueryService.existsByEmail(email)) {
-            user = userRepository.findByEmail(email).get();
+            user = userRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
         } else {
             user = createNewUser(kakaoProfile); // 등록되지않은 회원이면 회원가입
             isNewUser = true;
@@ -89,6 +90,10 @@ public class AuthService {
         String email = kakaoProfile.getKakaoAccount().getEmail();
         String kakaoKey = String.valueOf(kakaoProfile.getId());
         String nickname = kakaoProfile.getKakaoAccount().getProfile().getNickname();
+        String profileImgUrl = Optional.ofNullable(kakaoProfile.getKakaoAccount())
+                .map(k -> k.getProfile())
+                .map(p -> p.getProfileImageUrl())
+                .orElse(null);
 
         // 닉네임 중복 체크
         if (userRepository.existsByNickname(nickname)) {
@@ -99,6 +104,7 @@ public class AuthService {
         User newUser = User.builder()
                 .nickname(nickname)
                 .email(email)
+                .profileImgUrl(profileImgUrl)
                 .authType(AuthType.KAKAO)
                 .role(Role.USER)
                 .build();
