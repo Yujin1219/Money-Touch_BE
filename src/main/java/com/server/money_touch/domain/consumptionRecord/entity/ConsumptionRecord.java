@@ -24,7 +24,7 @@ public class ConsumptionRecord extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "consumption_category_id", nullable = false)
     private ConsumptionCategory consumptionCategory;
 
