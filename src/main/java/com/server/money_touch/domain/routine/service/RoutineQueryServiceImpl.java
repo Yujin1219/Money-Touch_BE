@@ -75,17 +75,18 @@ public class RoutineQueryServiceImpl implements RoutineQueryService {
 
     // 내 소비 루틴 목록 조회 (커서 기반 무한스크롤)
     @Override
-    public RoutineResponse.MyRoutineListDTO getMyRoutineList(Long userId, Long cursorId) {
-        // 1. Pageable 객체 생성 (페이지 크기 고정, 0페이지부터 시작)
+    public RoutineResponse.MyRoutineListDTO getMyRoutineList(Long userId, int year, int month, Long cursorId) {
         Pageable pageable = PageRequest.of(0, PAGE_SIZE);
 
-        // 2. 커서 기반으로 루틴 목록 조회 (Slice 사용)
-        Slice<RoutineResponse.RoutineThumbnailDTO> slice = routineRepository.findUserRoutineList(userId, cursorId, pageable);
+        // ✅ year, month를 그대로 넘겨줌
+        Slice<RoutineResponse.RoutineThumbnailDTO> slice =
+                routineRepository.findUserRoutineList(userId, cursorId, pageable, year, month);
 
-        // 3. 조회된 루틴 리스트 추출
         List<RoutineResponse.RoutineThumbnailDTO> routineList = slice.getContent();
 
-        log.info("내 소비 루틴 목록 조회(커서 기반 무한스크롤) 완료 - userId: {}, cursorId: {}", userId, cursorId);
+        log.info("내 소비 루틴 목록 조회 완료 - userId={}, cursorId={}, year={}, month={}",
+                userId, cursorId, year, month);
+
         return RoutineConverter.toMyRoutineListDTO(routineList, slice);
     }
 

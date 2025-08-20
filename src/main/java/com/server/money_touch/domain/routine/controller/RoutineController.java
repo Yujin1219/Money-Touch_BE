@@ -75,18 +75,27 @@ public class RoutineController {
     // 내 소비 루틴 목록 조회
     @Operation(
             summary = "내 소비 루틴 목록 조회 API (커서 기반 무한스크롤)",
-            description = "가계부에서 사용자가 등록한 소비 루틴 목록을 스크롤 형식으로 조회하는 API입니다."
+            description = "가계부에서 사용자가 등록한 소비 루틴 목록을 스크롤 형식으로 조회하는 API입니다. 특정 연도/월별 조회가 가능합니다."
     )
     @ApiErrorCodeExamples({
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "USER_NOT_FOUND"),
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "_BAD_REQUEST"),
             @ApiErrorCodeExample(value = ErrorStatus.class, name = "_INTERNAL_SERVER_ERROR"),
     })
-    @Parameter(name = "cursorId", description = "커서(이전 요청에서 마지막 소비 루틴 아이디), 첫번째 요청일 시에는 파라미터에 포함하지 않아도 됩니다.", example = "10", required = false)
+    @Parameters({
+            @Parameter(name = "cursorId", description = "커서(이전 요청에서 마지막 루틴 ID), 첫 요청 시 생략 가능", example = "10", required = false),
+            @Parameter(name = "year", description = "조회할 연도", example = "2025", required = true),
+            @Parameter(name = "month", description = "조회할 월", example = "7", required = true)
+    })
     @GetMapping("/users")
-    public ApiResponse<RoutineResponse.MyRoutineListDTO> getMyRoutines(@RequestParam(required = false) Long cursorId, HttpServletRequest servletRequest) {
+    public ApiResponse<RoutineResponse.MyRoutineListDTO> getMyRoutines(
+            @RequestParam int year,
+            @RequestParam int month,
+            @RequestParam(required = false) Long cursorId,
+            HttpServletRequest servletRequest) {
+
         Long userId = authUtil.getUserIdFromRequest(servletRequest);
-        RoutineResponse.MyRoutineListDTO response = routineQueryService.getMyRoutineList(userId, cursorId);
+        RoutineResponse.MyRoutineListDTO response = routineQueryService.getMyRoutineList(userId, year, month, cursorId);
         return ApiResponse.onSuccess(response);
     }
 
