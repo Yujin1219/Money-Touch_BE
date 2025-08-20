@@ -14,4 +14,7 @@ public interface FixedConsumptionCommandService {
 
     // 고정비 삭제
     void deleteFixedConsumption(@ExistUser Long userId, Long fixedConsumptionId);
+
+    // 고정비 수동 갱신
+    void postFixedConsumptionsByManual();
 }

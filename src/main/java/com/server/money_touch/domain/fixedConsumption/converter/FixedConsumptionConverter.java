@@ -17,6 +17,7 @@ public class FixedConsumptionConverter {
                 .fixedConsumptionAmount(requestDTO.getAmount())
                 .fixedConsumptionContent(requestDTO.getContent())
                 .fixedConsumptionMemo(requestDTO.getMemo())
+                .appliedThisMonth(true)
                 .build();
     }
 

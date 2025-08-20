@@ -4,6 +4,7 @@ import com.server.money_touch.domain.fixedConsumption.dto.FixedConsumptionReques
 import com.server.money_touch.domain.fixedConsumption.dto.FixedConsumptionResponse;
 import com.server.money_touch.domain.fixedConsumption.service.FixedConsumptionCommandService;
 import com.server.money_touch.domain.fixedConsumption.service.FixedConsumptionQueryService;
+import com.server.money_touch.domain.fixedConsumption.service.FixedConsumptionSchedulerService;
 import com.server.money_touch.global.apiPayload.ApiResponse;
 import com.server.money_touch.global.apiPayload.code.status.ErrorStatus;
 import com.server.money_touch.global.utils.AuthUtil;
@@ -115,4 +116,13 @@ public class FixedConsumptionController {
         return ApiResponse.onSuccess(response);
     }
 
+    @Operation(
+            summary = "[관리자용] 고정비 갱신 API",
+            description = "이번달 1일 소비 내역에 반영되지 않은 고정비를 수동으로 갱신"
+    )
+    @PostMapping("manual-post")
+    public ApiResponse<String> postFixedConsumptionsByManual(HttpServletRequest servletRequest) {
+        fixedConsumptionCommandService.postFixedConsumptionsByManual();
+        return ApiResponse.onSuccess("고정비 수동 갱신 완료");
+    }
 }
