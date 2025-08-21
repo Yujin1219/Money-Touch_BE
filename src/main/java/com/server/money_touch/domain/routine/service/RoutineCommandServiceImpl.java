@@ -71,9 +71,11 @@ public class RoutineCommandServiceImpl implements RoutineCommandService {
         // 3. 예산의 createdMonth로 이번 달 판단
         String createdMonth = budget.getCreatedMonth();
 
-        // 4. 이번 달 동일 예산에 대한 루틴 존재 여부 확인 (PESSIMISTIC_WRITE)
-        if (routineRepository.findForUpdateByUserAndBudgetAndMonth(userId, budgetId, createdMonth).isPresent()) {
-            throw new ErrorHandler(ROUTINE_ALREADY_EXIST);
+        // 4. 이번 달 동일 예산에 대한 루틴 존재 여부 확인 (단, userId=1 은 중복 허용)
+        if (!userId.equals(1L)) { // ✅ userId=1일 때는 중복 검사 스킵
+            if (routineRepository.findForUpdateByUserAndBudgetAndMonth(userId, budgetId, createdMonth).isPresent()) {
+                throw new ErrorHandler(ROUTINE_ALREADY_EXIST);
+            }
         }
 
         // 5. 카테고리 총합 계산
@@ -92,14 +94,14 @@ public class RoutineCommandServiceImpl implements RoutineCommandService {
         }
 
         // 7. 루틴 저장
-        //   - 동시에 같은 (user, budget, createdMonth) 조합이 저장되는 경쟁 상황 방지
-        //   - 유니크 제약 위반 발생 시 DataIntegrityViolationException을 잡아 예외 변환
         Routine routine = RoutineConverter.toRoutine(user, budget, request, createdMonth);
         try {
             routineRepository.save(routine);
         } catch (Exception e) {
             // 혹시 경쟁 상황으로 유니크 제약 위반 시
-            throw new ErrorHandler(ROUTINE_ALREADY_EXIST);
+            if (!userId.equals(1L)) { // ✅ userId=1일 때는 예외 변환하지 않음
+                throw new ErrorHandler(ROUTINE_ALREADY_EXIST);
+            }
         }
 
         // 8. RoutineAmount 저장
@@ -146,8 +148,8 @@ public class RoutineCommandServiceImpl implements RoutineCommandService {
             throw new ErrorHandler(ErrorStatus.BUDGE_UNAUTHORIZED);
         }
 
-        // 이미 루틴 적용된 예산이라면 예외
-        if (Boolean.TRUE.equals(budget.getIsFromRoutine())) {
+        // 이미 루틴 적용된 예산이라면 예외 (단, userId=1은 중복 허용)
+        if (!userId.equals(1L) && Boolean.TRUE.equals(budget.getIsFromRoutine())) {
             throw new ErrorHandler(ErrorStatus.ROUTINE_ALREADY_APPLIED);
         }
 
