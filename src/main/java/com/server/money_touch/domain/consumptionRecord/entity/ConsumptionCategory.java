@@ -33,8 +33,8 @@ public class ConsumptionCategory extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @OneToMany(mappedBy = "consumptionCategory", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ConsumptionRecord> consumptionRecords = new ArrayList<>();
+//    @OneToMany(mappedBy = "consumptionCategory", cascade = CascadeType.ALL, orphanRemoval = true)
+//    private List<ConsumptionRecord> consumptionRecords = new ArrayList<>();
 
     @OneToMany(mappedBy = "consumptionCategory", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BudgetCategory> budgetCategories = new ArrayList<>();
