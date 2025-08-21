@@ -131,13 +131,13 @@ public class RoutineCommandServiceImpl implements RoutineCommandService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ErrorHandler(ErrorStatus.USER_NOT_FOUND));
 
-        // 2. 소비 루틴 조회 (자신의 루틴은 허용하지 않음)
+        // 2. 소비 루틴 조회
         Routine routine = routineRepository.findById(routineId)
                 .orElseThrow(() -> new ErrorHandler(ErrorStatus.ROUTINE_NOT_FOUND));
 
-        if (routine.getUser().getId().equals(userId)) {
-            throw new ErrorHandler(ErrorStatus.ROUTINE_PREVIEW_NOT_ALLOWED);
-        }
+//        if (routine.getUser().getId().equals(userId)) {
+//            throw new ErrorHandler(ErrorStatus.ROUTINE_PREVIEW_NOT_ALLOWED);
+//        }
 
         // 3. 이번 달 예산 조회
         String currentMonth = LocalDate.now().withDayOfMonth(1).toString().substring(0, 7); // "2025-08"
