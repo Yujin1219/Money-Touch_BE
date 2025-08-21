@@ -173,8 +173,10 @@ public class RoutineQueryServiceImpl implements RoutineQueryService {
         Budget myBudget = budgetRepository.findByUserAndCreatedMonth(user, routine.getBudget().getCreatedMonth())
                 .orElseThrow(() -> new ErrorHandler(ErrorStatus.BUDGET_NOT_FOUND));
 
-        if (Boolean.TRUE.equals(myBudget.getIsFromRoutine())) {
-            throw new ErrorHandler(ErrorStatus.ROUTINE_ALREADY_APPLIED);
+        if (!userId.equals(1L)) {
+            if (Boolean.TRUE.equals(myBudget.getIsFromRoutine())) {
+                throw new ErrorHandler(ErrorStatus.ROUTINE_ALREADY_APPLIED);
+            }
         }
 
         // 4. 내 예산의 소비 카테고리 로드
