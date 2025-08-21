@@ -130,9 +130,12 @@ public class RoutineQueryServiceImpl implements RoutineQueryService {
 
         boolean canApply = true;
         String message = null;
-        if (myBudgetOpt.isPresent() && Boolean.TRUE.equals(myBudgetOpt.get().getIsFromRoutine())) {
-            canApply = false;
-            message = "소비루틴은 한 달에 한 번만 반영할 수 있어요";
+        // ✅ userId=1은 시연용 계정 → 검사하지 않음
+        if (!userId.equals(1L)) {
+            if (myBudgetOpt.isPresent() && Boolean.TRUE.equals(myBudgetOpt.get().getIsFromRoutine())) {
+                canApply = false;
+                message = "소비루틴은 한 달에 한 번만 반영할 수 있어요";
+            }
         }
 
         return RoutineResponse.RoutineListDetailDTO.builder()
