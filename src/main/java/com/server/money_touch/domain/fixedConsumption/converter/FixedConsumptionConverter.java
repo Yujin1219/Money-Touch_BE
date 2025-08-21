@@ -16,7 +16,12 @@ public class FixedConsumptionConverter {
                 .categoryName(requestDTO.getCategoryName())
                 .fixedConsumptionAmount(requestDTO.getAmount())
                 .fixedConsumptionContent(requestDTO.getContent())
-                .fixedConsumptionMemo(requestDTO.getMemo())
+                // ✅ 메모가 비어 있으면 null 로 처리
+                .fixedConsumptionMemo(
+                        (requestDTO.getMemo() == null || requestDTO.getMemo().isBlank())
+                                ? null
+                                : requestDTO.getMemo()
+                )
                 .appliedThisMonth(true)
                 .build();
     }
@@ -34,7 +39,7 @@ public class FixedConsumptionConverter {
                 .fixedConsumptionId(entity.getId())
                 .categoryName(entity.getCategoryName())
                 .amount(entity.getFixedConsumptionAmount())
-                .memo(entity.getFixedConsumptionMemo())
+                .content(entity.getFixedConsumptionContent())
                 .build();
     }
 

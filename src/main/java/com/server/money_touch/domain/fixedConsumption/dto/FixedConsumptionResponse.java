@@ -61,7 +61,7 @@ public class FixedConsumptionResponse {
         @Schema(description = "고정비 금액", example = "23000")
         private Integer amount;
 
-        @Schema(description = "메모", example = "가족 공유 요금제")
-        private String memo;
+        @Schema(description = "항목명", example = "가족 공유 요금제")
+        private String content;
     }
 }
