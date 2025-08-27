@@ -2,7 +2,9 @@
 ## 🤑 Introduce
 <img width="1920" height="1080" alt="Image" src="https://github.com/user-attachments/assets/c9ee2c8b-74e9-4162-88a2-c3e651be45f8" />
 
-**돈터치**는 소비 관리 플랫폼으로, 소비 기록과 분석을 중심으로 **예산 관리와 소비 습관 개선**을 지원합니다. SNS 형식의 소비 피드와 랭킹·배지 시스템을 통해 사용자 간 소통과 경쟁을 활성화하며, 가계부·소비 루틴·고정비 관리 등 체계적인 소비 관리 서비스를 제공합니다.
+**돈터치** 서비스는 혼자가 아닌 ‘함께’ 소비를 관리하는 SNS형 소비 관리 웹앱 서비스입니다.
+이름의 뜻은 돈 + 터치와 dont touch 두 가지로, 돈터치가 지출 유혹을 멈출 수 있도록 터치해주겠다는 의미입니다.
+SNS 형식의 소비 피드와 랭킹·배지 시스템을 통해 사용자 간 소통과 경쟁을 활성화하며, 가계부·소비 루틴·고정비 관리 등 체계적인 소비 관리 서비스를 제공합니다.
 
 ## 🔧 Tech Stack
 <p>
@@ -22,6 +24,12 @@
   <img src="https://img.shields.io/badge/Swagger-85EA2D?style=for-the-badge&logo=swagger&logoColor=white">
 </p>
 
+## ⭐ Main Feature
+<img width="3840" height="2160" alt="image" src="https://github.com/user-attachments/assets/7e48191e-0856-49d5-a9d7-f57efb973f16" />
+<img width="3840" height="4320" alt="image" src="https://github.com/user-attachments/assets/c3003787-6eed-4117-8adb-dcbd4700c3c5" />
+<img width="3840" height="5502" alt="image" src="https://github.com/user-attachments/assets/9d2fdafc-d5b6-4964-87ff-c106bca6237d" />
+<img width="3840" height="8040" alt="image" src="https://github.com/user-attachments/assets/e4b64e03-4cec-4e32-bae2-41c39a5d0195" />
+<img width="3840" height="5114" alt="image" src="https://github.com/user-attachments/assets/37c4e51c-317c-4a80-86af-ccedf736bdc6" />
 
 ## 🛠 Server Architecture
 <img width="1955" height="1540" alt="돈터치 아키텍처" src="https://github.com/user-attachments/assets/acc1630f-5eca-4a2f-aaa8-110ac448bee8" />
